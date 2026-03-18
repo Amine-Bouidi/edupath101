@@ -2054,6 +2054,16 @@ function enterApp(name, email){
   el('app').style.display='flex'; el('app').classList.add('active');
   el('sbName').textContent = name;
   el('sbAvatar').textContent = initials;
+  // Track user in Firestore
+  if(email && email !== ''){
+    var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
+    db.collection('users').doc(docId).set({
+      email: email,
+      name: name,
+      lastLogin: new Date().toISOString(),
+      firstSeen: firebase.firestore.FieldValue.serverTimestamp()
+    }, {merge: true}).catch(function(e){ console.log('User track error:', e); });
+  }
   startTrialTimer();
   showAdminIfNeeded();
   renderDashboard();
@@ -2957,34 +2967,60 @@ function loadAdminUsers(){
   var listEl = el('adminUserList');
   listEl.innerHTML='<div style="color:var(--text3);font-size:13px;padding:12px 0;text-align:center;">Loading...</div>';
 
-  db.collection('subscriptions').where('active','==',true).get().then(function(snap){
-    if(snap.empty){
-      listEl.innerHTML='<div style="color:var(--text3);font-size:13px;padding:12px 0;text-align:center;">No active subscribers yet.</div>';
-      el('statTotal').textContent='0'; el('statActive').textContent='0'; el('statTrial').textContent='0';
-      return;
-    }
-    var html='';
-    var total=0, active=0;
-    var planLabels = {starter:'🎯 Starter',semester:'📚 Semester',year:'🎓 Year',vip:'👑 VIP'};
-    snap.forEach(function(doc){
-      var d = doc.data();
-      total++;
-      var expired = d.expiresAt && new Date(d.expiresAt) < new Date();
-      if(!expired) active++;
-      var expText = d.expiresAt ? (expired ? '⚠️ Expired' : 'Expires: ' + new Date(d.expiresAt).toLocaleDateString()) : '♾️ Lifetime';
-      html += '<div class="admin-user-row">' +
-        '<span class="admin-user-email">' + d.email + '</span>' +
-        '<span class="admin-user-plan">' + (planLabels[d.plan]||d.plan) + '</span>' +
-        '<span class="admin-user-expires">' + expText + '</span>' +
-        '<button class="admin-revoke" onclick="adminRevoke(\'' + d.email + '\')">Revoke</button>' +
-      '</div>';
+  var planLabels = {starter:'🎯 Starter',semester:'📚 Semester',year:'🎓 Year',vip:'👑 VIP'};
+
+  // First get all subscriptions
+  db.collection('subscriptions').get().then(function(subSnap){
+    var subs = {};
+    subSnap.forEach(function(doc){ subs[doc.data().email] = doc.data(); });
+
+    // Then get all users
+    return db.collection('users').orderBy('lastLogin','desc').get().then(function(userSnap){
+      if(userSnap.empty){
+        listEl.innerHTML='<div style="color:var(--text3);font-size:13px;padding:12px 0;text-align:center;">No users yet.</div>';
+        el('statTotal').textContent='0'; el('statActive').textContent='0'; el('statTrial').textContent='0';
+        return;
+      }
+      var html='';
+      var total=0, active=0, trial=0;
+      userSnap.forEach(function(doc){
+        var u = doc.data();
+        if(ADMIN_EMAILS.indexOf(u.email.toLowerCase()) !== -1) return;
+        total++;
+        var sub = subs[u.email];
+        var statusHtml='';
+        if(sub && sub.active){
+          var expired = sub.expiresAt && new Date(sub.expiresAt) < new Date();
+          if(expired){
+            statusHtml='<span style="color:#e05252;font-size:12px;">⚠️ Expired</span>';
+          } else {
+            active++;
+            var expText = sub.expiresAt ? new Date(sub.expiresAt).toLocaleDateString() : '♾️ Lifetime';
+            statusHtml='<span class="admin-user-plan">'+(planLabels[sub.plan]||sub.plan)+'</span> <span class="admin-user-expires">until '+expText+'</span>';
+          }
+        } else {
+          trial++;
+          statusHtml='<span style="color:#f9a825;font-size:12px;">🕐 Free trial</span>';
+        }
+        var lastLogin = u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() + ' ' + new Date(u.lastLogin).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '—';
+        html += '<div class="admin-user-row">' +
+          '<div style="flex:1;min-width:0;">' +
+            '<div class="admin-user-email">' + u.email + '</div>' +
+            '<div style="font-size:11px;color:var(--text3);">' + (u.name||'') + ' · Last: ' + lastLogin + '</div>' +
+          '</div>' +
+          '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
+            statusHtml +
+            (sub && sub.active ? ' <button class="admin-revoke" onclick="adminRevoke(\'' + u.email + '\')">Revoke</button>' : '') +
+          '</div>' +
+        '</div>';
+      });
+      listEl.innerHTML = html || '<div style="color:var(--text3);font-size:13px;padding:12px 0;text-align:center;">No users yet.</div>';
+      el('statTotal').textContent = total;
+      el('statActive').textContent = active;
+      el('statTrial').textContent = trial;
     });
-    listEl.innerHTML = html;
-    el('statTotal').textContent = total;
-    el('statActive').textContent = active;
-    el('statTrial').textContent = '—';
   }).catch(function(err){
-    listEl.innerHTML='<div style="color:#e05252;font-size:13px;padding:12px 0;">Error loading users: ' + err.message + '</div>';
+    listEl.innerHTML='<div style="color:#e05252;font-size:13px;padding:12px 0;">Error: ' + err.message + '</div>';
   });
 }
 
