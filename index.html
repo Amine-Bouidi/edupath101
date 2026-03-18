@@ -422,6 +422,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .rec-cancel-btn:hover{color:var(--text2);}
 
 /* ── PRICING ── */
+.trial-banner{background:linear-gradient(135deg,#6c63ff,#f857a6);color:#fff;text-align:center;padding:10px 16px;font-size:13px;font-weight:600;position:sticky;top:0;z-index:999;display:none;border-radius:0 0 12px 12px;}
+.trial-banner .trial-time{font-family:'Sora',monospace;font-size:15px;margin:0 6px;letter-spacing:1px;}
+.trial-banner .trial-upgrade-btn{background:#fff;color:#6c63ff;border:none;padding:5px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;margin-left:10px;}
+.trial-banner .trial-upgrade-btn:hover{opacity:.9;}
+.paywall-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,10,30,.92);z-index:9999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
+.paywall-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px 32px;max-width:440px;width:90%;text-align:center;}
+.paywall-box h2{font-family:'Sora',sans-serif;font-size:24px;margin-bottom:12px;}
+.paywall-box p{color:var(--text2);font-size:14px;line-height:1.6;margin-bottom:24px;}
+.paywall-box .pw-btn{background:var(--accent2);color:#fff;border:none;padding:12px 32px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;width:100%;margin-bottom:10px;}
+.paywall-box .pw-btn:hover{opacity:.9;}
+.paywall-box .pw-sub{color:var(--text3);font-size:12px;}
 .pricing-wrap{max-width:1060px;margin:0 auto;padding:0 4px;}
 .pricing-hero{text-align:center;margin-bottom:36px;}
 .pricing-hero-tag{display:inline-block;background:rgba(108,99,255,.15);color:var(--accent2);font-size:12px;font-weight:700;padding:6px 16px;border-radius:20px;margin-bottom:14px;letter-spacing:.5px;}
@@ -815,6 +826,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 </div>
 
 <!-- APP -->
+<!-- TRIAL BANNER -->
+<div id="trialBanner" class="trial-banner">
+  🎓 Free trial — <span class="trial-time" id="trialCountdown">47h 59m</span> remaining
+  <button class="trial-upgrade-btn" onclick="showView('pricing')">Upgrade Now</button>
+</div>
+<!-- PAYWALL OVERLAY -->
+<div id="paywallOverlay" class="paywall-overlay">
+  <div class="paywall-box">
+    <div style="font-size:48px;margin-bottom:12px;">⏰</div>
+    <h2>Your free trial has ended</h2>
+    <p>You've explored EduPath for 48 hours! To keep accessing all videos, quizzes, resources, and community features — choose a plan that fits you.</p>
+    <button class="pw-btn" onclick="el('paywallOverlay').style.display='none';showView('pricing');">🔓 View Plans & Pricing</button>
+    <div class="pw-sub">Starting from just $10/month · Cancel anytime</div>
+  </div>
+</div>
 <div id="app" class="screen" style="flex-direction:row;">
   <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
   <div class="mobile-overlay" id="mobileOverlay"></div>
@@ -1865,6 +1891,75 @@ function updateCtx(){
   if(S.mod)el('ctxMod').textContent=S.mod.title;
 }
 
+/* ── FREE TRIAL SYSTEM (48 hours) ── */
+var TRIAL_HOURS = 48;
+var trialInterval = null;
+
+function getTrialData(email){
+  if(!email) return null;
+  var key = 'trial_' + email.replace(/[^a-zA-Z0-9]/g,'_');
+  var raw = localStorage.getItem(key);
+  if(!raw){
+    var data = { created: Date.now(), upgraded: false };
+    localStorage.setItem(key, JSON.stringify(data));
+    return data;
+  }
+  return JSON.parse(raw);
+}
+
+function setTrialUpgraded(email){
+  if(!email) return;
+  var key = 'trial_' + email.replace(/[^a-zA-Z0-9]/g,'_');
+  var data = getTrialData(email);
+  data.upgraded = true;
+  localStorage.setItem(key, JSON.stringify(data));
+}
+
+function getTrialRemaining(email){
+  var data = getTrialData(email);
+  if(!data) return 0;
+  if(data.upgraded) return -1;
+  var elapsed = Date.now() - data.created;
+  var total = TRIAL_HOURS * 60 * 60 * 1000;
+  return Math.max(0, total - elapsed);
+}
+
+function formatTrialTime(ms){
+  if(ms <= 0) return '0h 0m';
+  var h = Math.floor(ms / 3600000);
+  var m = Math.floor((ms % 3600000) / 60000);
+  var s = Math.floor((ms % 60000) / 1000);
+  return h + 'h ' + m + 'm ' + s + 's';
+}
+
+function checkTrialStatus(){
+  if(!S.user || !S.user.email || S.user.email === '' || S.user.name === 'Demo Student') {
+    el('trialBanner').style.display='none';
+    el('paywallOverlay').style.display='none';
+    return;
+  }
+  var remaining = getTrialRemaining(S.user.email);
+  if(remaining === -1){
+    el('trialBanner').style.display='none';
+    el('paywallOverlay').style.display='none';
+    return;
+  }
+  if(remaining > 0){
+    el('trialBanner').style.display='block';
+    el('trialCountdown').textContent = formatTrialTime(remaining);
+    el('paywallOverlay').style.display='none';
+  } else {
+    el('trialBanner').style.display='none';
+    el('paywallOverlay').style.display='flex';
+  }
+}
+
+function startTrialTimer(){
+  if(trialInterval) clearInterval(trialInterval);
+  checkTrialStatus();
+  trialInterval = setInterval(checkTrialStatus, 1000);
+}
+
 /* ── LOGIN ── */
 function enterApp(name, email){
   var initials = name.split(' ').map(function(w){return w[0];}).join('').substring(0,2).toUpperCase();
@@ -1873,6 +1968,7 @@ function enterApp(name, email){
   el('app').style.display='flex'; el('app').classList.add('active');
   el('sbName').textContent = name;
   el('sbAvatar').textContent = initials;
+  startTrialTimer();
   renderDashboard();
 }
 function doLogin(){
@@ -1908,6 +2004,9 @@ el('loginUser').addEventListener('keydown',function(e){if(e.key==='Enter')doLogi
 el('loginPass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
 el('btnSignOut').onclick=function(){
   firebase.auth().signOut().catch(function(){});
+  if(trialInterval) clearInterval(trialInterval);
+  el('trialBanner').style.display='none';
+  el('paywallOverlay').style.display='none';
   S={user:null,uni:null,sem:null,semIdx:0,mod:null,vidIdx:0,progress:{},vidDone:false};
   el('app').style.display='none'; el('app').classList.remove('active');
   el('login').style.display='flex'; el('login').classList.add('active');
