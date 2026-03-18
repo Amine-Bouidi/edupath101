@@ -198,7 +198,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .wb-stat-l{font-size:11px;color:var(--text3);}
 
 /* UNI GRID */
-.uni-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:32px;}
+.uni-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:32px;}
 .uni-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px 18px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
 .uni-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--uc);}
 .uni-card:hover{border-color:var(--border2);transform:translateY(-3px);box-shadow:0 14px 36px rgba(0,0,0,.3);}
@@ -210,7 +210,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .uc-pct{font-size:10px;color:var(--text3);margin-top:4px;}
 
 /* SEM GRID */
-.sem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.sem-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
 .sem-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:22px 20px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
 .sem-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--sc1),var(--sc2));}
 .sem-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,.3);}
@@ -1254,32 +1254,314 @@ function getYouTubeId(uniId, semId, modId, vidIdx){
 
 /* ── DATA ── */
 var UNIVERSITIES = [
-  {id:'ox', name:'University of Oxford',     country:'United Kingdom', emoji:'🎓', c:'#6c63ff'},
-  {id:'cam',name:'University of Cambridge',  country:'United Kingdom', emoji:'📚', c:'#ff6584'},
-  {id:'ucl',name:'University College London',country:'United Kingdom', emoji:'🏛️', c:'#43e97b'},
-  {id:'man',name:'University of Manchester', country:'United Kingdom', emoji:'⚙️', c:'#f9a825'},
-  {id:'ed', name:'University of Edinburgh',  country:'Scotland',       emoji:'🏰', c:'#56ccf2'}
+  {id:'uiz', name:'University Ibn Zohr — FLSH Agadir', country:'Morocco 🇲🇦', emoji:'🏛️', c:'#6c63ff'},
+  {id:'uh2c', name:'University Hassan II — Casablanca (Ain Chock & Ben M\'sik)', country:'Morocco 🇲🇦', emoji:'🎓', c:'#ff6584'},
+  {id:'uca', name:'University Cadi Ayyad — FLSH Marrakech', country:'Morocco 🇲🇦', emoji:'📚', c:'#43e97b'},
+  {id:'usmba', name:'University USMBA — FLDM Fez', country:'Morocco 🇲🇦', emoji:'🕌', c:'#f9a825'}
 ];
-var SEM_COLORS=[['#6c63ff','#9b59b6'],['#ff6584','#ff9a9e'],['#43e97b','#38f9d7'],['#f9a825','#fc4a1a'],['#56ccf2','#2f80ed'],['#a18cd1','#fbc2eb']];
-var SEMESTERS = (function(){
-  var subs=['Foundations','Core Concepts','Intermediate','Advanced Topics','Specialisation','Capstone & Review'];
-  var r=[];
-  for(var i=0;i<6;i++) r.push({id:'sem'+(i+1),num:i+1,title:'Semester '+(i+1),sub:subs[i],c1:SEM_COLORS[i][0],c2:SEM_COLORS[i][1]});
-  return r;
-})();
-var MOD_ICONS=['📊','💻','🧮','📈','🧠','📝'];
-var MOD_TITLES=[
-  ['Data Analysis','Programming Basics','Linear Algebra','Calculus I','Research Methods','Academic Writing'],
-  ['Statistics','Python II','Matrix Theory','Calculus II','Experimental Design','Critical Thinking'],
-  ['Machine Learning','Web Development','Probability','Differential Equations','Quantitative Methods','Literature Review'],
-  ['Deep Learning','Databases','Numerical Methods','Partial Diff. Eq.','Survey Design','Thesis Writing'],
-  ['AI Ethics','Cloud Computing','Optimisation','Complex Analysis','Mixed Methods','Grant Writing'],
-  ['Capstone Project','System Design','Applied Maths','Mathematical Modelling','Final Research','Dissertation']
+var SEM_COLORS=[['#6c63ff','#9b59b6'],['#ff6584','#ff9a9e'],['#43e97b','#38f9d7'],['#f9a825','#fc4a1a'],['#56ccf2','#2f80ed'],['#a18cd1','#fbc2eb'],['#ff6584','#6c63ff'],['#43e97b','#f9a825']];
+var SEMESTERS = [
+  {id:'sem1',num:1,title:'Semester 1',sub:'Common Core — Foundations',c1:'#6c63ff',c2:'#9b59b6'},
+  {id:'sem2',num:2,title:'Semester 2',sub:'Common Core — Building Skills',c1:'#ff6584',c2:'#ff9a9e'},
+  {id:'sem3',num:3,title:'Semester 3',sub:'Common Core — Intermediate',c1:'#43e97b',c2:'#38f9d7'},
+  {id:'sem4',num:4,title:'Semester 4',sub:'Common Core — Advanced',c1:'#f9a825',c2:'#fc4a1a'},
+  {id:'sem5lit',num:5,title:'Semester 5 — Literature',sub:'Major: Literature & Culture',c1:'#56ccf2',c2:'#2f80ed'},
+  {id:'sem5ling',num:5,title:'Semester 5 — Linguistics',sub:'Major: Linguistics & Applied',c1:'#a18cd1',c2:'#fbc2eb'},
+  {id:'sem6lit',num:6,title:'Semester 6 — Literature',sub:'Major: Literature & Culture',c1:'#ff6584',c2:'#6c63ff'},
+  {id:'sem6ling',num:6,title:'Semester 6 — Linguistics',sub:'Major: Linguistics & Applied',c1:'#43e97b',c2:'#f9a825'}
 ];
-var MOD_DESCS=['Foundational concepts and core techniques.','Applied methods and real-world examples.','Connecting theory with practice.','Advanced topics through case studies.','Specialist content with industry applications.','Comprehensive review and exam preparation.'];
-function getMods(si){
+
+/* Module data per semester index */
+var MOD_DATA = [
+  /* S1 */ [
+    {icon:'📖',title:'Reading Comprehension & Précis',desc:'Master basic reading comprehension skills and learn to write accurate summaries.'},
+    {icon:'✍️',title:'Writing Paragraphs',desc:'Learn paragraph structure, topic sentences, supporting details and coherence.'},
+    {icon:'📝',title:'Grammar 1',desc:'Foundations of English grammar: parts of speech, tenses, sentence structure.'},
+    {icon:'🗣️',title:'Spoken English',desc:'Practice and improve listening and oral communication skills.'},
+    {icon:'📚',title:'Guided Reading',desc:'Overcome lexical and structural difficulties through guided literary reading.'},
+    {icon:'🎯',title:'Soft Skills (MTU)',desc:'Study skills, time management, critical thinking and university adaptation.'},
+    {icon:'🌐',title:'Language 1 (French/Arabic)',desc:'Consolidate competence in French or Arabic as a working language.'}
+  ],
+  /* S2 */ [
+    {icon:'📖',title:'Reading Comprehension & Précis 2',desc:'Advanced reading strategies and summary writing techniques.'},
+    {icon:'✍️',title:'Composition 1',desc:'Essay writing fundamentals: thesis statements, argumentation, and structure.'},
+    {icon:'📝',title:'Grammar 2',desc:'Intermediate grammar: complex sentences, conditionals, passive voice.'},
+    {icon:'🗣️',title:'Oral Communication',desc:'Develop fluency, pronunciation, and conversational confidence.'},
+    {icon:'📚',title:'Reading in Culture',desc:'Explore cultural texts and develop cross-cultural reading competence.'},
+    {icon:'💼',title:'Business Communication',desc:'Introduction to business English: emails, reports, and professional writing.'},
+    {icon:'🌐',title:'Language 2 (French/Arabic)',desc:'Continue developing skills in French or Arabic for academic purposes.'}
+  ],
+  /* S3 */ [
+    {icon:'📖',title:'Extensive Reading',desc:'Read widely to build vocabulary, fluency, and literary appreciation.'},
+    {icon:'✍️',title:'Composition 2',desc:'Advanced essay writing: analytical and argumentative compositions.'},
+    {icon:'📝',title:'Grammar 3',desc:'Advanced grammar: relative clauses, reported speech, advanced tenses.'},
+    {icon:'🗣️',title:'Public Speaking',desc:'Learn the rules of public speaking, debate, and oral presentations.'},
+    {icon:'🌍',title:'British & US Culture & Society',desc:'Study British and American civilization, history, and cultural institutions.'},
+    {icon:'🔄',title:'Initiation to Translation',desc:'Introduction to translation theory: English–Arabic and Arabic–English.'}
+  ],
+  /* S4 */ [
+    {icon:'📚',title:'Introduction to Literature',desc:'Basics of reading and writing about English literature: genres and analysis.'},
+    {icon:'✍️',title:'Advanced Composition',desc:'Refine academic writing: research papers, critical analysis, and argumentation.'},
+    {icon:'🧠',title:'Introduction to Linguistics',desc:'Introduction to general linguistics: phonology, morphology, syntax, semantics.'},
+    {icon:'📺',title:'Studies in Media',desc:'Analyse media texts, discourse, and the role of media in society.'},
+    {icon:'🌐',title:'Introduction to Cultural Studies',desc:'Basics in the theory and practice of cultural studies and critical theory.'},
+    {icon:'🔄',title:'Translation & Interpretation',desc:'Develop translation skills from Arabic to English and vice versa.'}
+  ],
+  /* S5 Literature */ [
+    {icon:'📕',title:'19th Century Novel',desc:'Study major 19th century British and American novels and narrative techniques.'},
+    {icon:'🔬',title:'Research Project 1',desc:'Begin your independent research project: methodology and proposal writing.'},
+    {icon:'🎭',title:'Classical Drama',desc:'Explore classical dramatic works: Greek tragedy, Shakespeare, and Renaissance drama.'},
+    {icon:'📜',title:'Introduction to Poetry',desc:'Learn poetic forms, metre, imagery, and close reading of poetry.'},
+    {icon:'📖',title:'Literary Movements',desc:'Survey major literary movements: Romanticism, Realism, Modernism, and more.'},
+    {icon:'🌍',title:'Postcolonial Studies',desc:'Examine postcolonial literature, theory, identity, and cultural resistance.'}
+  ],
+  /* S5 Linguistics */ [
+    {icon:'🔊',title:'Phonetics',desc:'Study the sounds of human speech: articulation, acoustics, and transcription.'},
+    {icon:'🔬',title:'Research Project 1',desc:'Begin your independent research project: methodology and proposal writing.'},
+    {icon:'🧩',title:'Morphology',desc:'Analyse word structure: roots, affixes, derivation, and inflection.'},
+    {icon:'👥',title:'Sociolinguistics',desc:'Explore the relationship between language and society: dialects, register, identity.'},
+    {icon:'🎓',title:'Applied Linguistics',desc:'Apply linguistic theory to language teaching, learning, and communication.'},
+    {icon:'🧠',title:'Educational Psychology',desc:'Understand learning theories, motivation, and cognitive development in education.'}
+  ],
+  /* S6 Literature */ [
+    {icon:'📗',title:'20th Century Fiction',desc:'Study modern and contemporary fiction: narrative innovation and thematic depth.'},
+    {icon:'🔬',title:'Research Project 2',desc:'Complete your research project: data analysis, writing, and presentation.'},
+    {icon:'🎭',title:'Modern Drama',desc:'Explore 20th century drama: absurdism, expressionism, and contemporary theatre.'},
+    {icon:'📜',title:'Modern Poetry',desc:'Analyse modern and contemporary poetry: free verse, imagery, and experimentation.'},
+    {icon:'📖',title:'Modern Literary Criticism',desc:'Survey major critical approaches: structuralism, feminism, deconstruction.'},
+    {icon:'🌍',title:'Postcolonial Studies 2',desc:'Advanced postcolonial theory: diaspora, hybridity, and global literatures.'}
+  ],
+  /* S6 Linguistics */ [
+    {icon:'🔊',title:'Phonology',desc:'Study sound systems and patterns: phonemes, allophones, and phonological rules.'},
+    {icon:'🔬',title:'Research Project 2',desc:'Complete your research project: data analysis, writing, and presentation.'},
+    {icon:'🧩',title:'Syntax',desc:'Analyse sentence structure: phrase structure rules, transformations, and trees.'},
+    {icon:'💬',title:'Semantics & Pragmatics',desc:'Study meaning in language: word meaning, sentence meaning, and context.'},
+    {icon:'🎓',title:'Applied Linguistics',desc:'Advanced applied linguistics: discourse analysis, corpus linguistics, and ELT.'},
+    {icon:'✒️',title:'Stylistics',desc:'Analyse literary and non-literary texts using linguistic tools and frameworks.'}
+  ]
+];
+
+/* Hassan II — FLSH Ain Chock module data */
+var MOD_DATA_UH2C = [
+  /* S1 */ [
+    {icon:'📖',title:'Reading Comprehension & Précis 1',desc:'Master basic reading comprehension skills and summary writing.'},
+    {icon:'✍️',title:'Paragraph Writing',desc:'Learn paragraph structure, topic sentences, and coherence.'},
+    {icon:'📝',title:'Grammar 1',desc:'Foundations of English grammar: parts of speech, tenses, sentence structure.'},
+    {icon:'🗣️',title:'Spoken English',desc:'Practice and improve listening and oral communication skills.'},
+    {icon:'📚',title:'Guided Reading',desc:'Overcome lexical and structural difficulties through guided reading.'},
+    {icon:'🎯',title:'Study Skills',desc:'Academic skills: note-taking, time management, exam preparation.'},
+    {icon:'🌐',title:'Langues I',desc:'Consolidate competence in French or Arabic as a working language.'}
+  ],
+  /* S2 */ [
+    {icon:'📖',title:'Reading Comprehension & Précis 2',desc:'Advanced reading strategies and summary writing techniques.'},
+    {icon:'✍️',title:'Composition 1',desc:'Essay writing fundamentals: thesis statements, argumentation, and structure.'},
+    {icon:'📝',title:'Grammar 2',desc:'Intermediate grammar: complex sentences, conditionals, passive voice.'},
+    {icon:'🗣️',title:'Oral Communication',desc:'Develop fluency, pronunciation, and conversational confidence.'},
+    {icon:'📚',title:'Readings in Culture',desc:'Explore cultural texts and develop cross-cultural reading competence.'},
+    {icon:'💼',title:'Business Communication',desc:'Introduction to business English: emails, reports, and professional writing.'},
+    {icon:'🌐',title:'Langues II',desc:'Continue developing skills in French or Arabic for academic purposes.'}
+  ],
+  /* S3 */ [
+    {icon:'📖',title:'Extensive Reading',desc:'Read widely to build vocabulary, fluency, and literary appreciation.'},
+    {icon:'✍️',title:'Composition 2',desc:'Advanced essay writing: analytical and argumentative compositions.'},
+    {icon:'📝',title:'Grammar 3',desc:'Advanced grammar: relative clauses, reported speech, advanced tenses.'},
+    {icon:'🗣️',title:'Public Speaking & Debating',desc:'Master public speaking, debate techniques, and oral presentations.'},
+    {icon:'🌍',title:'British & US Culture & Society',desc:'Study British and American civilization, history, and cultural institutions.'},
+    {icon:'🔄',title:'Initiation to Translation',desc:'Introduction to translation theory: English–Arabic and Arabic–English.'}
+  ],
+  /* S4 */ [
+    {icon:'📚',title:'Introduction to Literature',desc:'Basics of reading and writing about English literature: genres and analysis.'},
+    {icon:'✍️',title:'Advanced Composition & Intro to Research',desc:'Academic writing and introduction to research methodology.'},
+    {icon:'🧠',title:'Introduction to Linguistics',desc:'Introduction to general linguistics: phonology, morphology, syntax, semantics.'},
+    {icon:'📺',title:'Introduction to Media Studies',desc:'Analyse media texts, discourse, and the role of media in society.'},
+    {icon:'🌐',title:'Introduction to Cultural Studies',desc:'Basics in the theory and practice of cultural studies and critical theory.'},
+    {icon:'🔄',title:'Translation (Arabic–English–Arabic)',desc:'Develop translation skills between Arabic and English.'}
+  ],
+  /* S5 Literature */ [
+    {icon:'🎯',title:'Study Skills & Research Method',desc:'Research methodology, academic writing, and study strategies.'},
+    {icon:'🇺🇸',title:'Survey of American Literature',desc:'Overview of major works and movements in American literary history.'},
+    {icon:'📕',title:'Rise of the Novel (18–19th Century)',desc:'Study the emergence and development of the English novel.'},
+    {icon:'🎭',title:'Modern Drama',desc:'Explore 20th century drama: absurdism, expressionism, and contemporary theatre.'},
+    {icon:'📜',title:'Poetry',desc:'Learn poetic forms, metre, imagery, and close reading of poetry.'},
+    {icon:'📖',title:'Major Trends in English Literature',desc:'Survey major literary movements and trends in English literature.'}
+  ],
+  /* S5 Linguistics */ [
+    {icon:'💬',title:'Semantics & Pragmatics',desc:'Study meaning in language: word meaning, sentence meaning, and context.'},
+    {icon:'🔊',title:'Phonetics & Phonology',desc:'Study speech sounds: articulation, acoustics, and sound system patterns.'},
+    {icon:'🧩',title:'Morphology',desc:'Analyse word structure: roots, affixes, derivation, and inflection.'},
+    {icon:'🔄',title:'Translation',desc:'Advanced translation practice and theory.'},
+    {icon:'🧩',title:'Syntax',desc:'Analyse sentence structure: phrase structure rules and transformations.'},
+    {icon:'🔬',title:'Research Project',desc:'Independent research project: methodology, data collection, and writing.'}
+  ],
+  /* S6 Literature */ [
+    {icon:'🇬🇧',title:'Survey of British Literature',desc:'Overview of major works and movements in British literary history.'},
+    {icon:'📗',title:'The Modern Novel',desc:'Study modern and contemporary fiction: narrative innovation and themes.'},
+    {icon:'🎭',title:'Classical Drama / Shakespeare',desc:'Explore Shakespeare and classical dramatic works in depth.'},
+    {icon:'📖',title:'Literary Criticism',desc:'Survey major critical approaches: structuralism, feminism, deconstruction.'},
+    {icon:'🌍',title:'World Literatures',desc:'Explore literatures from around the world: postcolonial, global perspectives.'},
+    {icon:'🔬',title:'Project Options',desc:'Research project in Literary Studies, Cultural Studies, or Media.'}
+  ],
+  /* S6 Linguistics */ [
+    {icon:'👥',title:'Sociolinguistics',desc:'Explore the relationship between language and society: dialects, identity.'},
+    {icon:'🧠',title:'Psycholinguistics & Neurolinguistics',desc:'Study how the brain processes and acquires language.'},
+    {icon:'🎓',title:'EL Teaching',desc:'English language teaching methodology, classroom practices, and assessment.'},
+    {icon:'✒️',title:'Stylistics',desc:'Analyse literary and non-literary texts using linguistic tools.'},
+    {icon:'🇲🇦',title:'Topics in Moroccan Linguistics',desc:'Explore linguistic topics specific to the Moroccan context.'},
+    {icon:'🔬',title:'Research Project',desc:'Complete your independent research project and presentation.'}
+  ]
+];
+
+/* Cadi Ayyad — FLSH Marrakech module data */
+var MOD_DATA_UCA = [
+  /* S1 */ [
+    {icon:'📖',title:'Reading Comprehension & Précis I',desc:'Master basic reading comprehension skills and summary writing.'},
+    {icon:'✍️',title:'Paragraph Writing',desc:'Learn paragraph structure, topic sentences, and coherence.'},
+    {icon:'📝',title:'Grammar I',desc:'Foundations of English grammar: parts of speech, tenses, sentence structure.'},
+    {icon:'🗣️',title:'Spoken English',desc:'Practice and improve listening and oral communication skills.'},
+    {icon:'📚',title:'Guided Reading',desc:'Overcome lexical and structural difficulties through guided reading.'},
+    {icon:'🎯',title:'Study Skills (Online)',desc:'Academic skills delivered online: note-taking, time management, exam prep.'},
+    {icon:'🌐',title:'Langue et Terminologie',desc:'Language and terminology course in French or Arabic.'}
+  ],
+  /* S2 */ [
+    {icon:'📖',title:'Reading Comprehension & Précis II',desc:'Advanced reading strategies and summary writing techniques.'},
+    {icon:'✍️',title:'Composition I',desc:'Essay writing fundamentals: thesis statements, argumentation, and structure.'},
+    {icon:'📝',title:'Grammar II',desc:'Intermediate grammar: complex sentences, conditionals, passive voice.'},
+    {icon:'🗣️',title:'Oral Communication',desc:'Develop fluency, pronunciation, and conversational confidence.'},
+    {icon:'📚',title:'Readings in Culture',desc:'Explore cultural texts and develop cross-cultural reading competence.'},
+    {icon:'💼',title:'Business Communication',desc:'Introduction to business English: emails, reports, and professional writing.'},
+    {icon:'🌐',title:'Langue et Terminologie',desc:'Continue developing language and terminology skills.'}
+  ],
+  /* S3 */ [
+    {icon:'📖',title:'Extensive Reading',desc:'Read widely to build vocabulary, fluency, and literary appreciation.'},
+    {icon:'✍️',title:'Composition II',desc:'Advanced essay writing: analytical and argumentative compositions.'},
+    {icon:'📝',title:'Grammar III',desc:'Advanced grammar: relative clauses, reported speech, advanced tenses.'},
+    {icon:'🗣️',title:'Public Speaking & Debating',desc:'Master public speaking, debate techniques, and oral presentations.'},
+    {icon:'🌍',title:'British Culture & Society',desc:'Study British civilization, history, and cultural institutions.'},
+    {icon:'🔄',title:'Initiation to Translation',desc:'Introduction to translation theory: English–Arabic and Arabic–English.'}
+  ],
+  /* S4 */ [
+    {icon:'📚',title:'Introduction to Literature',desc:'Basics of reading and writing about English literature: genres and analysis.'},
+    {icon:'✍️',title:'Advanced Composition & Intro to Research',desc:'Academic writing and introduction to research methodology.'},
+    {icon:'🧠',title:'Introduction to Linguistics',desc:'Introduction to general linguistics: phonology, morphology, syntax, semantics.'},
+    {icon:'📺',title:'Introduction to Media Studies',desc:'Analyse media texts, discourse, and the role of media in society.'},
+    {icon:'🌐',title:'Introduction to Cultural Studies',desc:'Basics in the theory and practice of cultural studies and critical theory.'},
+    {icon:'🔄',title:'Translation (Arabic–English–Arabic)',desc:'Develop translation skills between Arabic and English.'}
+  ],
+  /* S5 Literature — same as S5 Combined for UCA */ [
+    {icon:'📕',title:'Novel I',desc:'Study the novel genre: narrative techniques, themes, and major works.'},
+    {icon:'🎓',title:'Applied Linguistics',desc:'Apply linguistic theory to language teaching, learning, and communication.'},
+    {icon:'✒️',title:'Stylistics',desc:'Analyse literary and non-literary texts using linguistic tools.'},
+    {icon:'📡',title:'General Communication Theory',desc:'Study communication models, media theory, and discourse.'},
+    {icon:'🔄',title:'Advanced Translation Studies',desc:'Advanced translation practice, theory, and professional techniques.'},
+    {icon:'🌍',title:'African Literature',desc:'Explore African literary traditions, postcolonial voices, and cultural narratives.'}
+  ],
+  /* S5 Linguistics — same combined S5 for UCA */ [
+    {icon:'📕',title:'Novel I',desc:'Study the novel genre: narrative techniques, themes, and major works.'},
+    {icon:'🎓',title:'Applied Linguistics',desc:'Apply linguistic theory to language teaching, learning, and communication.'},
+    {icon:'✒️',title:'Stylistics',desc:'Analyse literary and non-literary texts using linguistic tools.'},
+    {icon:'📡',title:'General Communication Theory',desc:'Study communication models, media theory, and discourse.'},
+    {icon:'🔄',title:'Advanced Translation Studies',desc:'Advanced translation practice, theory, and professional techniques.'},
+    {icon:'🌍',title:'African Literature',desc:'Explore African literary traditions, postcolonial voices, and cultural narratives.'}
+  ],
+  /* S6 Literature */ [
+    {icon:'📗',title:'Novel II',desc:'Advanced study of the novel: modern and contemporary fiction.'},
+    {icon:'📖',title:'Literary Criticism',desc:'Survey major critical approaches: structuralism, feminism, deconstruction.'},
+    {icon:'📜',title:'Poetry',desc:'Learn poetic forms, metre, imagery, and close reading of poetry.'},
+    {icon:'🎭',title:'Drama',desc:'Explore dramatic works from classical to contemporary theatre.'},
+    {icon:'🔬',title:'End Term Study Project',desc:'Complete your independent research project and presentation.'}
+  ],
+  /* S6 Linguistics */ [
+    {icon:'🔊',title:'Phonetics / Phonology / Morphology',desc:'Study speech sounds, sound systems, and word structure.'},
+    {icon:'🧩',title:'Syntactic Analysis',desc:'Analyse sentence structure: phrase structure rules and transformations.'},
+    {icon:'💬',title:'Semantics & Pragmatics',desc:'Study meaning in language: word meaning, sentence meaning, and context.'},
+    {icon:'👥',title:'Sociolinguistics & Psycholinguistics',desc:'Explore language in society and how the brain processes language.'},
+    {icon:'🔬',title:'End Term Study Project',desc:'Complete your independent research project and presentation.'}
+  ]
+];
+
+/* USMBA Fez — FLDM Dhar El Mahraz module data */
+var MOD_DATA_USMBA = [
+  /* S1 */ [
+    {icon:'📖',title:'Reading Comprehension & Précis 1',desc:'Master basic reading comprehension skills and summary writing.'},
+    {icon:'✍️',title:'Writing Paragraphs',desc:'Learn paragraph structure, topic sentences, and coherence.'},
+    {icon:'📝',title:'Grammar 1',desc:'Foundations of English grammar: parts of speech, tenses, sentence structure.'},
+    {icon:'🗣️',title:'Spoken English',desc:'Practice and improve listening and oral communication skills.'},
+    {icon:'📚',title:'Guided Reading',desc:'Overcome lexical and structural difficulties through guided reading.'},
+    {icon:'🎯',title:'Study Skills',desc:'Academic skills: note-taking, time management, exam preparation.'},
+    {icon:'🌐',title:'Language 1 (French/Arabic)',desc:'Consolidate competence in French or Arabic as a working language.'}
+  ],
+  /* S2 */ [
+    {icon:'📖',title:'Reading Comprehension & Précis 2',desc:'Advanced reading strategies and summary writing techniques.'},
+    {icon:'✍️',title:'Composition 1',desc:'Essay writing fundamentals: thesis statements, argumentation, and structure.'},
+    {icon:'📝',title:'Grammar 2',desc:'Intermediate grammar: complex sentences, conditionals, passive voice.'},
+    {icon:'🗣️',title:'Oral Communication',desc:'Develop fluency, pronunciation, and conversational confidence.'},
+    {icon:'📚',title:'Reading in Culture',desc:'Explore cultural texts and develop cross-cultural reading competence.'},
+    {icon:'💼',title:'Business Communication',desc:'Introduction to business English: emails, reports, and professional writing.'},
+    {icon:'🌐',title:'Language 2 (French/Arabic)',desc:'Continue developing skills in French or Arabic.'}
+  ],
+  /* S3 */ [
+    {icon:'📖',title:'Extensive Reading',desc:'Read widely to build vocabulary, fluency, and literary appreciation.'},
+    {icon:'✍️',title:'Composition 2',desc:'Advanced essay writing: analytical and argumentative compositions.'},
+    {icon:'📝',title:'Grammar 3',desc:'Advanced grammar: relative clauses, reported speech, advanced tenses.'},
+    {icon:'🗣️',title:'Public Speaking',desc:'Learn the rules of public speaking, debate, and oral presentations.'},
+    {icon:'🌍',title:'British & US Culture & Society',desc:'Study British and American civilization, history, and cultural institutions.'},
+    {icon:'🔄',title:'Initiation to Translation',desc:'Introduction to translation theory: English–Arabic and Arabic–English.'}
+  ],
+  /* S4 */ [
+    {icon:'📚',title:'Introduction to Literature',desc:'Basics of reading and writing about English literature: genres and analysis.'},
+    {icon:'✍️',title:'Advanced Composition',desc:'Refine academic writing: research papers, critical analysis, and argumentation.'},
+    {icon:'🧠',title:'Introduction to Linguistics',desc:'Introduction to general linguistics: phonology, morphology, syntax, semantics.'},
+    {icon:'📺',title:'Studies in Media',desc:'Analyse media texts, discourse, and the role of media in society.'},
+    {icon:'🌐',title:'Introduction to Cultural Studies',desc:'Basics in the theory and practice of cultural studies and critical theory.'},
+    {icon:'🔄',title:'Translation & Interpretation',desc:'Develop translation skills from Arabic to English and vice versa.'}
+  ],
+  /* S5 Literary & Cultural Studies */ [
+    {icon:'📕',title:'19th Century Novel',desc:'Study major 19th century British and American novels and narrative techniques.'},
+    {icon:'🔬',title:'Research Project / Monograph',desc:'Begin your independent research project in literature or culture.'},
+    {icon:'🎭',title:'Classical Drama',desc:'Explore classical dramatic works: Greek tragedy, Shakespeare, and Renaissance drama.'},
+    {icon:'📜',title:'Introduction to Poetry',desc:'Learn poetic forms, metre, imagery, and close reading of poetry.'},
+    {icon:'📖',title:'Literary Movements',desc:'Survey major literary movements: Romanticism, Realism, Modernism, and more.'},
+    {icon:'🌍',title:'Postcolonial Studies',desc:'Examine postcolonial literature, theory, identity, and cultural resistance.'}
+  ],
+  /* S5 Linguistics & Cultural Studies */ [
+    {icon:'🔊',title:'Phonetics',desc:'Study the sounds of human speech: articulation, acoustics, and transcription.'},
+    {icon:'🔬',title:'Research Project / Monograph',desc:'Begin your independent research project in linguistics or culture.'},
+    {icon:'🧩',title:'Morphology',desc:'Analyse word structure: roots, affixes, derivation, and inflection.'},
+    {icon:'👥',title:'Sociolinguistics',desc:'Explore the relationship between language and society: dialects, register, identity.'},
+    {icon:'🎓',title:'Applied Linguistics',desc:'Apply linguistic theory to language teaching, learning, and communication.'},
+    {icon:'🧠',title:'Educational Psychology',desc:'Understand learning theories, motivation, and cognitive development.'}
+  ],
+  /* S6 Literary & Cultural Studies */ [
+    {icon:'📗',title:'20th Century Fiction',desc:'Study modern and contemporary fiction: narrative innovation and thematic depth.'},
+    {icon:'🔬',title:'Research Project 2',desc:'Complete your research project: data analysis, writing, and presentation.'},
+    {icon:'🎭',title:'Modern Drama',desc:'Explore 20th century drama: absurdism, expressionism, and contemporary theatre.'},
+    {icon:'📜',title:'Modern Poetry',desc:'Analyse modern and contemporary poetry: free verse, imagery, and experimentation.'},
+    {icon:'📖',title:'Modern Literary Criticism',desc:'Survey major critical approaches: structuralism, feminism, deconstruction.'},
+    {icon:'🌍',title:'Postcolonial Studies 2',desc:'Advanced postcolonial theory: diaspora, hybridity, and global literatures.'}
+  ],
+  /* S6 Linguistics & Cultural Studies */ [
+    {icon:'🔊',title:'Phonology',desc:'Study sound systems and patterns: phonemes, allophones, and phonological rules.'},
+    {icon:'🔬',title:'Research Project 2',desc:'Complete your research project: data analysis, writing, and presentation.'},
+    {icon:'🧩',title:'Syntax',desc:'Analyse sentence structure: phrase structure rules, transformations, and trees.'},
+    {icon:'💬',title:'Semantics & Pragmatics',desc:'Study meaning in language: word meaning, sentence meaning, and context.'},
+    {icon:'🎓',title:'Applied Linguistics',desc:'Advanced applied linguistics: discourse analysis, corpus linguistics, and ELT.'},
+    {icon:'✒️',title:'Stylistics',desc:'Analyse literary and non-literary texts using linguistic tools and frameworks.'}
+  ]
+];
+
+/* University-specific module lookup */
+var UNI_MOD_DATA = {
+  'uiz': MOD_DATA,
+  'uh2c': MOD_DATA_UH2C,
+  'uca': MOD_DATA_UCA,
+  'usmba': MOD_DATA_USMBA
+};
+
+function getMods(si, uniId){
+  var data = (uniId && UNI_MOD_DATA[uniId]) ? UNI_MOD_DATA[uniId] : MOD_DATA;
+  var mods = data[si] || data[0];
   var r=[];
-  for(var i=0;i<6;i++) r.push({id:'m'+(i+1),icon:MOD_ICONS[i],title:MOD_TITLES[si][i],desc:MOD_DESCS[i]});
+  for(var i=0;i<mods.length;i++) r.push({id:'m'+(i+1),icon:mods[i].icon,title:mods[i].title,desc:mods[i].desc});
   return r;
 }
 var VIDEOS=[
@@ -1456,7 +1738,7 @@ function renderDashboard(){
   el('wbGreet').textContent='Welcome back, '+S.user.name.split(' ')[0]+'!';
   var totalVids=0,totalMods=0,totalPts=0;
   UNIVERSITIES.forEach(function(uni){
-    SEMESTERS.forEach(function(sem,si){getMods(si).forEach(function(mod){
+    SEMESTERS.forEach(function(sem,si){getMods(si,uni.id).forEach(function(mod){
       var p=getP(uni.id,sem.id,mod.id);
       totalVids+=p.videos.length;
       if(p.videos.length===VIDEOS.length)totalMods++;
@@ -1468,9 +1750,9 @@ function renderDashboard(){
   el('statPts').textContent=totalPts;
   var grid=el('uniGrid'); grid.innerHTML='';
   UNIVERSITIES.forEach(function(uni){
-    var done=0,total=SEMESTERS.length*6*VIDEOS.length;
-    SEMESTERS.forEach(function(sem,si){getMods(si).forEach(function(mod){done+=getP(uni.id,sem.id,mod.id).videos.length;});});
-    var pct=Math.round((done/total)*100);
+    var done=0,total=0;
+    SEMESTERS.forEach(function(sem,si){var mods=getMods(si,uni.id);total+=mods.length*VIDEOS.length;mods.forEach(function(mod){done+=getP(uni.id,sem.id,mod.id).videos.length;});});
+    var pct=total>0?Math.round((done/total)*100):0;
     var card=document.createElement('div'); card.className='uni-card';
     card.style.setProperty('--uc',uni.c);
     card.innerHTML='<div class="uc-emoji">'+uni.emoji+'</div><div class="uc-name">'+uni.name+'</div><div class="uc-country">'+uni.country+'</div><div class="uc-bar"><div class="uc-fill" style="width:'+pct+'%"></div></div><div class="uc-pct">'+pct+'% complete</div>';
@@ -1487,14 +1769,14 @@ function openSemesters(uni){
   S.uni=uni; S.sem=null; S.mod=null; updateCtx();
   var grid=el('semGrid'); grid.innerHTML='';
   SEMESTERS.forEach(function(sem,idx){
-    var mods=getMods(idx),done=0;
+    var mods=getMods(idx,uni.id),done=0;
     mods.forEach(function(m){done+=getP(uni.id,sem.id,m.id).videos.length;});
     var total=mods.length*VIDEOS.length, pct=Math.round((done/total)*100);
     var isAll=done===total, isSome=done>0&&!isAll;
     var badge=isSome?'<span class="badge b-prog">'+pct+'%</span>':isAll?'<span class="badge b-done">✓ Done</span>':'<span class="badge b-new">New</span>';
     var card=document.createElement('div'); card.className='sem-card';
     card.style.setProperty('--sc1',sem.c1); card.style.setProperty('--sc2',sem.c2);
-    card.innerHTML='<div class="sc-num" style="color:'+sem.c1+'">Semester '+sem.num+'</div><div class="sc-title">'+sem.title+'</div><div class="sc-sub">'+sem.sub+'</div><div class="pbar"><div class="pfill" style="width:'+pct+'%;background:linear-gradient(90deg,'+sem.c1+','+sem.c2+');"></div></div><div class="sc-footer"><span style="font-size:12px;color:var(--text2);">6 modules</span>'+badge+'</div>';
+    card.innerHTML='<div class="sc-num" style="color:'+sem.c1+'">'+sem.title+'</div><div class="sc-title">'+sem.sub+'</div><div class="pbar"><div class="pfill" style="width:'+pct+'%;background:linear-gradient(90deg,'+sem.c1+','+sem.c2+');"></div></div><div class="sc-footer"><span style="font-size:12px;color:var(--text2);">'+mods.length+' modules</span>'+badge+'</div>';
     card.onclick=(function(s,i){return function(){openModules(s,i);};})(sem,idx);
     grid.appendChild(card);
   });
@@ -1507,7 +1789,7 @@ el('nav-semesters').onclick=function(){closeMobileMenu();if(S.uni)openSemesters(
 /* ── MODULES ── */
 function openModules(sem,idx){
   S.sem=sem; S.semIdx=idx; S.mod=null; updateCtx();
-  var mods=getMods(idx);
+  var mods=getMods(idx,S.uni.id);
   var grid=el('modGrid'); grid.innerHTML='';
   mods.forEach(function(mod){
     var p=getP(S.uni.id,sem.id,mod.id),dv=p.videos.length,pct=Math.round((dv/VIDEOS.length)*100);
