@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EduPath</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
 :root{
@@ -39,8 +38,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .btn-login:hover{opacity:.9;transform:translateY(-1px);}
 .btn-demo{width:100%;padding:13px;margin-top:10px;background:var(--bg3);border:1px solid var(--border2);border-radius:11px;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;}
 .btn-demo:hover{background:var(--bg4);color:var(--text);}
-.btn-google{width:100%;padding:13px;margin-top:0;background:var(--bg3);border:1px solid var(--border2);border-radius:11px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s;}
-.btn-google:hover{background:var(--bg4);border-color:var(--accent);}
 
 /* ── APP SHELL ── */
 .app-shell{display:flex;flex:1;overflow:hidden;}
@@ -240,13 +237,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .mc-vids{font-size:11px;color:var(--text2);}
 
 /* ── PLAYER ── */
-#view-player{padding:0;display:none;grid-template-columns:minmax(0,1fr) 400px;overflow:hidden;}
-
-/* ── PLAYER ── */
-#view-player{padding:0;display:none;grid-template-columns:minmax(0,1fr) 400px;overflow:hidden;}
+#view-player{padding:0;display:none;height:100%;}
+#view-player.active{display:grid;grid-template-columns:minmax(0,1fr) 400px;height:100%;overflow:hidden;}
 
 /* LEFT */
-.pl-left{display:flex;flex-direction:column;border-right:1px solid var(--border);overflow-y:auto;background:var(--bg);min-width:0;height:100%;}
+.pl-left{display:flex;flex-direction:column;border-right:1px solid var(--border);overflow-y:auto;background:var(--bg);min-width:0;}
 .pl-left-inner{padding:24px;display:flex;flex-direction:column;gap:18px;}
 
 .video-box{width:100%;flex-shrink:0;background:var(--bg2);border-radius:var(--r);aspect-ratio:16/9;position:relative;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);overflow:hidden;}
@@ -282,7 +277,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .vi-item-d{font-size:11px;color:var(--text3);}
 
 /* RIGHT */
-.pl-right{display:flex;flex-direction:column;background:var(--bg);overflow-y:auto;min-width:0;height:100%;}
+.pl-right{display:flex;flex-direction:column;background:var(--bg);overflow-y:auto;min-width:0;}
 .pl-right-inner{padding:24px;display:flex;flex-direction:column;gap:16px;}
 
 .prog-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;display:flex;align-items:center;gap:20px;}
@@ -490,6 +485,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .btn-accent{background:linear-gradient(135deg,var(--accent),#9b59b6);color:#fff;border:none;padding:11px 22px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif;transition:opacity .2s;}
 .btn-accent:hover{opacity:.9;}
 </style>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script>
+  var firebaseConfig = {
+    apiKey: "AIzaSyDDvXYqYyZV45UvxhE7f70P0JmJlKN5SLg",
+    authDomain: "edupath101-54337.firebaseapp.com",
+    projectId: "edupath101-54337",
+    storageBucket: "edupath101-54337.firebasestorage.app",
+    messagingSenderId: "120290264406",
+    appId: "1:120290264406:web:1d790a9c9b6c2143f442f7",
+    measurementId: "G-DW1MT8LWDG"
+  };
+  firebase.initializeApp(firebaseConfig);
+</script>
 </head>
 <body>
 
@@ -498,39 +508,28 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
   <div class="login-card">
     <div class="login-logo">EduPath</div>
     <div class="login-tag">Your personalised learning journey</div>
-
-    <!-- tabs -->
-    <div style="display:flex;gap:0;margin-bottom:28px;background:var(--bg3);border-radius:10px;padding:4px;">
-      <button id="tabSignIn" onclick="switchAuthTab('signin')" style="flex:1;padding:9px;border:none;border-radius:8px;background:linear-gradient(135deg,var(--accent),#9b59b6);color:#fff;font-family:'Sora',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Sign in</button>
-      <button id="tabSignUp" onclick="switchAuthTab('signup')" style="flex:1;padding:9px;border:none;border-radius:8px;background:transparent;color:var(--text3);font-family:'Sora',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Create account</button>
-    </div>
-
-    <!-- sign in form -->
-    <div id="formSignIn">
-      <div class="field"><label>Email address</label><input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email"></div>
-      <div class="field"><label>Password</label><input type="password" id="loginPass" placeholder="Your password"></div>
-      <div id="loginErr" class="login-err"></div>
-      <button class="btn-login" id="btnSignIn">Sign in →</button>
-      <div style="display:flex;align-items:center;gap:12px;margin:18px 0;">
+    <div id="loginErr" class="login-err"></div>
+    <button class="btn-login" id="btnGoogleSignIn" style="display:flex;align-items:center;justify-content:center;gap:10px;">
+      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Sign in with Google
+    </button>
+    <div style="text-align:center;color:var(--text3);font-size:12px;margin-top:16px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
         <div style="flex:1;height:1px;background:var(--border);"></div>
-        <span style="font-size:12px;color:var(--text3);">or</span>
+        <span>or use demo account</span>
         <div style="flex:1;height:1px;background:var(--border);"></div>
       </div>
-      <button class="btn-google" id="btnGoogle">
-        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.29-8.16 2.29-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-        Continue with Google
-      </button>
     </div>
-
-    <!-- sign up form -->
-    <div id="formSignUp" style="display:none;">
-      <div class="field"><label>Full name</label><input type="text" id="signupName" placeholder="Your full name"></div>
-      <div class="field"><label>Email address</label><input type="email" id="signupEmail" placeholder="your@email.com"></div>
-      <div class="field"><label>Password</label><input type="password" id="signupPass" placeholder="At least 6 characters"></div>
-      <div id="signupErr" class="login-err"></div>
-      <div id="signupOk" style="display:none;background:rgba(67,233,123,.1);color:var(--success);font-size:13px;padding:12px;border-radius:8px;margin-bottom:12px;text-align:center;">✅ Account created! Check your email to confirm, then sign in.</div>
-      <button class="btn-login" id="btnSignUp">Create account →</button>
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="loginUser" placeholder="Enter username" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
     </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="Enter password">
+    </div>
+    <button class="btn-demo" id="btnSignIn" style="background:linear-gradient(135deg,var(--accent),#9b59b6);color:#fff;border:none;font-family:'Sora',sans-serif;font-weight:600;">Sign in with demo →</button>
+    <button class="btn-demo" id="btnFillDemo">👆 Fill demo credentials (demo / demo123)</button>
   </div>
 </div>
 
@@ -1027,240 +1026,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 <script>
 (function(){
 
-/* ══════════════════════════════════════════
-   SUPABASE CONFIG
-══════════════════════════════════════════ */
-var SUPA_URL = 'https://xmmcrlekivllyjscvmge.supabase.co';
-var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhtbWNybGVraXZsbHlqc2N2bWdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3OTQ5NjcsImV4cCI6MjA4OTM3MDk2N30.8YESkOxmSbzepEdA_ZaDXAcAL2JZB3uRNiwQgeAeZEc';
-var supa = window.supabase.createClient(SUPA_URL, SUPA_KEY);
-
-/* ══════════════════════════════════════════
-   AUTH UI HELPERS
-══════════════════════════════════════════ */
-function showErr(id, msg){
-  var e=el(id); e.textContent=msg; e.style.display=msg?'block':'none';
-}
-function setLoading(btnId, loading, text){
-  var b=el(btnId); b.disabled=loading; b.textContent=loading?'Please wait…':text;
-}
-
-window.switchAuthTab = function(tab){
-  var isIn = tab==='signin';
-  el('formSignIn').style.display = isIn?'block':'none';
-  el('formSignUp').style.display = isIn?'none':'block';
-  var si=el('tabSignIn'), su=el('tabSignUp');
-  si.style.background = isIn?'linear-gradient(135deg,var(--accent),#9b59b6)':'transparent';
-  si.style.color = isIn?'#fff':'var(--text3)';
-  su.style.background = isIn?'transparent':'linear-gradient(135deg,var(--accent),#9b59b6)';
-  su.style.color = isIn?'var(--text3)':'#fff';
-};
-
-/* ══════════════════════════════════════════
-   SIGN IN
-══════════════════════════════════════════ */
-el('btnSignIn').onclick = async function(){
-  var email = el('loginEmail').value.trim();
-  var pass  = el('loginPass').value;
-  if(!email||!pass){ showErr('loginErr','Please enter your email and password.'); return; }
-  showErr('loginErr','');
-  setLoading('btnSignIn',true,'Sign in →');
-  var res = await supa.auth.signInWithPassword({email:email, password:pass});
-  setLoading('btnSignIn',false,'Sign in →');
-  if(res.error){ showErr('loginErr', res.error.message); return; }
-  await afterLogin(res.data.user);
-};
-
-el('loginPass').addEventListener('keydown',function(e){if(e.key==='Enter')el('btnSignIn').click();});
-el('loginEmail').addEventListener('keydown',function(e){if(e.key==='Enter')el('loginPass').focus();});
-
-/* ══════════════════════════════════════════
-   GOOGLE LOGIN
-══════════════════════════════════════════ */
-el('btnGoogle').onclick = async function(){
-  await supa.auth.signInWithOAuth({
-    provider:'google',
-    options:{ redirectTo: 'https://amine-bouidi.github.io/edupath101/' }
-  });
-};
-
-/* ══════════════════════════════════════════
-   SIGN UP
-══════════════════════════════════════════ */
-el('btnSignUp').onclick = async function(){
-  var name  = el('signupName').value.trim();
-  var email = el('signupEmail').value.trim();
-  var pass  = el('signupPass').value;
-  if(!name||!email||!pass){ showErr('signupErr','Please fill in all fields.'); return; }
-  if(pass.length<6){ showErr('signupErr','Password must be at least 6 characters.'); return; }
-  showErr('signupErr','');
-  setLoading('btnSignUp',true,'Create account →');
-  var res = await supa.auth.signUp({
-    email:email, password:pass,
-    options:{ data:{ full_name:name } }
-  });
-  setLoading('btnSignUp',false,'Create account →');
-  if(res.error){ showErr('signupErr', res.error.message); return; }
-  el('signupOk').style.display='block';
-  el('btnSignUp').style.display='none';
-};
-
-/* ══════════════════════════════════════════
-   AFTER LOGIN — load profile
-══════════════════════════════════════════ */
-async function afterLogin(user){
-  /* load profile from DB */
-  var prof = await supa.from('profiles').select('*').eq('id',user.id).single();
-  var profile = prof.data || {};
-
-  S.user = {
-    id:       user.id,
-    name:     profile.full_name || user.email.split('@')[0],
-    email:    user.email,
-    plan:     profile.plan || 'free',
-    modules:  profile.modules_allowed || 0,
-    isActive: profile.is_active || false
-  };
-
-  /* update sidebar */
-  el('sbName').textContent   = S.user.name;
-  el('sbAvatar').textContent = S.user.name.split(' ').map(function(n){return n[0];}).join('').toUpperCase().slice(0,2);
-
-  /* switch screen */
-  el('login').style.display='none'; el('login').classList.remove('active');
-  el('app').style.display='flex';   el('app').classList.add('active');
-
-  /* load progress from DB */
-  await loadProgressFromDB();
-
-  renderDashboard();
-}
-
-/* ══════════════════════════════════════════
-   SIGN OUT
-══════════════════════════════════════════ */
-el('btnSignOut').onclick = async function(){
-  await supa.auth.signOut();
-  S = {user:null,uni:null,sem:null,semIdx:0,mod:null,vidIdx:0,progress:{},vidDone:false};
-  el('app').style.display='none';  el('app').classList.remove('active');
-  el('login').style.display='flex';el('login').classList.add('active');
-  el('loginEmail').value=''; el('loginPass').value='';
-  showErr('loginErr','');
-};
-
-/* ══════════════════════════════════════════
-   AUTO LOGIN on page load (session restore)
-══════════════════════════════════════════ */
-(async function checkSession(){
-  var sess = await supa.auth.getSession();
-  if(sess.data && sess.data.session && sess.data.session.user){
-    await afterLogin(sess.data.session.user);
-  }
-})();
-
-/* listen for OAuth redirect */
-supa.auth.onAuthStateChange(async function(event, session){
-  if(event==='SIGNED_IN' && session && session.user){
-    if(!S.user) await afterLogin(session.user);
-  }
-});
-
-/* ══════════════════════════════════════════
-   PROGRESS — LOAD FROM SUPABASE
-══════════════════════════════════════════ */
-async function loadProgressFromDB(){
-  if(!S.user) return;
-  var res = await supa.from('progress').select('*').eq('user_id', S.user.id);
-  if(res.data){
-    res.data.forEach(function(row){
-      var k = row.university_id+'_'+row.semester_id+'_'+row.module_id;
-      S.progress[k] = {
-        videos:  Array.from({length: row.videos_completed}, function(_,i){return i;}),
-        quizzes: [],
-        quizScores: row.quiz_scores || {}
-      };
-    });
-  }
-}
-
-/* ══════════════════════════════════════════
-   PROGRESS — SAVE TO SUPABASE
-══════════════════════════════════════════ */
-async function saveProgressToDB(uniId, semId, modId){
-  if(!S.user) return;
-  var p    = getP(uniId, semId, modId);
-  var done = p.videos.length;
-  await supa.from('progress').upsert({
-    user_id:        S.user.id,
-    university_id:  uniId,
-    semester_id:    semId,
-    module_id:      modId,
-    videos_completed: done,
-    quiz_scores:    p.quizScores || {},
-    updated_at:     new Date().toISOString()
-  }, {onConflict: 'user_id,university_id,semester_id,module_id'});
-}
-
-/* ══════════════════════════════════════════
-   DISCUSSION — LOAD FROM SUPABASE
-══════════════════════════════════════════ */
-async function loadDiscFromDB(){
-  if(!S.uni||!S.sem||!S.mod) return;
-  var res = await supa.from('discussion_messages')
-    .select('*')
-    .eq('university_id', S.uni.id)
-    .eq('semester_id',   S.sem.id)
-    .eq('module_id',     S.mod.id)
-    .order('created_at', {ascending:true})
-    .limit(100);
-  if(res.data && res.data.length > 0){
-    var key = getDiscKey();
-    DISC_STORE[key] = res.data.map(function(row){
-      var isMe = row.user_id === S.user.id;
-      return {
-        isMe:     isMe,
-        sid:      row.user_id,
-        name:     row.author_name || 'Student',
-        initials: (row.author_name||'ST').split(' ').map(function(n){return n[0];}).join('').toUpperCase().slice(0,2),
-        color:    isMe?'linear-gradient(135deg,var(--accent),#9b59b6)':'#6c63ff',
-        text:     row.message || '',
-        media:    row.media_url ? [{type:'image',url:row.media_url,name:'image'}] : null,
-        time:     timeAgo(row.created_at)
-      };
-    });
-    renderDisc();
-  }
-}
-
-/* ══════════════════════════════════════════
-   DISCUSSION — SAVE MESSAGE TO SUPABASE
-══════════════════════════════════════════ */
-async function saveMessageToDB(text, mediaUrl){
-  if(!S.user||!S.uni||!S.sem||!S.mod) return;
-  await supa.from('discussion_messages').insert({
-    user_id:       S.user.id,
-    university_id: S.uni.id,
-    semester_id:   S.sem.id,
-    module_id:     S.mod.id,
-    message:       text || '',
-    media_url:     mediaUrl || null,
-    author_name:   S.user.name,
-    created_at:    new Date().toISOString()
-  });
-}
-
-function timeAgo(ts){
-  if(!ts) return 'now';
-  var diff = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
-  if(diff < 60) return 'Just now';
-  if(diff < 3600) return Math.floor(diff/60)+'m ago';
-  if(diff < 86400) return Math.floor(diff/3600)+'h ago';
-  return Math.floor(diff/86400)+'d ago';
-}
-
 /* ── SIDEBAR TOGGLE ── */
 el('sbToggle').onclick = function(){
-  el('sidebar').classList.toggle('collapsed');
+  var sb = el('sidebar');
+  sb.classList.toggle('collapsed');
 };
+var CREDS = { username: 'demo', password: 'demo123', name: 'Amine B.' };
 
 /* ── DATA ── */
 var UNIVERSITIES = [
@@ -1378,39 +1149,19 @@ function getP(u,s,m){var k=u+'_'+s+'_'+m;return S.progress[k]||{videos:[],quizze
 /* ── HELPERS ── */
 function el(id){return document.getElementById(id);}
 function showView(id){
-  var ms = document.querySelector('.main-scroll');
-  var pl = el('view-player');
-
-  /* always hide player first */
-  pl.style.display = 'none';
-  pl.style.flex    = '0';
-
-  if(id === 'player'){
-    /* hide scroll, show player full height */
-    ms.style.display = 'none';
-    ms.style.flex    = '0';
-    pl.style.display = 'grid';
-    pl.style.flex    = '1';
-    pl.style.minHeight = '0';
-    pl.style.overflow  = 'hidden';
+  ['dashboard','semesters','modules','contact','pricing'].forEach(function(v){
+    var e=el('view-'+v); if(e){e.style.display='none';e.classList.remove('active');}
+  });
+  var pl=el('view-player');
+  pl.style.display='none'; pl.classList.remove('active');
+  if(id==='player'){
+    pl.style.display='grid'; pl.classList.add('active');
   } else {
-    /* show scroll, hide player, show correct view */
-    ms.style.display = 'block';
-    ms.style.flex    = '1';
-    /* hide every view inside scroll */
-    ['dashboard','semesters','modules','contact','pricing'].forEach(function(v){
-      var e = el('view-'+v);
-      if(e){ e.style.display = 'none'; e.classList.remove('active'); }
-    });
-    /* show the requested view */
-    var t = el('view-'+id);
-    if(t){ t.style.display = 'block'; t.classList.add('active'); }
+    var t=el('view-'+id);
+    if(t){t.style.display='block';t.classList.add('active');}
   }
-
-  /* sidebar active state */
   ['dashboard','semesters','modules','player','contact','pricing'].forEach(function(n){
-    var e = el('nav-'+n);
-    if(e) e.classList.toggle('active', n===id);
+    var e=el('nav-'+n); if(e) e.classList.toggle('active',n===id);
   });
 }
 function setTopbar(crumbs,title,showProg){
@@ -1431,8 +1182,56 @@ function updateCtx(){
   if(S.mod)el('ctxMod').textContent=S.mod.title;
 }
 
-/* ── DASHBOARD ── */
+/* ── LOGIN ── */
+function enterApp(name, email){
+  var initials = name.split(' ').map(function(w){return w[0];}).join('').substring(0,2).toUpperCase();
+  S.user = { name: name, email: email||'', initials: initials };
+  el('login').style.display='none'; el('login').classList.remove('active');
+  el('app').style.display='flex'; el('app').classList.add('active');
+  el('sbName').textContent = name;
+  el('sbAvatar').textContent = initials;
+  renderDashboard();
+}
+function doLogin(){
+  var u=el('loginUser').value.trim().toLowerCase();
+  var p=el('loginPass').value;
+  if(u===CREDS.username && p===CREDS.password){
+    enterApp(CREDS.name, '');
+  } else {
+    el('loginErr').textContent='Incorrect username or password. Try: demo / demo123';
+    el('loginErr').style.display='block';
+  }
+}
+function googleSignIn(){
+  var provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider).then(function(result){
+    var user = result.user;
+    enterApp(user.displayName || 'User', user.email || '');
+  }).catch(function(error){
+    console.error('Google sign-in error:', error);
+    el('loginErr').textContent='Google sign-in failed: ' + (error.message || 'Please try again.');
+    el('loginErr').style.display='block';
+  });
+}
+function fillDemo(){
+  el('loginUser').value='demo';
+  el('loginPass').value='demo123';
+  el('loginErr').style.display='none';
+}
+el('btnGoogleSignIn').onclick=googleSignIn;
 el('btnSignIn').onclick=doLogin;
+el('btnFillDemo').onclick=fillDemo;
+el('loginUser').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+el('loginPass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+el('btnSignOut').onclick=function(){
+  firebase.auth().signOut().catch(function(){});
+  S={user:null,uni:null,sem:null,semIdx:0,mod:null,vidIdx:0,progress:{},vidDone:false};
+  el('app').style.display='none'; el('app').classList.remove('active');
+  el('login').style.display='flex'; el('login').classList.add('active');
+  el('loginUser').value=''; el('loginPass').value='';
+  el('loginErr').style.display='none';
+};
+
 /* ── DASHBOARD ── */
 function renderDashboard(){
   el('wbGreet').textContent='Welcome back, '+S.user.name.split(' ')[0]+'!';
@@ -1589,8 +1388,6 @@ el('btnDone').onclick=function(){
   el('progCircle').style.strokeDashoffset=188.5-(188.5*(pct/100));
   el('pcPct').textContent=pct+'%'; el('pcSub').textContent=done+' of '+VIDEOS.length+' completed';
   renderVidList();
-  /* save to Supabase */
-  saveProgressToDB(S.uni.id, S.sem.id, S.mod.id);
   if(done===VIDEOS.length) setTimeout(showModal,600);
 };
 
@@ -1750,7 +1547,7 @@ el('btnModalBook').onclick=function(){el('compModal').classList.remove('open');o
 /* ── CONTACT ── */
 function openContact(){
   el('cName').value=S.user?S.user.name:'';
-  el('cEmail').value='';
+  el('cEmail').value=S.user?S.user.email||'':'';
   el('cUni').value=S.uni?S.uni.name:'';
   el('cSem').value=S.sem?S.sem.title:'';
   el('cMod').value=S.mod?S.mod.title:'';
@@ -1814,8 +1611,6 @@ function renderCommunity(){
   seedMessages();
   renderStudents();
   renderDisc();
-  /* load real messages from Supabase in background */
-  loadDiscFromDB();
 }
 
 function renderStudents(){
@@ -1828,8 +1623,9 @@ function renderStudents(){
   var mePct = Math.round((getP(S.uni.id,S.sem.id,S.mod.id).videos.length / VIDEOS.length)*100);
   var meCard = document.createElement('div');
   meCard.className = 'student-card';
+  var meInitials = S.user.initials || 'AB';
   meCard.innerHTML =
-    '<div class="stu-avatar" style="background:linear-gradient(135deg,var(--accent),#9b59b6);">AB'+
+    '<div class="stu-avatar" style="background:linear-gradient(135deg,var(--accent),#9b59b6);">'+meInitials+
       '<div class="stu-online-dot" style="background:var(--success);"></div>'+
     '</div>'+
     '<div class="stu-info">'+
@@ -2156,12 +1952,9 @@ function sendMessage(){
   updatePreviewStrip();
   updateAttachBtnState();
 
-  var initials = S.user ? S.user.name.split(' ').map(function(n){return n[0];}).join('').toUpperCase().slice(0,2) : 'ME';
-
   DISC_STORE[key].push({
     isMe: true, sid:'me',
-    name: S.user ? S.user.name : 'You',
-    initials: initials,
+    name: S.user.name, initials: S.user.initials || 'AB',
     color:'linear-gradient(135deg,var(--accent),#9b59b6)',
     text: text, time:'Just now',
     media: mediaSnapshot
@@ -2169,10 +1962,6 @@ function sendMessage(){
   input.value='';
   input.style.height='auto';
   renderDisc();
-
-  /* save to Supabase */
-  var mediaUrl = mediaSnapshot.length && mediaSnapshot[0].url ? mediaSnapshot[0].url : null;
-  saveMessageToDB(text, mediaUrl);
 
   /* simulate reply only if text was sent */
   if(text){
@@ -2217,6 +2006,13 @@ window.completePurchase = function(){
     alert('✅ Payment successful!\n\nWelcome to the '+currentPlan.name+' plan ('+currentPlan.price+').\n\nIn the live version your modules are now unlocked. Connect Stripe or any payment provider to go live.');
   },200);
 };
+
+/* ── AUTO LOGIN CHECK ── */
+firebase.auth().onAuthStateChanged(function(user){
+  if(user && !S.user){
+    enterApp(user.displayName || 'User', user.email || '');
+  }
+});
 
 })();
 </script>
