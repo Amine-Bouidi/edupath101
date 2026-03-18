@@ -1,0 +1,2224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduPath</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
+:root{
+  --bg:#0c0c18;--bg2:#13132a;--bg3:#1a1a35;--bg4:#22223f;--bg5:#2a2a4a;
+  --accent:#6c63ff;--accent2:#8b84ff;--accent3:#ff6584;--teal:#38f9d7;
+  --text:#eae8ff;--text2:#9e9bbf;--text3:#5c5a7a;
+  --border:rgba(108,99,255,.18);--border2:rgba(108,99,255,.38);
+  --success:#43e97b;--warning:#f9a825;--r:14px;--sw:260px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;height:100vh;}
+
+/* SCREENS */
+.screen{display:none;flex:1;overflow:hidden;}
+.screen.active{display:flex;}
+
+/* ── LOGIN ── */
+#login{align-items:center;justify-content:center;flex-direction:column;
+  background:radial-gradient(ellipse 60% 50% at 20% 30%,rgba(108,99,255,.2) 0%,transparent 70%),
+             radial-gradient(ellipse 50% 40% at 80% 70%,rgba(255,101,132,.12) 0%,transparent 70%),var(--bg);}
+.login-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:52px 48px;width:440px;box-shadow:0 40px 80px rgba(0,0,0,.5);}
+.login-logo{font-family:'Sora',sans-serif;font-size:32px;font-weight:800;background:linear-gradient(135deg,var(--accent2),var(--accent3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;margin-bottom:6px;}
+.login-tag{text-align:center;color:var(--text3);font-size:14px;margin-bottom:40px;}
+.field{margin-bottom:20px;}
+.field label{display:block;font-size:13px;color:var(--text2);font-weight:500;margin-bottom:8px;}
+.field input{width:100%;padding:14px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:15px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;}
+.field input:focus{border-color:var(--accent);}
+.field input::placeholder{color:var(--text3);}
+.login-err{color:var(--accent3);font-size:13px;text-align:center;margin-bottom:10px;display:none;padding:10px;background:rgba(255,101,132,.08);border-radius:8px;}
+.btn-login{width:100%;padding:14px;margin-top:4px;background:linear-gradient(135deg,var(--accent),#9b59b6);border:none;border-radius:11px;color:#fff;font-family:'Sora',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .2s,transform .1s;}
+.btn-login:hover{opacity:.9;transform:translateY(-1px);}
+.btn-demo{width:100%;padding:13px;margin-top:10px;background:var(--bg3);border:1px solid var(--border2);border-radius:11px;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;}
+.btn-demo:hover{background:var(--bg4);color:var(--text);}
+.btn-google{width:100%;padding:13px;margin-top:0;background:var(--bg3);border:1px solid var(--border2);border-radius:11px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s;}
+.btn-google:hover{background:var(--bg4);border-color:var(--accent);}
+
+/* ── APP SHELL ── */
+.app-shell{display:flex;flex:1;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:var(--sw);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;transition:width .3s cubic-bezier(.4,0,.2,1);}
+.sidebar.collapsed{width:58px;overflow:hidden;}
+.sb-logo{padding:18px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);min-height:58px;}
+.sb-logo-text{font-family:'Sora',sans-serif;font-size:20px;font-weight:800;background:linear-gradient(135deg,var(--accent2),var(--accent3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;overflow:hidden;transition:opacity .2s,width .3s;width:auto;}
+.sidebar.collapsed .sb-logo-text{opacity:0;width:0;pointer-events:none;}
+.sb-toggle{background:none;border:none;cursor:pointer;padding:5px;border-radius:8px;color:var(--text3);flex-shrink:0;transition:background .2s,color .2s;display:flex;align-items:center;justify-content:center;}
+.sb-toggle:hover{background:var(--bg3);color:var(--accent2);}
+.sb-toggle svg{transition:transform .3s;}
+.sidebar.collapsed .sb-toggle svg{transform:rotate(180deg);}
+.sb-user{display:flex;align-items:center;gap:10px;padding:12px 11px;border-bottom:1px solid var(--border);overflow:hidden;min-height:58px;}
+.sb-user-info{display:flex;flex-direction:column;flex:1;overflow:hidden;transition:opacity .2s,width .3s;white-space:nowrap;}
+.sidebar.collapsed .sb-user-info{opacity:0;width:0;pointer-events:none;}
+.sb-signout-wrap{transition:opacity .2s;white-space:nowrap;}
+.sidebar.collapsed .sb-signout-wrap{opacity:0;pointer-events:none;width:0;overflow:hidden;}
+.sb-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#9b59b6);display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;}
+.sb-uname{font-size:13px;font-weight:600;}
+.sb-role{font-size:11px;color:var(--text3);}
+.sb-signout{background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:4px 8px;border-radius:6px;transition:color .2s,background .2s;}
+.sb-signout:hover{color:var(--accent3);background:rgba(255,101,132,.1);}
+.sb-nav{flex:1;padding:10px 8px;overflow:hidden;}
+.sb-sec{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding:8px 10px 6px;white-space:nowrap;overflow:hidden;transition:opacity .2s;}
+.sidebar.collapsed .sb-sec{opacity:0;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);transition:all .15s;margin-bottom:2px;border:1px solid transparent;white-space:nowrap;overflow:hidden;}
+.sb-item:hover{background:var(--bg3);color:var(--text);}
+.sb-item.active{background:rgba(108,99,255,.15);color:var(--accent2);border-color:var(--border);}
+.sb-icon{font-size:16px;width:22px;text-align:center;flex-shrink:0;}
+.sb-item-label{transition:opacity .2s,width .3s;overflow:hidden;}
+.sidebar.collapsed .sb-item-label{opacity:0;width:0;}
+.sidebar.collapsed .sb-item{padding:10px 8px;justify-content:center;}
+.sb-ctx{padding:12px 10px;border-top:1px solid var(--border);overflow:hidden;transition:opacity .2s;}
+.sidebar.collapsed .sb-ctx{opacity:0;pointer-events:none;}
+.sb-ctx-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding:0 8px 8px;}
+.sb-ctx-row{display:flex;align-items:center;gap:8px;padding:6px 10px;}
+.sb-ctx-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+.sb-ctx-txt{font-size:12px;color:var(--text2);white-space:nowrap;}
+
+/* ── STUDY ALONE TOGGLE ── */
+.study-alone-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all .2s;}
+.study-alone-bar:hover{border-color:var(--border2);}
+.study-alone-bar.solo-mode{background:rgba(108,99,255,.08);border-color:var(--border2);}
+.sa-left{display:flex;align-items:center;gap:12px;}
+.sa-toggle-wrap{flex-shrink:0;}
+.sa-toggle{width:44px;height:24px;border-radius:12px;background:var(--bg5);border:1px solid var(--border2);position:relative;cursor:pointer;transition:background .25s,border-color .25s;flex-shrink:0;}
+.sa-toggle.on{background:var(--accent);border-color:var(--accent);}
+.sa-knob{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .25s cubic-bezier(.4,0,.2,1);box-shadow:0 1px 4px rgba(0,0,0,.3);}
+.sa-toggle.on .sa-knob{transform:translateX(20px);}
+.sa-text{display:flex;flex-direction:column;gap:2px;}
+.sa-title{font-family:'Sora',sans-serif;font-size:13px;font-weight:700;color:var(--text);}
+.sa-sub{font-size:11px;color:var(--text3);}
+.sa-icon{font-size:22px;transition:all .3s;}
+
+/* community collapse animation */
+.community-wrap{overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1),opacity .3s;max-height:1200px;opacity:1;}
+.community-wrap.hidden{max-height:0;opacity:0;pointer-events:none;}
+
+/* ── COMMUNITY SECTION ── */
+.community-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:0;overflow:hidden;margin-top:0;}
+.comm-tabs{display:flex;border-bottom:1px solid var(--border);}
+.comm-tab{flex:1;padding:12px 8px;font-size:12px;font-weight:600;color:var(--text3);cursor:pointer;text-align:center;border:none;background:none;transition:all .2s;border-bottom:2px solid transparent;}
+.comm-tab:hover{color:var(--text2);background:var(--bg3);}
+.comm-tab.active{color:var(--accent2);border-bottom-color:var(--accent2);}
+.comm-panel{display:none;padding:16px;}
+.comm-panel.active{display:block;}
+
+/* students list */
+.comm-hdr-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.comm-hdr-title{font-family:'Sora',sans-serif;font-size:13px;font-weight:700;color:var(--text);}
+.comm-online-pill{font-size:10px;font-weight:700;background:rgba(67,233,123,.12);color:var(--success);padding:3px 10px;border-radius:20px;}
+.student-list{display:flex;flex-direction:column;gap:8px;}
+.student-card{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg3);border-radius:10px;border:1px solid var(--border);}
+.stu-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;position:relative;}
+.stu-online-dot{position:absolute;bottom:0;right:0;width:9px;height:9px;border-radius:50%;border:2px solid var(--bg3);}
+.stu-info{flex:1;min-width:0;}
+.stu-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.stu-prog-row{display:flex;align-items:center;gap:6px;}
+.stu-prog-bar{flex:1;height:4px;background:var(--bg5);border-radius:2px;overflow:hidden;}
+.stu-prog-fill{height:100%;border-radius:2px;transition:width .5s;}
+.stu-prog-pct{font-size:10px;color:var(--text3);font-weight:600;flex-shrink:0;}
+.stu-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;flex-shrink:0;}
+.stu-badge-online{background:rgba(67,233,123,.12);color:var(--success);}
+.stu-badge-away{background:rgba(249,168,37,.12);color:var(--warning);}
+.stu-badge-offline{background:var(--bg5);color:var(--text3);}
+
+/* discussion */
+.disc-msgs{display:flex;flex-direction:column;gap:10px;max-height:320px;overflow-y:auto;margin-bottom:14px;padding-right:2px;}
+.disc-msgs::-webkit-scrollbar{width:4px;}
+.disc-msgs::-webkit-scrollbar-track{background:transparent;}
+.disc-msgs::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:2px;}
+.msg-row{display:flex;gap:9px;align-items:flex-start;}
+.msg-row.mine{flex-direction:row-reverse;}
+.msg-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;margin-top:2px;}
+.msg-body{max-width:75%;}
+.msg-meta{font-size:10px;color:var(--text3);margin-bottom:3px;}
+.msg-row.mine .msg-meta{text-align:right;}
+.msg-bubble{padding:9px 13px;border-radius:12px;font-size:13px;line-height:1.5;color:var(--text);word-break:break-word;}
+.msg-bubble-other{background:var(--bg3);border:1px solid var(--border);border-radius:12px 12px 12px 3px;}
+.msg-bubble-mine{background:linear-gradient(135deg,var(--accent),#9b59b6);border-radius:12px 12px 3px 12px;color:#fff;}
+.msg-bubble-mine .msg-meta{color:rgba(255,255,255,.6);}
+.disc-input-row{display:flex;gap:8px;align-items:flex-end;}
+.disc-attach-btns{display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
+.disc-attach-btn{width:36px;height:36px;border-radius:9px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text3);transition:all .2s;flex-shrink:0;}
+.disc-attach-btn:hover{background:var(--bg4);color:var(--accent2);border-color:var(--border2);}
+.disc-attach-btn.has-file{background:rgba(108,99,255,.15);color:var(--accent2);border-color:var(--border2);}
+.disc-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;resize:none;min-height:42px;max-height:100px;transition:border-color .2s;}
+.disc-input:focus{border-color:var(--accent);}
+.disc-input::placeholder{color:var(--text3);}
+.disc-send{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#9b59b6);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .2s;}
+.disc-send:hover{opacity:.85;}
+
+/* media preview strip above input */
+.media-preview-strip{display:flex;gap:8px;flex-wrap:wrap;padding:6px 0 8px;}
+.media-thumb{position:relative;border-radius:8px;overflow:hidden;border:1px solid var(--border);}
+.media-thumb img{width:72px;height:56px;object-fit:cover;display:block;}
+.media-thumb-audio{width:140px;height:40px;background:var(--bg3);display:flex;align-items:center;gap:8px;padding:0 10px;border-radius:8px;border:1px solid var(--border);}
+.media-thumb-audio-icon{color:var(--accent2);flex-shrink:0;}
+.media-thumb-audio-name{font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.media-remove{position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;background:rgba(0,0,0,.7);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;line-height:1;}
+
+/* media in messages */
+.msg-media-img{margin-top:6px;border-radius:10px;overflow:hidden;max-width:220px;}
+.msg-media-img img{width:100%;display:block;border-radius:10px;cursor:pointer;transition:opacity .2s;}
+.msg-media-img img:hover{opacity:.9;}
+.msg-media-audio{margin-top:6px;}
+.msg-media-audio audio{width:100%;border-radius:8px;height:32px;}
+
+/* MAIN */
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;}
+.tb-left{display:flex;flex-direction:column;gap:3px;}
+.tb-crumb{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);}
+.tb-crumb span{color:var(--text2);}
+.tb-title{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;}
+.tb-right{display:flex;align-items:center;gap:14px;}
+.prog-pill{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:30px;padding:7px 16px;}
+.prog-pill-bar{width:100px;height:5px;background:var(--bg5);border-radius:3px;overflow:hidden;}
+.prog-pill-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width .5s;}
+.prog-pill-pct{font-size:12px;font-weight:700;color:var(--accent2);}
+.pts-chip{background:rgba(249,168,37,.12);border:1px solid rgba(249,168,37,.3);color:var(--warning);font-size:12px;font-weight:700;padding:6px 14px;border-radius:20px;}
+.main-scroll{flex:1;overflow-y:auto;}
+
+/* VIEWS */
+.view{display:none;padding:28px 32px;}
+.view.active{display:block;}
+.sec-hdr{font-family:'Sora',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:14px;}
+
+/* WELCOME */
+.welcome-banner{background:linear-gradient(135deg,rgba(108,99,255,.18),rgba(155,89,182,.12));border:1px solid var(--border);border-radius:var(--r);padding:28px 32px;margin-bottom:28px;display:flex;align-items:center;justify-content:space-between;}
+.wb-text h2{font-family:'Sora',sans-serif;font-size:22px;font-weight:700;margin-bottom:5px;}
+.wb-text p{font-size:14px;color:var(--text2);}
+.wb-stats{display:flex;gap:24px;}
+.wb-stat{text-align:center;}
+.wb-stat-n{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent2);}
+.wb-stat-l{font-size:11px;color:var(--text3);}
+
+/* UNI GRID */
+.uni-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:32px;}
+.uni-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px 18px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.uni-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--uc);}
+.uni-card:hover{border-color:var(--border2);transform:translateY(-3px);box-shadow:0 14px 36px rgba(0,0,0,.3);}
+.uc-emoji{font-size:26px;margin-bottom:10px;}
+.uc-name{font-family:'Sora',sans-serif;font-size:13px;font-weight:600;margin-bottom:3px;line-height:1.3;}
+.uc-country{font-size:11px;color:var(--text3);}
+.uc-bar{height:3px;background:var(--bg5);border-radius:2px;margin-top:10px;overflow:hidden;}
+.uc-fill{height:100%;background:var(--success);border-radius:2px;}
+.uc-pct{font-size:10px;color:var(--text3);margin-top:4px;}
+
+/* SEM GRID */
+.sem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.sem-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:22px 20px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.sem-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--sc1),var(--sc2));}
+.sem-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,.3);}
+.sc-num{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.sc-title{font-family:'Sora',sans-serif;font-size:17px;font-weight:700;margin-bottom:3px;}
+.sc-sub{font-size:12px;color:var(--text3);margin-bottom:14px;}
+.sc-footer{display:flex;align-items:center;justify-content:space-between;}
+.pbar{height:5px;background:var(--bg5);border-radius:3px;overflow:hidden;margin:10px 0 14px;}
+.pfill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width .5s;}
+.badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;}
+.b-done{background:rgba(67,233,123,.15);color:var(--success);}
+.b-prog{background:rgba(108,99,255,.15);color:var(--accent2);}
+.b-new{background:var(--bg5);color:var(--text3);}
+
+/* MOD GRID */
+.mod-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.mod-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:22px;cursor:pointer;transition:all .2s;}
+.mod-card:hover{border-color:var(--border2);transform:translateY(-2px);}
+.mc-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;}
+.mc-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#9b59b6);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.mc-title{font-family:'Sora',sans-serif;font-size:14px;font-weight:600;margin-bottom:3px;}
+.mc-desc{font-size:11px;color:var(--text3);}
+.mc-footer{display:flex;align-items:center;justify-content:space-between;}
+.mc-vids{font-size:11px;color:var(--text2);}
+
+/* ── PLAYER ── */
+#view-player{padding:0;display:none;grid-template-columns:minmax(0,1fr) 400px;overflow:hidden;}
+
+/* ── PLAYER ── */
+#view-player{padding:0;display:none;grid-template-columns:minmax(0,1fr) 400px;overflow:hidden;}
+
+/* LEFT */
+.pl-left{display:flex;flex-direction:column;border-right:1px solid var(--border);overflow-y:auto;background:var(--bg);min-width:0;height:100%;}
+.pl-left-inner{padding:24px;display:flex;flex-direction:column;gap:18px;}
+
+.video-box{width:100%;flex-shrink:0;background:var(--bg2);border-radius:var(--r);aspect-ratio:16/9;position:relative;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);overflow:hidden;}
+.vid-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(12,12,24,.65);}
+.play-btn{width:68px;height:68px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;transition:transform .2s,background .2s;box-shadow:0 0 0 16px rgba(108,99,255,.15);}
+.play-btn:hover{transform:scale(1.08);background:var(--accent2);}
+.vov-title{font-family:'Sora',sans-serif;font-size:15px;font-weight:600;color:#fff;text-align:center;padding:0 24px;}
+.vov-dur{font-size:12px;color:rgba(255,255,255,.5);}
+.vid-playing{display:none;width:100%;height:100%;background:var(--bg3);align-items:center;justify-content:center;flex-direction:column;gap:10px;}
+
+.vid-info{flex-shrink:0;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;}
+.vi-num{font-size:10px;color:var(--accent2);font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;}
+.vi-name{font-family:'Sora',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px;}
+.vi-desc{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:12px;}
+.vi-actions{display:flex;gap:8px;}
+.btn-done{background:linear-gradient(135deg,var(--success),#27c26c);color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif;transition:opacity .2s,transform .1s;}
+.btn-done:hover{opacity:.9;transform:translateY(-1px);}
+.btn-done:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+.btn-nxt{background:var(--bg3);color:var(--text);border:1px solid var(--border2);padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif;transition:all .2s;}
+.btn-nxt:hover{background:var(--bg4);}
+.btn-nxt:disabled{opacity:.3;cursor:not-allowed;}
+
+.vl-wrap{flex:1;min-height:0;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;}
+.vl-hdr{font-family:'Sora',sans-serif;font-size:13px;font-weight:700;color:var(--text2);margin-bottom:12px;}
+.vid-list{display:flex;flex-direction:column;gap:5px;overflow-y:auto;}
+.vid-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;cursor:pointer;transition:background .15s;border:1px solid transparent;}
+.vid-item:hover{background:var(--bg3);}
+.vid-item.active{background:var(--bg3);border-color:var(--border2);}
+.vi-dot{width:26px;height:26px;border-radius:50%;background:var(--bg5);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text2);flex-shrink:0;}
+.vi-dot.done{background:rgba(67,233,123,.18);color:var(--success);}
+.vi-dot.cur{background:var(--accent);color:#fff;}
+.vi-item-t{font-size:12px;color:var(--text2);flex:1;}
+.vi-item-d{font-size:11px;color:var(--text3);}
+
+/* RIGHT */
+.pl-right{display:flex;flex-direction:column;background:var(--bg);overflow-y:auto;min-width:0;height:100%;}
+.pl-right-inner{padding:24px;display:flex;flex-direction:column;gap:16px;}
+
+.prog-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;display:flex;align-items:center;gap:20px;}
+.pc-circ{position:relative;width:76px;height:76px;flex-shrink:0;}
+.pc-circ svg{transform:rotate(-90deg);}
+.pc-pct{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Sora',sans-serif;font-size:17px;font-weight:800;color:var(--accent2);}
+.pc-title{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;margin-bottom:3px;}
+.pc-sub{font-size:12px;color:var(--text2);}
+
+.sum-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px 22px;}
+.sum-hdr{display:flex;align-items:center;gap:9px;margin-bottom:14px;}
+.sum-hdr-icon{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#9b59b6);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.sum-hdr-title{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;}
+.sum-body{font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+.ki-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--accent2);margin-bottom:10px;}
+.ki-list{display:flex;flex-direction:column;gap:8px;}
+.ki-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--bg3);border-radius:10px;border:1px solid var(--border);}
+.ki-dot{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#9b59b6);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;margin-top:1px;}
+.ki-text{font-size:12px;color:var(--text);line-height:1.55;}
+
+.quiz-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px 22px;}
+.qz-hdr{display:flex;align-items:center;gap:9px;margin-bottom:14px;}
+.qz-hdr-icon{width:30px;height:30px;border-radius:8px;background:rgba(249,168,37,.15);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.qz-hdr-title{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--warning);}
+.qz-progress-wrap{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.qz-qnum{font-size:11px;font-weight:700;color:var(--text3);white-space:nowrap;}
+.qz-progress-bar{width:60px;height:4px;background:var(--bg5);border-radius:2px;overflow:hidden;}
+.qz-progress-fill{height:100%;background:var(--warning);border-radius:2px;transition:width .3s;}
+.qz-q{font-size:13px;font-weight:600;line-height:1.55;margin-bottom:12px;color:var(--text);}
+.qz-opts{display:flex;flex-direction:column;gap:7px;}
+.qz-opt{background:var(--bg3);border:1px solid var(--border);padding:10px 14px;border-radius:9px;cursor:pointer;font-size:13px;transition:all .18s;color:var(--text);text-align:left;font-family:'DM Sans',sans-serif;}
+.qz-opt:hover{border-color:var(--border2);background:var(--bg4);}
+.qz-opt.correct{border-color:var(--success);background:rgba(67,233,123,.1);color:var(--success);}
+.qz-opt.wrong{border-color:var(--accent3);background:rgba(255,101,132,.1);color:var(--accent3);}
+.qz-fb{margin-top:10px;font-size:12px;font-weight:600;display:none;padding:9px 13px;border-radius:8px;}
+.qz-fb.ok{background:rgba(67,233,123,.1);color:var(--success);}
+.qz-fb.bad{background:rgba(255,101,132,.1);color:var(--accent3);}
+.qz-next-btn{margin-top:12px;width:100%;padding:9px;background:var(--bg3);border:1px solid var(--border2);border-radius:9px;color:var(--accent2);font-size:12px;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif;transition:all .2s;}
+.qz-next-btn:hover{background:var(--bg4);}
+.qz-result{text-align:center;padding:8px 0 4px;}
+.qz-score-circle{width:72px;height:72px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-size:20px;font-weight:800;border:3px solid;}
+.qz-result-title{font-family:'Sora',sans-serif;font-size:15px;font-weight:700;margin-bottom:5px;}
+.qz-result-sub{font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.5;}
+.qz-retry-btn{background:var(--bg3);border:1px solid var(--border2);color:var(--accent2);padding:8px 20px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif;transition:all .2s;}
+.qz-retry-btn:hover{background:var(--bg4);}
+
+/* ── RESOURCES ── */
+.res-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.res-hdr{display:flex;align-items:center;gap:9px;padding:14px 16px 0;}
+.res-hdr-title{font-family:'Sora',sans-serif;font-size:13px;font-weight:700;}
+.res-tabs{display:flex;gap:6px;padding:10px 16px 0;}
+.res-tab{flex:1;padding:7px 8px;font-size:12px;font-weight:600;color:var(--text3);cursor:pointer;background:var(--bg3);border:1px solid var(--border);border-radius:8px;transition:all .2s;}
+.res-tab:hover{color:var(--text2);border-color:var(--border2);}
+.res-tab.active{background:rgba(108,99,255,.15);color:var(--accent2);border-color:var(--border2);}
+.res-panel{display:none;padding:10px 14px 14px;}
+.res-panel.active{display:block;}
+.res-file-list{display:flex;flex-direction:column;gap:4px;}
+.res-file{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .18s;text-decoration:none;}
+.res-file:hover{border-color:var(--border2);background:var(--bg4);}
+.res-file-ext{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;width:28px;flex-shrink:0;color:var(--text3);}
+.res-file-ext.pdf{color:#e05252;}
+.res-file-ext.doc{color:#5b9bd5;}
+.res-file-ext.ppt{color:#f97316;}
+.res-file-ext.xls{color:#22c55e;}
+.res-file-ext.exam{color:var(--warning);}
+.res-file-info{flex:1;min-width:0;display:flex;align-items:center;gap:6px;}
+.res-file-name{font-size:12px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
+.res-file-size{font-size:11px;color:var(--text3);flex-shrink:0;}
+.res-badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:6px;flex-shrink:0;}
+.res-badge-new{background:rgba(67,233,123,.15);color:var(--success);}
+.res-badge-exam{background:rgba(249,168,37,.12);color:var(--warning);}
+.res-file-dl{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;color:var(--text3);flex-shrink:0;transition:color .2s;}
+.res-file:hover .res-file-dl{color:var(--accent2);}
+
+/* ── AUDIO RECORDING MODAL ── */
+.record-modal-box{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:28px 28px 20px;width:320px;text-align:center;box-shadow:0 40px 80px rgba(0,0,0,.6);}
+.rec-top{margin-bottom:22px;}
+.rec-title{font-family:'Sora',sans-serif;font-size:16px;font-weight:700;margin-bottom:4px;}
+.rec-sub{font-size:12px;color:var(--text3);}
+.rec-mic-ring{width:80px;height:80px;border-radius:50%;background:rgba(108,99,255,.12);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;transition:all .2s;}
+.rec-mic-ring:hover{background:rgba(108,99,255,.2);border-color:var(--accent);}
+.rec-mic-btn{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#9b59b6);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s;}
+.rec-mic-btn:hover{transform:scale(1.05);}
+.rec-hint{font-size:12px;color:var(--text3);}
+.rec-timer-wrap{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;position:relative;}
+.rec-pulse-ring{position:absolute;width:14px;height:14px;border-radius:50%;background:rgba(255,101,132,.3);animation:pulse 1s infinite;}
+@keyframes pulse{0%{transform:scale(1);opacity:1;}100%{transform:scale(2.2);opacity:0;}}
+.rec-dot{width:10px;height:10px;border-radius:50%;background:var(--accent3);flex-shrink:0;}
+.rec-timer{font-family:'Sora',sans-serif;font-size:28px;font-weight:800;color:var(--text);letter-spacing:1px;}
+.rec-bar-wrap{margin-bottom:16px;}
+.rec-bar-track{height:5px;background:var(--bg5);border-radius:3px;overflow:hidden;margin-bottom:4px;}
+.rec-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent3));border-radius:3px;width:0%;transition:width .5s linear;}
+.rec-bar-lbl{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);}
+.rec-waveform{display:flex;align-items:center;justify-content:center;gap:3px;height:36px;margin-bottom:18px;}
+.rec-waveform span{display:block;width:4px;border-radius:2px;background:var(--accent2);opacity:.6;animation:wave 0.8s ease-in-out infinite;}
+.rec-waveform span:nth-child(1){animation-delay:0s;}
+.rec-waveform span:nth-child(2){animation-delay:.1s;}
+.rec-waveform span:nth-child(3){animation-delay:.2s;}
+.rec-waveform span:nth-child(4){animation-delay:.3s;}
+.rec-waveform span:nth-child(5){animation-delay:.4s;}
+.rec-waveform span:nth-child(6){animation-delay:.3s;}
+.rec-waveform span:nth-child(7){animation-delay:.2s;}
+.rec-waveform span:nth-child(8){animation-delay:.1s;}
+.rec-waveform span:nth-child(9){animation-delay:0s;}
+.rec-waveform span:nth-child(10){animation-delay:.1s;}
+@keyframes wave{0%,100%{height:6px;}50%{height:28px;}}
+.rec-stop-btn{width:100%;padding:10px;background:rgba(255,101,132,.12);border:1px solid rgba(255,101,132,.35);border-radius:10px;color:var(--accent3);font-size:13px;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif;transition:all .2s;}
+.rec-stop-btn:hover{background:rgba(255,101,132,.2);}
+.rec-preview-icon{font-size:40px;margin-bottom:6px;}
+.rec-preview-dur{font-size:13px;color:var(--text2);margin-bottom:2px;}
+.rec-preview-actions{display:flex;gap:10px;margin-top:4px;}
+.rec-discard-btn{flex:1;padding:9px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;color:var(--text3);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
+.rec-discard-btn:hover{color:var(--accent3);border-color:rgba(255,101,132,.4);}
+.rec-send-btn{flex:2;padding:9px;background:linear-gradient(135deg,var(--accent),#9b59b6);border:none;border-radius:9px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif;transition:opacity .2s;}
+.rec-send-btn:hover{opacity:.9;}
+.rec-cancel-btn{margin-top:14px;background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:color .2s;}
+.rec-cancel-btn:hover{color:var(--text2);}
+
+/* ── PRICING ── */
+.pricing-wrap{max-width:1060px;margin:0 auto;padding:0 4px;}
+.pricing-hero{text-align:center;margin-bottom:36px;}
+.pricing-hero-tag{display:inline-block;background:rgba(108,99,255,.15);color:var(--accent2);font-size:12px;font-weight:700;padding:6px 16px;border-radius:20px;margin-bottom:14px;letter-spacing:.5px;}
+.pricing-hero-title{font-family:'Sora',sans-serif;font-size:28px;font-weight:800;margin-bottom:8px;}
+.pricing-hero-sub{font-size:14px;color:var(--text2);max-width:520px;margin:0 auto;line-height:1.6;}
+
+.plans-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:40px;}
+@media(max-width:900px){.plans-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:560px){.plans-grid{grid-template-columns:1fr;}}
+
+.plan-card{background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:24px 20px;display:flex;flex-direction:column;gap:0;position:relative;transition:transform .2s,box-shadow .2s;}
+.plan-card:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,.3);}
+.plan-card-popular{border-color:var(--accent);background:rgba(108,99,255,.06);}
+.plan-card-premium{border-color:rgba(249,168,37,.4);background:rgba(249,168,37,.04);}
+.plan-popular-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--accent),#9b59b6);color:#fff;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;white-space:nowrap;}
+
+.plan-top{margin-bottom:16px;}
+.plan-name{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.8px;}
+.plan-price{font-family:'Sora',sans-serif;font-size:42px;font-weight:800;color:var(--text);line-height:1;}
+.plan-currency{font-size:22px;font-weight:700;vertical-align:top;margin-top:8px;display:inline-block;}
+.plan-billing{font-size:11px;color:var(--text3);margin-top:4px;}
+
+.plan-modules-badge{display:flex;align-items:baseline;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:18px;}
+.plan-modules-badge-accent{background:rgba(108,99,255,.12);border-color:var(--border2);}
+.plan-modules-badge-gold{background:rgba(249,168,37,.1);border-color:rgba(249,168,37,.3);}
+.pmb-num{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--accent2);}
+.plan-modules-badge-gold .pmb-num{color:var(--warning);}
+.pmb-label{font-size:12px;color:var(--text2);}
+
+.plan-features{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:22px;flex:1;}
+.plan-features li{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--text2);line-height:1.4;}
+.pf-check{color:var(--success);font-weight:700;flex-shrink:0;font-size:11px;margin-top:1px;}
+.pf-gold{color:var(--warning);}
+.pf-cross{color:var(--text3);flex-shrink:0;font-size:11px;margin-top:1px;}
+.pf-dim{opacity:.5;}
+
+.plan-btn{width:100%;padding:12px;border-radius:10px;font-family:'Sora',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;border:none;}
+.plan-btn-outline{background:var(--bg3);color:var(--text);border:1px solid var(--border2);}
+.plan-btn-outline:hover{background:var(--bg4);border-color:var(--accent);}
+.plan-btn-accent{background:linear-gradient(135deg,var(--accent),#9b59b6);color:#fff;}
+.plan-btn-accent:hover{opacity:.9;transform:translateY(-1px);}
+.plan-btn-gold{background:linear-gradient(135deg,#f9a825,#fc4a1a);color:#fff;}
+.plan-btn-gold:hover{opacity:.9;transform:translateY(-1px);}
+
+.pricing-faq{border-top:1px solid var(--border);padding-top:28px;}
+.faq-title{font-family:'Sora',sans-serif;font-size:16px;font-weight:700;margin-bottom:18px;text-align:center;}
+.faq-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+@media(max-width:600px){.faq-grid{grid-template-columns:1fr;}}
+.faq-item{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;}
+.faq-q{font-family:'Sora',sans-serif;font-size:13px;font-weight:700;margin-bottom:6px;}
+.faq-a{font-size:12px;color:var(--text2);line-height:1.6;}
+
+/* PURCHASE MODAL */
+.purchase-modal-box{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:36px 32px;max-width:380px;width:90%;text-align:center;box-shadow:0 40px 80px rgba(0,0,0,.6);}
+.pur-emoji{font-size:48px;margin-bottom:12px;}
+.pur-title{font-family:'Sora',sans-serif;font-size:20px;font-weight:800;margin-bottom:6px;}
+.pur-sub{font-size:13px;color:var(--text2);margin-bottom:6px;}
+.pur-price{font-family:'Sora',sans-serif;font-size:36px;font-weight:800;color:var(--accent2);margin:16px 0;}
+.pur-actions{display:flex;gap:10px;margin-top:20px;}
+
+/* CONTACT */
+.contact-inner{max-width:640px;margin:0 auto;}
+.c-hero{text-align:center;margin-bottom:32px;}
+.c-badge{display:inline-block;background:rgba(67,233,123,.15);color:var(--success);font-size:11px;font-weight:700;padding:6px 16px;border-radius:20px;margin-bottom:14px;text-transform:uppercase;letter-spacing:.8px;}
+.c-title{font-family:'Sora',sans-serif;font-size:26px;font-weight:800;margin-bottom:8px;}
+.c-sub{color:var(--text2);font-size:14px;line-height:1.6;}
+.c-form{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:32px 36px;}
+.c-form .field{margin-bottom:18px;}
+.fi{width:100%;padding:13px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;}
+.fi:focus{border-color:var(--accent);}
+.fi[readonly]{opacity:.65;cursor:default;}
+.btn-submit{width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),#9b59b6);border:none;border-radius:11px;color:#fff;font-family:'Sora',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .2s;margin-top:4px;}
+.btn-submit:hover{opacity:.9;}
+.c-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+
+/* MODAL */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;align-items:center;justify-content:center;}
+.modal-ov.open{display:flex;}
+.modal-box{background:var(--bg2);border:1px solid var(--border2);border-radius:24px;padding:44px 40px;max-width:400px;width:90%;text-align:center;box-shadow:0 48px 96px rgba(0,0,0,.6);}
+.m-emoji{font-size:52px;margin-bottom:16px;}
+.m-title{font-family:'Sora',sans-serif;font-size:22px;font-weight:700;margin-bottom:8px;}
+.m-sub{color:var(--text2);font-size:13px;margin-bottom:26px;line-height:1.6;}
+.m-actions{display:flex;gap:12px;justify-content:center;}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);padding:11px 22px;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.btn-ghost:hover{background:var(--bg3);color:var(--text);}
+.btn-accent{background:linear-gradient(135deg,var(--accent),#9b59b6);color:#fff;border:none;padding:11px 22px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif;transition:opacity .2s;}
+.btn-accent:hover{opacity:.9;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login" class="screen active" style="flex-direction:column;">
+  <div class="login-card">
+    <div class="login-logo">EduPath</div>
+    <div class="login-tag">Your personalised learning journey</div>
+
+    <!-- tabs -->
+    <div style="display:flex;gap:0;margin-bottom:28px;background:var(--bg3);border-radius:10px;padding:4px;">
+      <button id="tabSignIn" onclick="switchAuthTab('signin')" style="flex:1;padding:9px;border:none;border-radius:8px;background:linear-gradient(135deg,var(--accent),#9b59b6);color:#fff;font-family:'Sora',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Sign in</button>
+      <button id="tabSignUp" onclick="switchAuthTab('signup')" style="flex:1;padding:9px;border:none;border-radius:8px;background:transparent;color:var(--text3);font-family:'Sora',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Create account</button>
+    </div>
+
+    <!-- sign in form -->
+    <div id="formSignIn">
+      <div class="field"><label>Email address</label><input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email"></div>
+      <div class="field"><label>Password</label><input type="password" id="loginPass" placeholder="Your password"></div>
+      <div id="loginErr" class="login-err"></div>
+      <button class="btn-login" id="btnSignIn">Sign in →</button>
+      <div style="display:flex;align-items:center;gap:12px;margin:18px 0;">
+        <div style="flex:1;height:1px;background:var(--border);"></div>
+        <span style="font-size:12px;color:var(--text3);">or</span>
+        <div style="flex:1;height:1px;background:var(--border);"></div>
+      </div>
+      <button class="btn-google" id="btnGoogle">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.29-8.16 2.29-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Continue with Google
+      </button>
+    </div>
+
+    <!-- sign up form -->
+    <div id="formSignUp" style="display:none;">
+      <div class="field"><label>Full name</label><input type="text" id="signupName" placeholder="Your full name"></div>
+      <div class="field"><label>Email address</label><input type="email" id="signupEmail" placeholder="your@email.com"></div>
+      <div class="field"><label>Password</label><input type="password" id="signupPass" placeholder="At least 6 characters"></div>
+      <div id="signupErr" class="login-err"></div>
+      <div id="signupOk" style="display:none;background:rgba(67,233,123,.1);color:var(--success);font-size:13px;padding:12px;border-radius:8px;margin-bottom:12px;text-align:center;">✅ Account created! Check your email to confirm, then sign in.</div>
+      <button class="btn-login" id="btnSignUp">Create account →</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="screen" style="flex-direction:row;">
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-logo">
+      <span class="sb-logo-text">EduPath</span>
+      <button class="sb-toggle" id="sbToggle" title="Collapse sidebar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+    </div>
+    <div class="sb-user">
+      <div class="sb-avatar" id="sbAvatar">AB</div>
+      <div class="sb-user-info"><div class="sb-uname" id="sbName">Amine B.</div><div class="sb-role">Student</div></div>
+      <div class="sb-signout-wrap"><button class="sb-signout" id="btnSignOut">Sign out</button></div>
+    </div>
+    <div class="sb-nav">
+      <div class="sb-sec">Navigation</div>
+      <div class="sb-item active" id="nav-dashboard"><span class="sb-icon">🏠</span><span class="sb-item-label"> Dashboard</span></div>
+      <div class="sb-item" id="nav-semesters" style="display:none;"><span class="sb-icon">📅</span><span class="sb-item-label"> Semesters</span></div>
+      <div class="sb-item" id="nav-modules"   style="display:none;"><span class="sb-icon">📚</span><span class="sb-item-label"> Modules</span></div>
+      <div class="sb-item" id="nav-player"    style="display:none;"><span class="sb-icon">▶</span><span class="sb-item-label"> Now watching</span></div>
+      <div class="sb-sec" style="margin-top:12px;">Account</div>
+      <div class="sb-item" id="nav-pricing"><span class="sb-icon">💎</span><span class="sb-item-label"> Plans & Pricing</span></div>
+      <div class="sb-item" id="nav-contact"   style="display:none;"><span class="sb-icon">💬</span><span class="sb-item-label"> Book tutoring</span></div>
+    </div>
+    <div class="sb-ctx" id="sbCtx" style="display:none;">
+      <div class="sb-ctx-lbl">Current session</div>
+      <div class="sb-ctx-row"><div class="sb-ctx-dot"></div><div class="sb-ctx-txt" id="ctxUni">—</div></div>
+      <div class="sb-ctx-row"><div class="sb-ctx-dot" style="background:var(--accent3);"></div><div class="sb-ctx-txt" id="ctxSem">—</div></div>
+      <div class="sb-ctx-row"><div class="sb-ctx-dot" style="background:var(--teal);"></div><div class="sb-ctx-txt" id="ctxMod">—</div></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar" id="topbar">
+      <div class="tb-left">
+        <div class="tb-crumb" id="topCrumb"></div>
+        <div class="tb-title" id="topTitle">Dashboard</div>
+      </div>
+      <div class="tb-right">
+        <div class="prog-pill" id="progPill" style="display:none;">
+          <div class="prog-pill-bar"><div class="prog-pill-fill" id="progFill" style="width:0%;"></div></div>
+          <span class="prog-pill-pct" id="progPct">0%</span>
+        </div>
+        <div class="pts-chip" id="ptsChip" style="display:none;">⭐ 0 pts</div>
+      </div>
+    </div>
+
+    <div class="main-scroll">
+      <!-- DASHBOARD -->
+      <div class="view active" id="view-dashboard">
+        <div class="welcome-banner">
+          <div class="wb-text"><h2 id="wbGreet">Welcome back!</h2><p>Pick a university to continue your learning journey.</p></div>
+          <div class="wb-stats">
+            <div class="wb-stat"><div class="wb-stat-n" id="statVids">0</div><div class="wb-stat-l">Videos done</div></div>
+            <div class="wb-stat"><div class="wb-stat-n" id="statMods">0</div><div class="wb-stat-l">Modules done</div></div>
+            <div class="wb-stat"><div class="wb-stat-n" id="statPts">0</div><div class="wb-stat-l">Points earned</div></div>
+          </div>
+        </div>
+        <div class="sec-hdr">Select your university</div>
+        <div class="uni-grid" id="uniGrid"></div>
+      </div>
+
+      <!-- SEMESTERS -->
+      <div class="view" id="view-semesters">
+        <div class="sec-hdr" style="margin-bottom:18px;">Choose a semester</div>
+        <div class="sem-grid" id="semGrid"></div>
+      </div>
+
+      <!-- MODULES -->
+      <div class="view" id="view-modules">
+        <div class="sec-hdr" style="margin-bottom:18px;">Choose a module</div>
+        <div class="mod-grid" id="modGrid"></div>
+      </div>
+
+      <!-- CONTACT -->
+      <div class="view" id="view-contact">
+        <div class="contact-inner">
+          <div class="c-hero">
+            <div class="c-badge">🎉 Module complete!</div>
+            <div class="c-title">Ready for private tutoring?</div>
+            <div class="c-sub">Book a private session with your tutor for personalised guidance.</div>
+          </div>
+          <div class="c-form" id="cFormCard">
+            <div class="c-row">
+              <div class="field"><label>Your name</label><input class="fi" type="text" id="cName"></div>
+              <div class="field"><label>Email</label><input class="fi" type="text" id="cEmail"></div>
+            </div>
+            <div class="c-row">
+              <div class="field"><label>University</label><input class="fi" type="text" id="cUni" readonly></div>
+              <div class="field"><label>Semester</label><input class="fi" type="text" id="cSem" readonly></div>
+            </div>
+            <div class="field"><label>Module completed</label><input class="fi" type="text" id="cMod" readonly></div>
+            <div class="field"><label>Session type</label>
+              <select class="fi" id="cType">
+                <option>One-on-one coaching</option><option>Exam preparation</option>
+                <option>Concept deep-dive</option><option>Practice problems</option>
+              </select>
+            </div>
+            <div class="field"><label>Message (optional)</label>
+              <textarea class="fi" rows="3" id="cMsg" placeholder="Topics to focus on…" style="resize:vertical;"></textarea>
+            </div>
+            <button class="btn-submit" id="btnSubmitContact">Send request →</button>
+          </div>
+          <div id="cSuccess" style="display:none;text-align:center;padding:48px 0;">
+            <div style="font-size:54px;margin-bottom:16px;">✅</div>
+            <div style="font-family:'Sora',sans-serif;font-size:22px;font-weight:700;color:var(--success);margin-bottom:8px;">Request sent!</div>
+            <div style="color:var(--text2);font-size:14px;">Your tutor will get back to you within 24 hours.</div>
+            <button class="btn-ghost" style="margin-top:22px;" id="btnBackDash">Back to dashboard</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRICING VIEW -->
+      <div class="view" id="view-pricing">
+        <div class="pricing-wrap">
+          <div class="pricing-hero">
+            <div class="pricing-hero-tag">💎 Simple, transparent pricing</div>
+            <h1 class="pricing-hero-title">Choose your plan</h1>
+            <p class="pricing-hero-sub">Unlock modules, resources, past exams and personal tutoring — pay once, study at your own pace.</p>
+          </div>
+
+          <div class="plans-grid">
+
+            <!-- $10 -->
+            <div class="plan-card">
+              <div class="plan-top">
+                <div class="plan-name">Starter</div>
+                <div class="plan-price"><span class="plan-currency">$</span>10</div>
+                <div class="plan-billing">one-time payment</div>
+              </div>
+              <div class="plan-modules-badge">
+                <span class="pmb-num">2</span>
+                <span class="pmb-label">modules unlocked</span>
+              </div>
+              <ul class="plan-features">
+                <li><span class="pf-check">✓</span> Choose any 2 modules</li>
+                <li><span class="pf-check">✓</span> Full video access (5 videos each)</li>
+                <li><span class="pf-check">✓</span> Lesson PDFs &amp; slides</li>
+                <li><span class="pf-check">✓</span> Past exams &amp; mock papers</li>
+                <li><span class="pf-check">✓</span> 10-question quiz per video</li>
+                <li><span class="pf-check">✓</span> Community discussion access</li>
+                <li class="pf-dim"><span class="pf-cross">✗</span> Personal tutoring session</li>
+              </ul>
+              <button class="plan-btn plan-btn-outline" onclick="selectPlan('Starter','$10',2)">Get Starter</button>
+            </div>
+
+            <!-- $20 -->
+            <div class="plan-card">
+              <div class="plan-top">
+                <div class="plan-name">Essential</div>
+                <div class="plan-price"><span class="plan-currency">$</span>20</div>
+                <div class="plan-billing">one-time payment</div>
+              </div>
+              <div class="plan-modules-badge">
+                <span class="pmb-num">4</span>
+                <span class="pmb-label">modules unlocked</span>
+              </div>
+              <ul class="plan-features">
+                <li><span class="pf-check">✓</span> Choose any 4 modules</li>
+                <li><span class="pf-check">✓</span> Full video access (5 videos each)</li>
+                <li><span class="pf-check">✓</span> Lesson PDFs &amp; slides</li>
+                <li><span class="pf-check">✓</span> Past exams &amp; mock papers</li>
+                <li><span class="pf-check">✓</span> 10-question quiz per video</li>
+                <li><span class="pf-check">✓</span> Community discussion access</li>
+                <li class="pf-dim"><span class="pf-cross">✗</span> Personal tutoring session</li>
+              </ul>
+              <button class="plan-btn plan-btn-outline" onclick="selectPlan('Essential','$20',4)">Get Essential</button>
+            </div>
+
+            <!-- $30 — popular -->
+            <div class="plan-card plan-card-popular">
+              <div class="plan-popular-badge">⭐ Most popular</div>
+              <div class="plan-top">
+                <div class="plan-name">Pro</div>
+                <div class="plan-price"><span class="plan-currency">$</span>30</div>
+                <div class="plan-billing">one-time payment</div>
+              </div>
+              <div class="plan-modules-badge plan-modules-badge-accent">
+                <span class="pmb-num">6</span>
+                <span class="pmb-label">modules unlocked</span>
+              </div>
+              <ul class="plan-features">
+                <li><span class="pf-check">✓</span> Choose any 6 modules</li>
+                <li><span class="pf-check">✓</span> Full video access (5 videos each)</li>
+                <li><span class="pf-check">✓</span> Lesson PDFs &amp; slides</li>
+                <li><span class="pf-check">✓</span> Past exams &amp; mock papers</li>
+                <li><span class="pf-check">✓</span> 10-question quiz per video</li>
+                <li><span class="pf-check">✓</span> Community discussion access</li>
+                <li class="pf-dim"><span class="pf-cross">✗</span> Personal tutoring session</li>
+              </ul>
+              <button class="plan-btn plan-btn-accent" onclick="selectPlan('Pro','$30',6)">Get Pro</button>
+            </div>
+
+            <!-- $100 — premium -->
+            <div class="plan-card plan-card-premium">
+              <div class="plan-top">
+                <div class="plan-name">Premium</div>
+                <div class="plan-price"><span class="plan-currency">$</span>100</div>
+                <div class="plan-billing">one-time payment</div>
+              </div>
+              <div class="plan-modules-badge plan-modules-badge-gold">
+                <span class="pmb-num">All</span>
+                <span class="pmb-label">modules unlocked</span>
+              </div>
+              <ul class="plan-features">
+                <li><span class="pf-check pf-gold">✓</span> All modules across all semesters</li>
+                <li><span class="pf-check pf-gold">✓</span> Full video access (5 videos each)</li>
+                <li><span class="pf-check pf-gold">✓</span> All lesson PDFs &amp; slides</li>
+                <li><span class="pf-check pf-gold">✓</span> All past exams &amp; mock papers</li>
+                <li><span class="pf-check pf-gold">✓</span> 10-question quiz per video</li>
+                <li><span class="pf-check pf-gold">✓</span> Community discussion access</li>
+                <li><span class="pf-check pf-gold">✓</span> 1-on-1 personal tutoring session</li>
+                <li><span class="pf-check pf-gold">✓</span> Personalised study plan</li>
+                <li><span class="pf-check pf-gold">✓</span> Priority tutor support</li>
+              </ul>
+              <button class="plan-btn plan-btn-gold" onclick="selectPlan('Premium','$100','all')">Get Premium</button>
+            </div>
+
+          </div>
+
+          <div class="pricing-faq">
+            <div class="faq-title">Frequently asked questions</div>
+            <div class="faq-grid">
+              <div class="faq-item">
+                <div class="faq-q">Can I upgrade my plan later?</div>
+                <div class="faq-a">Yes — you only pay the difference between your current plan and the new one.</div>
+              </div>
+              <div class="faq-item">
+                <div class="faq-q">How do I choose my modules?</div>
+                <div class="faq-a">After purchasing, you unlock any modules of your choice from any semester and university.</div>
+              </div>
+              <div class="faq-item">
+                <div class="faq-q">When does the tutoring session happen?</div>
+                <div class="faq-a">After purchasing the Premium plan, use the "Book tutoring" form to schedule your session.</div>
+              </div>
+              <div class="faq-item">
+                <div class="faq-q">Is access time-limited?</div>
+                <div class="faq-a">No — once you purchase a plan, you keep access to those modules permanently.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PLAYER -->
+    <div id="view-player">
+      <div class="pl-left">
+        <div class="pl-left-inner">
+          <div class="video-box">
+            <div class="vid-overlay" id="vidOverlay">
+              <button class="play-btn" id="btnPlay">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+              </button>
+              <div class="vov-title" id="vovTitle"></div>
+              <div class="vov-dur"   id="vovDur"></div>
+            </div>
+            <div class="vid-playing" id="vidPlaying">
+              <div style="font-size:12px;color:var(--text2);">▶ Now playing</div>
+              <div style="font-size:14px;font-family:'Sora',sans-serif;font-weight:600;text-align:center;padding:0 20px;" id="nowPlayTitle"></div>
+              <div style="width:200px;height:4px;background:var(--bg5);border-radius:2px;overflow:hidden;margin-top:12px;">
+                <div id="fakeBar" style="height:100%;width:0%;background:var(--accent);border-radius:2px;transition:width .25s linear;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="vid-info">
+            <div class="vi-num" id="viNum"></div>
+            <div class="vi-name" id="viName"></div>
+            <div class="vi-desc" id="viDesc"></div>
+            <div class="vi-actions">
+              <button class="btn-done" id="btnDone" disabled>✓ Mark as complete</button>
+              <button class="btn-nxt"  id="btnNxt"  disabled>Next video →</button>
+            </div>
+          </div>
+          <div class="vl-wrap">
+            <div class="vl-hdr">All videos in this module</div>
+            <div class="vid-list" id="vidList"></div>
+          </div>
+
+          <!-- STUDY ALONE TOGGLE -->
+          <div class="study-alone-bar" id="studyAloneBar">
+            <div class="sa-left">
+              <div class="sa-toggle-wrap">
+                <div class="sa-toggle" id="saToggle" onclick="toggleStudyAlone()">
+                  <div class="sa-knob" id="saKnob"></div>
+                </div>
+              </div>
+              <div class="sa-text">
+                <div class="sa-title">I prefer to study alone</div>
+                <div class="sa-sub" id="saSubText">Community is visible — toggle to focus solo</div>
+              </div>
+            </div>
+            <div class="sa-icon" id="saIcon">👥</div>
+          </div>
+
+          <!-- COMMUNITY SECTION -->
+          <div class="community-wrap" id="communitySection">
+            <div class="comm-tabs">
+              <button class="comm-tab active" id="tabStudents" onclick="switchCommTab('students')">👥 Classmates <span id="onlineCount" style="margin-left:4px;"></span></button>
+              <button class="comm-tab" id="tabDisc" onclick="switchCommTab('disc')">💬 Discussion <span id="msgCount" style="margin-left:4px;background:var(--accent);color:#fff;font-size:9px;padding:1px 5px;border-radius:10px;"></span></button>
+            </div>
+            <!-- STUDENTS PANEL -->
+            <div class="comm-panel active" id="panelStudents">
+              <div class="comm-hdr-row">
+                <div class="comm-hdr-title">Students in this module</div>
+                <div class="comm-online-pill" id="onlinePill">0 online</div>
+              </div>
+              <div class="student-list" id="studentList"></div>
+            </div>
+            <!-- DISCUSSION PANEL -->
+            <div class="comm-panel" id="panelDisc">
+              <div class="comm-hdr-row">
+                <div class="comm-hdr-title">Module discussion</div>
+                <div style="font-size:11px;color:var(--text3);">Public · all classmates can see</div>
+              </div>
+              <div class="disc-msgs" id="discMsgs"></div>
+              <!-- media preview strip -->
+              <div id="mediaPreview" style="display:none;padding:8px 0 4px;display:none;gap:8px;flex-wrap:wrap;"></div>
+              <div class="disc-input-row">
+                <div class="disc-attach-btns">
+                  <!-- image button -->
+                  <label class="disc-attach-btn" title="Add image" id="imgLabel">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                      <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    <input type="file" id="imgInput" accept="image/*" style="display:none;" multiple>
+                  </label>
+                  <!-- audio record button -->
+                  <button class="disc-attach-btn" title="Record audio" id="audioRecordBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                      <path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/>
+                      <line x1="8" y1="23" x2="16" y2="23"/>
+                    </svg>
+                  </button>
+                </div>
+                <textarea class="disc-input" id="discInput" placeholder="Ask a question or share a thought…" rows="1"></textarea>
+                <button class="disc-send" id="discSendBtn" title="Send">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pl-right">
+        <div class="pl-right-inner">
+          <div class="sum-card">
+            <div class="sum-hdr"><div class="sum-hdr-icon">📖</div><div class="sum-hdr-title">Video Summary</div></div>
+            <div class="sum-body" id="sumBody"></div>
+            <div class="ki-lbl">Key ideas to remember</div>
+            <div class="ki-list" id="kiList"></div>
+          </div>
+          <div class="quiz-card">
+            <div class="qz-hdr">
+              <div class="qz-hdr-icon">📝</div>
+              <div class="qz-hdr-title">Quick Quiz</div>
+              <div class="qz-progress-wrap" id="qzProgressWrap">
+                <span class="qz-qnum" id="qzQNum">1 / 10</span>
+                <div class="qz-progress-bar"><div class="qz-progress-fill" id="qzProgressFill"></div></div>
+              </div>
+            </div>
+            <div id="qzBody">
+              <div class="qz-q" id="qzQ"></div>
+              <div class="qz-opts" id="qzOpts"></div>
+              <div class="qz-fb" id="qzFb"></div>
+              <button class="qz-next-btn" id="qzNextBtn" style="display:none;" onclick="quizNext()">Next question →</button>
+            </div>
+            <div id="qzResult" style="display:none;" class="qz-result">
+              <div class="qz-score-circle" id="qzScoreCircle"></div>
+              <div class="qz-result-title" id="qzResultTitle"></div>
+              <div class="qz-result-sub" id="qzResultSub"></div>
+              <button class="qz-retry-btn" id="qzRetryBtn" onclick="quizRetry()">↺ Retry quiz</button>
+            </div>
+          </div>
+
+          <!-- RESOURCES SECTION -->
+          <div class="res-card">
+            <div class="res-hdr">
+              <div class="res-hdr-title">📁 Module Resources</div>
+            </div>
+            <div class="res-tabs">
+              <button class="res-tab active" id="resTabLessons" onclick="switchResTab('lessons')">Lessons</button>
+              <button class="res-tab" id="resTabExams" onclick="switchResTab('exams')">Past Exams</button>
+            </div>
+
+            <!-- LESSONS PANEL -->
+            <div class="res-panel active" id="resPanelLessons">
+              <div class="res-file-list" id="lessonFileList"></div>
+            </div>
+
+            <!-- EXAMS PANEL -->
+            <div class="res-panel" id="resPanelExams">
+              <div class="res-file-list" id="examFileList"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PURCHASE MODAL -->
+<div class="modal-ov" id="purchaseModal">
+  <div class="purchase-modal-box">
+    <div class="pur-emoji" id="purEmoji">🎉</div>
+    <div class="pur-title" id="purTitle">Get Starter Plan</div>
+    <div class="pur-sub" id="purSub">2 modules of your choice, full resource access</div>
+    <div class="pur-price" id="purPrice">$10</div>
+    <div style="font-size:12px;color:var(--text3);">One-time payment · Instant access · No subscription</div>
+    <div class="pur-actions">
+      <button class="btn-ghost" onclick="el('purchaseModal').classList.remove('open')" style="flex:1;">Cancel</button>
+      <button class="btn-accent" style="flex:2;" onclick="completePurchase()">Pay now →</button>
+    </div>
+  </div>
+</div>
+
+<!-- AUDIO RECORD MODAL -->
+<div class="modal-ov" id="recordModal">
+  <div class="record-modal-box">
+    <div class="rec-top">
+      <div class="rec-title">🎙 Record Audio Message</div>
+      <div class="rec-sub">Max 60 seconds</div>
+    </div>
+
+    <!-- idle state -->
+    <div id="recStateIdle">
+      <div class="rec-mic-ring" id="recMicRing">
+        <button class="rec-mic-btn" id="recStartBtn">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="0">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2" fill="none" stroke="white" stroke-width="2"/>
+            <line x1="12" y1="19" x2="12" y2="23" stroke="white" stroke-width="2"/>
+            <line x1="8" y1="23" x2="16" y2="23" stroke="white" stroke-width="2"/>
+          </svg>
+        </button>
+      </div>
+      <div class="rec-hint">Tap the mic to start recording</div>
+    </div>
+
+    <!-- recording state -->
+    <div id="recStateRecording" style="display:none;">
+      <div class="rec-timer-wrap">
+        <div class="rec-pulse-ring"></div>
+        <div class="rec-dot"></div>
+        <div class="rec-timer" id="recTimer">0:00</div>
+      </div>
+      <div class="rec-bar-wrap">
+        <div class="rec-bar-track"><div class="rec-bar-fill" id="recBarFill"></div></div>
+        <div class="rec-bar-lbl"><span>0s</span><span>60s</span></div>
+      </div>
+      <div class="rec-waveform" id="recWaveform">
+        <span></span><span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+      <button class="rec-stop-btn" id="recStopBtn">⏹ Stop recording</button>
+    </div>
+
+    <!-- preview state -->
+    <div id="recStatePreview" style="display:none;">
+      <div class="rec-preview-icon">✅</div>
+      <div class="rec-preview-dur" id="recPreviewDur">Recording ready</div>
+      <audio id="recAudioPreview" controls style="width:100%;border-radius:8px;margin:12px 0;"></audio>
+      <div class="rec-preview-actions">
+        <button class="rec-discard-btn" id="recDiscardBtn">🗑 Discard</button>
+        <button class="rec-send-btn"    id="recSendBtn">Send recording →</button>
+      </div>
+    </div>
+
+    <button class="rec-cancel-btn" id="recCancelBtn">Cancel</button>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-ov" id="compModal">
+  <div class="modal-box">
+    <div class="m-emoji">🏆</div>
+    <div class="m-title" id="mTitle">Module complete!</div>
+    <div class="m-sub" id="mSub"></div>
+    <div class="m-actions">
+      <button class="btn-ghost" id="btnModalStay">Stay here</button>
+      <button class="btn-accent" id="btnModalBook">Book session →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+
+/* ══════════════════════════════════════════
+   SUPABASE CONFIG
+══════════════════════════════════════════ */
+var SUPA_URL = 'https://xmmcrlekivllyjscvmge.supabase.co';
+var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhtbWNybGVraXZsbHlqc2N2bWdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3OTQ5NjcsImV4cCI6MjA4OTM3MDk2N30.8YESkOxmSbzepEdA_ZaDXAcAL2JZB3uRNiwQgeAeZEc';
+var supa = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+
+/* ══════════════════════════════════════════
+   AUTH UI HELPERS
+══════════════════════════════════════════ */
+function showErr(id, msg){
+  var e=el(id); e.textContent=msg; e.style.display=msg?'block':'none';
+}
+function setLoading(btnId, loading, text){
+  var b=el(btnId); b.disabled=loading; b.textContent=loading?'Please wait…':text;
+}
+
+window.switchAuthTab = function(tab){
+  var isIn = tab==='signin';
+  el('formSignIn').style.display = isIn?'block':'none';
+  el('formSignUp').style.display = isIn?'none':'block';
+  var si=el('tabSignIn'), su=el('tabSignUp');
+  si.style.background = isIn?'linear-gradient(135deg,var(--accent),#9b59b6)':'transparent';
+  si.style.color = isIn?'#fff':'var(--text3)';
+  su.style.background = isIn?'transparent':'linear-gradient(135deg,var(--accent),#9b59b6)';
+  su.style.color = isIn?'var(--text3)':'#fff';
+};
+
+/* ══════════════════════════════════════════
+   SIGN IN
+══════════════════════════════════════════ */
+el('btnSignIn').onclick = async function(){
+  var email = el('loginEmail').value.trim();
+  var pass  = el('loginPass').value;
+  if(!email||!pass){ showErr('loginErr','Please enter your email and password.'); return; }
+  showErr('loginErr','');
+  setLoading('btnSignIn',true,'Sign in →');
+  var res = await supa.auth.signInWithPassword({email:email, password:pass});
+  setLoading('btnSignIn',false,'Sign in →');
+  if(res.error){ showErr('loginErr', res.error.message); return; }
+  await afterLogin(res.data.user);
+};
+
+el('loginPass').addEventListener('keydown',function(e){if(e.key==='Enter')el('btnSignIn').click();});
+el('loginEmail').addEventListener('keydown',function(e){if(e.key==='Enter')el('loginPass').focus();});
+
+/* ══════════════════════════════════════════
+   GOOGLE LOGIN
+══════════════════════════════════════════ */
+el('btnGoogle').onclick = async function(){
+  await supa.auth.signInWithOAuth({
+    provider:'google',
+    options:{ redirectTo: 'https://edupath101.netlify.app' }
+  });
+};
+
+/* ══════════════════════════════════════════
+   SIGN UP
+══════════════════════════════════════════ */
+el('btnSignUp').onclick = async function(){
+  var name  = el('signupName').value.trim();
+  var email = el('signupEmail').value.trim();
+  var pass  = el('signupPass').value;
+  if(!name||!email||!pass){ showErr('signupErr','Please fill in all fields.'); return; }
+  if(pass.length<6){ showErr('signupErr','Password must be at least 6 characters.'); return; }
+  showErr('signupErr','');
+  setLoading('btnSignUp',true,'Create account →');
+  var res = await supa.auth.signUp({
+    email:email, password:pass,
+    options:{ data:{ full_name:name } }
+  });
+  setLoading('btnSignUp',false,'Create account →');
+  if(res.error){ showErr('signupErr', res.error.message); return; }
+  el('signupOk').style.display='block';
+  el('btnSignUp').style.display='none';
+};
+
+/* ══════════════════════════════════════════
+   AFTER LOGIN — load profile
+══════════════════════════════════════════ */
+async function afterLogin(user){
+  /* load profile from DB */
+  var prof = await supa.from('profiles').select('*').eq('id',user.id).single();
+  var profile = prof.data || {};
+
+  S.user = {
+    id:       user.id,
+    name:     profile.full_name || user.email.split('@')[0],
+    email:    user.email,
+    plan:     profile.plan || 'free',
+    modules:  profile.modules_allowed || 0,
+    isActive: profile.is_active || false
+  };
+
+  /* update sidebar */
+  el('sbName').textContent   = S.user.name;
+  el('sbAvatar').textContent = S.user.name.split(' ').map(function(n){return n[0];}).join('').toUpperCase().slice(0,2);
+
+  /* switch screen */
+  el('login').style.display='none'; el('login').classList.remove('active');
+  el('app').style.display='flex';   el('app').classList.add('active');
+
+  /* load progress from DB */
+  await loadProgressFromDB();
+
+  renderDashboard();
+}
+
+/* ══════════════════════════════════════════
+   SIGN OUT
+══════════════════════════════════════════ */
+el('btnSignOut').onclick = async function(){
+  await supa.auth.signOut();
+  S = {user:null,uni:null,sem:null,semIdx:0,mod:null,vidIdx:0,progress:{},vidDone:false};
+  el('app').style.display='none';  el('app').classList.remove('active');
+  el('login').style.display='flex';el('login').classList.add('active');
+  el('loginEmail').value=''; el('loginPass').value='';
+  showErr('loginErr','');
+};
+
+/* ══════════════════════════════════════════
+   AUTO LOGIN on page load (session restore)
+══════════════════════════════════════════ */
+(async function checkSession(){
+  var sess = await supa.auth.getSession();
+  if(sess.data && sess.data.session && sess.data.session.user){
+    await afterLogin(sess.data.session.user);
+  }
+})();
+
+/* listen for OAuth redirect */
+supa.auth.onAuthStateChange(async function(event, session){
+  if(event==='SIGNED_IN' && session && session.user){
+    if(!S.user) await afterLogin(session.user);
+  }
+});
+
+/* ══════════════════════════════════════════
+   PROGRESS — LOAD FROM SUPABASE
+══════════════════════════════════════════ */
+async function loadProgressFromDB(){
+  if(!S.user) return;
+  var res = await supa.from('progress').select('*').eq('user_id', S.user.id);
+  if(res.data){
+    res.data.forEach(function(row){
+      var k = row.university_id+'_'+row.semester_id+'_'+row.module_id;
+      S.progress[k] = {
+        videos:  Array.from({length: row.videos_completed}, function(_,i){return i;}),
+        quizzes: [],
+        quizScores: row.quiz_scores || {}
+      };
+    });
+  }
+}
+
+/* ══════════════════════════════════════════
+   PROGRESS — SAVE TO SUPABASE
+══════════════════════════════════════════ */
+async function saveProgressToDB(uniId, semId, modId){
+  if(!S.user) return;
+  var p    = getP(uniId, semId, modId);
+  var done = p.videos.length;
+  await supa.from('progress').upsert({
+    user_id:        S.user.id,
+    university_id:  uniId,
+    semester_id:    semId,
+    module_id:      modId,
+    videos_completed: done,
+    quiz_scores:    p.quizScores || {},
+    updated_at:     new Date().toISOString()
+  }, {onConflict: 'user_id,university_id,semester_id,module_id'});
+}
+
+/* ══════════════════════════════════════════
+   DISCUSSION — LOAD FROM SUPABASE
+══════════════════════════════════════════ */
+async function loadDiscFromDB(){
+  if(!S.uni||!S.sem||!S.mod) return;
+  var res = await supa.from('discussion_messages')
+    .select('*')
+    .eq('university_id', S.uni.id)
+    .eq('semester_id',   S.sem.id)
+    .eq('module_id',     S.mod.id)
+    .order('created_at', {ascending:true})
+    .limit(100);
+  if(res.data && res.data.length > 0){
+    var key = getDiscKey();
+    DISC_STORE[key] = res.data.map(function(row){
+      var isMe = row.user_id === S.user.id;
+      return {
+        isMe:     isMe,
+        sid:      row.user_id,
+        name:     row.author_name || 'Student',
+        initials: (row.author_name||'ST').split(' ').map(function(n){return n[0];}).join('').toUpperCase().slice(0,2),
+        color:    isMe?'linear-gradient(135deg,var(--accent),#9b59b6)':'#6c63ff',
+        text:     row.message || '',
+        media:    row.media_url ? [{type:'image',url:row.media_url,name:'image'}] : null,
+        time:     timeAgo(row.created_at)
+      };
+    });
+    renderDisc();
+  }
+}
+
+/* ══════════════════════════════════════════
+   DISCUSSION — SAVE MESSAGE TO SUPABASE
+══════════════════════════════════════════ */
+async function saveMessageToDB(text, mediaUrl){
+  if(!S.user||!S.uni||!S.sem||!S.mod) return;
+  await supa.from('discussion_messages').insert({
+    user_id:       S.user.id,
+    university_id: S.uni.id,
+    semester_id:   S.sem.id,
+    module_id:     S.mod.id,
+    message:       text || '',
+    media_url:     mediaUrl || null,
+    author_name:   S.user.name,
+    created_at:    new Date().toISOString()
+  });
+}
+
+function timeAgo(ts){
+  if(!ts) return 'now';
+  var diff = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
+  if(diff < 60) return 'Just now';
+  if(diff < 3600) return Math.floor(diff/60)+'m ago';
+  if(diff < 86400) return Math.floor(diff/3600)+'h ago';
+  return Math.floor(diff/86400)+'d ago';
+}
+
+/* ── SIDEBAR TOGGLE ── */
+el('sbToggle').onclick = function(){
+  el('sidebar').classList.toggle('collapsed');
+};
+
+/* ── DATA ── */
+var UNIVERSITIES = [
+  {id:'ox', name:'University of Oxford',     country:'United Kingdom', emoji:'🎓', c:'#6c63ff'},
+  {id:'cam',name:'University of Cambridge',  country:'United Kingdom', emoji:'📚', c:'#ff6584'},
+  {id:'ucl',name:'University College London',country:'United Kingdom', emoji:'🏛️', c:'#43e97b'},
+  {id:'man',name:'University of Manchester', country:'United Kingdom', emoji:'⚙️', c:'#f9a825'},
+  {id:'ed', name:'University of Edinburgh',  country:'Scotland',       emoji:'🏰', c:'#56ccf2'}
+];
+var SEM_COLORS=[['#6c63ff','#9b59b6'],['#ff6584','#ff9a9e'],['#43e97b','#38f9d7'],['#f9a825','#fc4a1a'],['#56ccf2','#2f80ed'],['#a18cd1','#fbc2eb']];
+var SEMESTERS = (function(){
+  var subs=['Foundations','Core Concepts','Intermediate','Advanced Topics','Specialisation','Capstone & Review'];
+  var r=[];
+  for(var i=0;i<6;i++) r.push({id:'sem'+(i+1),num:i+1,title:'Semester '+(i+1),sub:subs[i],c1:SEM_COLORS[i][0],c2:SEM_COLORS[i][1]});
+  return r;
+})();
+var MOD_ICONS=['📊','💻','🧮','📈','🧠','📝'];
+var MOD_TITLES=[
+  ['Data Analysis','Programming Basics','Linear Algebra','Calculus I','Research Methods','Academic Writing'],
+  ['Statistics','Python II','Matrix Theory','Calculus II','Experimental Design','Critical Thinking'],
+  ['Machine Learning','Web Development','Probability','Differential Equations','Quantitative Methods','Literature Review'],
+  ['Deep Learning','Databases','Numerical Methods','Partial Diff. Eq.','Survey Design','Thesis Writing'],
+  ['AI Ethics','Cloud Computing','Optimisation','Complex Analysis','Mixed Methods','Grant Writing'],
+  ['Capstone Project','System Design','Applied Maths','Mathematical Modelling','Final Research','Dissertation']
+];
+var MOD_DESCS=['Foundational concepts and core techniques.','Applied methods and real-world examples.','Connecting theory with practice.','Advanced topics through case studies.','Specialist content with industry applications.','Comprehensive review and exam preparation.'];
+function getMods(si){
+  var r=[];
+  for(var i=0;i<6;i++) r.push({id:'m'+(i+1),icon:MOD_ICONS[i],title:MOD_TITLES[si][i],desc:MOD_DESCS[i]});
+  return r;
+}
+var VIDEOS=[
+  {title:'Introduction & Overview',desc:'Get oriented — what we cover and why it matters.',dur:'6:20',
+   summary:'This opening lesson sets the stage for the entire module. We explore the historical context, real-world relevance, and the learning outcomes you should expect by the end.',
+   keys:['Every complex subject has a foundational "why" — understanding it drives motivation.','Learning objectives act as a roadmap; review them before and after each session.','Prior knowledge gaps should be identified early and addressed before moving forward.','Active engagement from lesson one significantly improves long-term retention.','The approach blends theory with practical application throughout the module.'],
+   quizzes:[
+     {q:'What is the primary purpose of an introductory lesson?',opts:['Memorise all key terms','Understand the big picture and goals','Complete the hardest exercises','Skip to advanced content'],correct:1},
+     {q:'What does a learning objective help you do?',opts:['Guess exam answers','Track your progress and focus your study','Avoid difficult topics','Replace note-taking'],correct:1},
+     {q:'When should prior knowledge gaps be identified?',opts:['After completing the module','At the very end of the course','Early, before moving forward','Only during exams'],correct:2},
+     {q:'Which of these best describes active engagement?',opts:['Reading passively','Watching without pausing','Asking questions and taking notes','Listening only'],correct:2},
+     {q:'What does "blending theory with practice" mean?',opts:['Only memorising formulas','Connecting concepts to real examples','Skipping practical parts','Studying theory on its own'],correct:1},
+     {q:'Why is historical context important in an introduction?',opts:['It fills time','It helps you understand where the subject came from','It is always on the exam','It replaces learning objectives'],correct:1},
+     {q:'What is the best way to use learning objectives?',opts:['Ignore them after reading once','Review them before and after each session','Use them only before the exam','Share them with classmates only'],correct:1},
+     {q:'Active engagement from lesson one mainly improves…',opts:['Speed of reading','Short-term memory only','Long-term retention','Exam guessing'],correct:2},
+     {q:'What is a sign that you have understood an introduction well?',opts:['You finished watching','You can explain the module goals in your own words','You read the slides','You copied the notes'],correct:1},
+     {q:'The tutor\'s approach throughout the module is best described as…',opts:['Theory only','Practice only','A blend of theory and application','Exam-focused only'],correct:2}
+   ]},
+  {title:'Core Concepts Part 1',desc:'Deep dive into foundational principles.',dur:'8:45',
+   summary:'We break down the first set of core concepts with clear definitions, worked examples, and common misconceptions to avoid. Each concept is connected to related ideas to build a coherent mental model.',
+   keys:['Definitions are precise — small wording differences change meaning entirely.','Worked examples are the fastest path from abstract to concrete understanding.','Common misconceptions are as important to learn as the correct concepts.','Connecting new ideas to existing knowledge accelerates retention.','Pattern recognition in examples helps solve unseen problems independently.'],
+   quizzes:[
+     {q:'Why are worked examples important in learning core concepts?',opts:['They replace the need for theory','They make abstract ideas concrete','They are easier to memorise','They cover every exam question'],correct:1},
+     {q:'What can small wording differences in definitions cause?',opts:['Better understanding','A change in meaning entirely','No difference at all','Faster memorisation'],correct:1},
+     {q:'Why should you study common misconceptions?',opts:['They are easier than correct concepts','They are as important as the correct concepts','They are rarely tested','They speed up reading'],correct:1},
+     {q:'How does connecting new ideas to existing knowledge affect learning?',opts:['It slows you down','It accelerates retention','It makes things more confusing','It only helps with exams'],correct:1},
+     {q:'What does pattern recognition in examples help you do?',opts:['Memorise faster','Copy solutions','Solve unseen problems independently','Skip difficult questions'],correct:2},
+     {q:'What is the fastest path from abstract to concrete understanding?',opts:['Re-reading definitions','Worked examples','Watching videos twice','Group discussion'],correct:1},
+     {q:'Which approach best builds a coherent mental model?',opts:['Memorising each concept separately','Connecting concepts to related ideas','Reading in order only','Highlighting text'],correct:1},
+     {q:'When encountering a new definition, you should…',opts:['Skim it quickly','Read it once and move on','Pay close attention to exact wording','Paraphrase immediately'],correct:2},
+     {q:'What does studying misconceptions protect you from?',opts:['Nothing useful','Common exam traps and errors','Spending too long on examples','Connecting too many ideas'],correct:1},
+     {q:'Retention is best accelerated by…',opts:['Isolated memorisation','Linking new knowledge to what you already know','Skipping examples','Reading at speed'],correct:1}
+   ]},
+  {title:'Core Concepts Part 2',desc:'More depth, harder examples and edge cases.',dur:'9:12',
+   summary:'Building directly on Part 1, this lesson introduces more nuanced aspects. We examine edge cases, exceptions to rules, and complex examples that require combining multiple ideas.',
+   keys:['Edge cases reveal the true boundaries and scope of a concept.','Combining concepts is harder than understanding them individually.','Exceptions to rules are often the most tested topics in assessments.','Re-reading Part 1 notes before this session improves comprehension.','Explaining a concept in your own words is the best test of understanding.'],
+   quizzes:[
+     {q:'What do edge cases reveal about a concept?',opts:['That the concept is wrong','Its boundaries and true scope','That you should ignore them','A tutor error'],correct:1},
+     {q:'Why is combining concepts harder than learning them separately?',opts:['Concepts are unrelated','You must hold multiple ideas in mind simultaneously','It is not harder','You need more time to read'],correct:1},
+     {q:'Why are exceptions to rules frequently tested in assessments?',opts:['They are easier to write','They reveal deep understanding','They save time','They replace main concepts'],correct:1},
+     {q:'What does re-reading Part 1 notes before this session help with?',opts:['Nothing extra','Improving comprehension of Part 2','Avoiding edge cases','Replacing the video'],correct:1},
+     {q:'What is the best test of whether you truly understand a concept?',opts:['Passing the quiz','Explaining it in your own words','Copying the definition','Finishing the video'],correct:1},
+     {q:'An edge case is best described as…',opts:['The most common scenario','A scenario at the boundary of a rule','An error in the theory','An optional topic'],correct:1},
+     {q:'Complex examples in Part 2 require you to…',opts:['Apply one concept at a time','Combine multiple ideas simultaneously','Re-watch Part 1 only','Skip to the answer'],correct:1},
+     {q:'The nuanced aspects introduced in Part 2 build on…',opts:['Completely new ideas','Foundations from Part 1','External reading only','Previous semester material'],correct:1},
+     {q:'Which strategy improves comprehension before watching Part 2?',opts:['Skip Part 1 entirely','Review your Part 1 notes','Only watch the summary','Ask a classmate'],correct:1},
+     {q:'Exceptions to rules are important because they…',opts:['Are rare and unimportant','Define the full truth of a concept','Can be safely ignored','Only appear in mock exams'],correct:1}
+   ]},
+  {title:'Applied Examples',desc:'Work through real-world problems step by step.',dur:'11:04',
+   summary:'Theory only becomes useful when applied. We solve a series of real-world problems narrated step-by-step so you follow the reasoning, not just the answer.',
+   keys:['Always identify what is being asked before attempting a solution.','Breaking a problem into sub-problems makes it manageable.','Check units, signs, and constraints — most errors come from these.','Multiple solution paths often exist; choose the one you understand best.','Reviewing mistakes immediately after an error is more valuable than re-reading notes.'],
+   quizzes:[
+     {q:'What is the first step when approaching a new problem?',opts:['Start calculating immediately','Identify what is being asked','Look for a similar example','Guess and check'],correct:1},
+     {q:'Why should you break a problem into sub-problems?',opts:['To make it look easier','To make it more manageable','To avoid doing the full solution','To impress the tutor'],correct:1},
+     {q:'Where do most errors in problem-solving come from?',opts:['Wrong formulas','Units, signs, and constraints','Misreading the question','Using the wrong method'],correct:1},
+     {q:'When multiple solution paths exist, which should you choose?',opts:['The shortest one','The one the tutor used','The one you understand best','The one with fewer steps'],correct:2},
+     {q:'When is reviewing a mistake most valuable?',opts:['A week later during revision','Immediately after making the error','Only before the exam','When a classmate points it out'],correct:1},
+     {q:'What does narrated step-by-step reasoning help you do?',opts:['Finish faster','Follow the logic, not just copy the answer','Avoid re-watching','Skip sub-problems'],correct:1},
+     {q:'Checking constraints before finalising an answer helps you…',opts:['Save time','Avoid common careless errors','Show more working','Change your method'],correct:1},
+     {q:'Real-world problems are included primarily to…',opts:['Make the module longer','Demonstrate theory in a meaningful context','Replace theoretical study','Give harder exams'],correct:1},
+     {q:'What does identifying sub-problems help with?',opts:['Reducing total steps','Making a complex problem manageable','Avoiding the problem entirely','Getting partial marks only'],correct:1},
+     {q:'After making an error, the most effective next step is…',opts:['Move on quickly','Ask a classmate','Review the error immediately to understand why','Re-watch the entire video'],correct:2}
+   ]},
+  {title:'Summary & Key Takeaways',desc:'Consolidate everything and prepare for assessments.',dur:'5:30',
+   summary:'The final lesson revisits the most important ideas from all previous videos, connects them into a unified framework, and highlights the most exam-relevant points.',
+   keys:['Spaced repetition after completing the module dramatically improves recall.','Creating a one-page summary in your own words is the most effective revision tool.','The most common exam questions test application, not just definition recall.','Booking a private session helps address remaining gaps before assessments.','Consistent short study sessions outperform infrequent long cramming sessions.'],
+   quizzes:[
+     {q:'What is the most effective long-term revision strategy?',opts:['Cramming the night before','Spaced repetition over time','Reading the textbook once','Watching videos at double speed'],correct:1},
+     {q:'What makes a one-page summary most effective?',opts:['It is short','It is written in your own words','It copies the slides','It includes every definition'],correct:1},
+     {q:'What do the most common exam questions test?',opts:['Definition recall only','Application of knowledge','Speed of reading','Length of answers'],correct:1},
+     {q:'What does booking a private session help with?',opts:['Replacing video study','Addressing remaining gaps before assessments','Getting a certificate','Skipping the quiz'],correct:1},
+     {q:'Short consistent sessions are better than cramming because…',opts:['They are easier to schedule','They build stronger long-term memory','They feel less stressful only','They are faster overall'],correct:1},
+     {q:'Spaced repetition works best when applied…',opts:['Only before the exam','Randomly throughout the course','After completing the module, regularly over time','Once a month'],correct:2},
+     {q:'The summary lesson connects all previous videos into…',opts:['A new topic','A unified framework','A practice exam','A reading list'],correct:1},
+     {q:'Which revision tool is described as most effective?',opts:['Highlighting notes','Flashcards','A one-page summary in your own words','Re-watching all videos'],correct:2},
+     {q:'What highlights the most exam-relevant points in this lesson?',opts:['The quiz','The key ideas section','The final summary video','The discussion board'],correct:2},
+     {q:'Consistent short study sessions primarily improve…',opts:['Short-term memory','Long-term recall and understanding','Speed of completion','Quiz scores only'],correct:1}
+   ]}
+];
+
+/* ── STATE ── */
+var S={user:null,uni:null,sem:null,semIdx:0,mod:null,vidIdx:0,progress:{},vidDone:false};
+function initP(u,s,m){var k=u+'_'+s+'_'+m;if(!S.progress[k])S.progress[k]={videos:[],quizzes:[]};return S.progress[k];}
+function getP(u,s,m){var k=u+'_'+s+'_'+m;return S.progress[k]||{videos:[],quizzes:[]};}
+
+/* ── HELPERS ── */
+function el(id){return document.getElementById(id);}
+function showView(id){
+  var ms = document.querySelector('.main-scroll');
+  var pl = el('view-player');
+
+  /* always hide player first */
+  pl.style.display = 'none';
+  pl.style.flex    = '0';
+
+  if(id === 'player'){
+    /* hide scroll, show player full height */
+    ms.style.display = 'none';
+    ms.style.flex    = '0';
+    pl.style.display = 'grid';
+    pl.style.flex    = '1';
+    pl.style.minHeight = '0';
+    pl.style.overflow  = 'hidden';
+  } else {
+    /* show scroll, hide player, show correct view */
+    ms.style.display = 'block';
+    ms.style.flex    = '1';
+    /* hide every view inside scroll */
+    ['dashboard','semesters','modules','contact','pricing'].forEach(function(v){
+      var e = el('view-'+v);
+      if(e){ e.style.display = 'none'; e.classList.remove('active'); }
+    });
+    /* show the requested view */
+    var t = el('view-'+id);
+    if(t){ t.style.display = 'block'; t.classList.add('active'); }
+  }
+
+  /* sidebar active state */
+  ['dashboard','semesters','modules','player','contact','pricing'].forEach(function(n){
+    var e = el('nav-'+n);
+    if(e) e.classList.toggle('active', n===id);
+  });
+}
+function setTopbar(crumbs,title,showProg){
+  var crumbEl=el('topCrumb'); crumbEl.innerHTML='';
+  crumbs.forEach(function(c,i){
+    var s=document.createElement('span'); s.textContent=c; crumbEl.appendChild(s);
+    if(i<crumbs.length-1){var sep=document.createElement('span');sep.textContent=' › ';sep.style.color='var(--text3)';crumbEl.appendChild(sep);}
+  });
+  el('topTitle').textContent=title;
+  el('progPill').style.display=showProg?'flex':'none';
+  el('ptsChip').style.display=showProg?'block':'none';
+}
+function updateCtx(){
+  var show=!!(S.uni||S.sem||S.mod);
+  el('sbCtx').style.display=show?'block':'none';
+  if(S.uni)el('ctxUni').textContent=S.uni.emoji+' '+S.uni.name;
+  if(S.sem)el('ctxSem').textContent=S.sem.title;
+  if(S.mod)el('ctxMod').textContent=S.mod.title;
+}
+
+/* ── DASHBOARD ── */
+el('btnSignIn').onclick=doLogin;
+/* ── DASHBOARD ── */
+function renderDashboard(){
+  el('wbGreet').textContent='Welcome back, '+S.user.name.split(' ')[0]+'!';
+  var totalVids=0,totalMods=0,totalPts=0;
+  UNIVERSITIES.forEach(function(uni){
+    SEMESTERS.forEach(function(sem,si){getMods(si).forEach(function(mod){
+      var p=getP(uni.id,sem.id,mod.id);
+      totalVids+=p.videos.length;
+      if(p.videos.length===VIDEOS.length)totalMods++;
+      totalPts+=p.videos.length*2;
+    });});
+  });
+  el('statVids').textContent=totalVids;
+  el('statMods').textContent=totalMods;
+  el('statPts').textContent=totalPts;
+  var grid=el('uniGrid'); grid.innerHTML='';
+  UNIVERSITIES.forEach(function(uni){
+    var done=0,total=SEMESTERS.length*6*VIDEOS.length;
+    SEMESTERS.forEach(function(sem,si){getMods(si).forEach(function(mod){done+=getP(uni.id,sem.id,mod.id).videos.length;});});
+    var pct=Math.round((done/total)*100);
+    var card=document.createElement('div'); card.className='uni-card';
+    card.style.setProperty('--uc',uni.c);
+    card.innerHTML='<div class="uc-emoji">'+uni.emoji+'</div><div class="uc-name">'+uni.name+'</div><div class="uc-country">'+uni.country+'</div><div class="uc-bar"><div class="uc-fill" style="width:'+pct+'%"></div></div><div class="uc-pct">'+pct+'% complete</div>';
+    card.onclick=(function(u){return function(){openSemesters(u);};})(uni);
+    grid.appendChild(card);
+  });
+  setTopbar([],'Dashboard',false);
+  showView('dashboard');
+  ['nav-semesters','nav-modules','nav-player','nav-contact'].forEach(function(id){el(id).style.display='none';});
+}
+
+/* ── SEMESTERS ── */
+function openSemesters(uni){
+  S.uni=uni; S.sem=null; S.mod=null; updateCtx();
+  var grid=el('semGrid'); grid.innerHTML='';
+  SEMESTERS.forEach(function(sem,idx){
+    var mods=getMods(idx),done=0;
+    mods.forEach(function(m){done+=getP(uni.id,sem.id,m.id).videos.length;});
+    var total=mods.length*VIDEOS.length, pct=Math.round((done/total)*100);
+    var isAll=done===total, isSome=done>0&&!isAll;
+    var badge=isSome?'<span class="badge b-prog">'+pct+'%</span>':isAll?'<span class="badge b-done">✓ Done</span>':'<span class="badge b-new">New</span>';
+    var card=document.createElement('div'); card.className='sem-card';
+    card.style.setProperty('--sc1',sem.c1); card.style.setProperty('--sc2',sem.c2);
+    card.innerHTML='<div class="sc-num" style="color:'+sem.c1+'">Semester '+sem.num+'</div><div class="sc-title">'+sem.title+'</div><div class="sc-sub">'+sem.sub+'</div><div class="pbar"><div class="pfill" style="width:'+pct+'%;background:linear-gradient(90deg,'+sem.c1+','+sem.c2+');"></div></div><div class="sc-footer"><span style="font-size:12px;color:var(--text2);">6 modules</span>'+badge+'</div>';
+    card.onclick=(function(s,i){return function(){openModules(s,i);};})(sem,idx);
+    grid.appendChild(card);
+  });
+  setTopbar([uni.emoji+' '+uni.name],'Choose a Semester',false);
+  el('nav-semesters').style.display='flex';
+  showView('semesters');
+}
+el('nav-semesters').onclick=function(){if(S.uni)openSemesters(S.uni);};
+
+/* ── MODULES ── */
+function openModules(sem,idx){
+  S.sem=sem; S.semIdx=idx; S.mod=null; updateCtx();
+  var mods=getMods(idx);
+  var grid=el('modGrid'); grid.innerHTML='';
+  mods.forEach(function(mod){
+    var p=getP(S.uni.id,sem.id,mod.id),dv=p.videos.length,pct=Math.round((dv/VIDEOS.length)*100);
+    var isAll=dv===VIDEOS.length,isSome=dv>0&&!isAll;
+    var badge=isSome?'<span class="badge b-prog">'+pct+'%</span>':isAll?'<span class="badge b-done">✓ Done</span>':'<span class="badge b-new">New</span>';
+    var card=document.createElement('div'); card.className='mod-card';
+    card.innerHTML='<div class="mc-head"><div class="mc-icon">'+mod.icon+'</div><div><div class="mc-title">'+mod.title+'</div><div class="mc-desc">'+mod.desc+'</div></div></div><div class="pbar"><div class="pfill" style="width:'+pct+'%"></div></div><div class="mc-footer"><span class="mc-vids">5 videos'+(dv>0?' · '+dv+' done':'')+'</span>'+badge+'</div>';
+    card.onclick=(function(m){return function(){openPlayer(m);};})(mod);
+    grid.appendChild(card);
+  });
+  setTopbar([S.uni.emoji+' '+S.uni.name, sem.title], sem.title+' — '+sem.sub, false);
+  el('nav-modules').style.display='flex';
+  showView('modules');
+}
+el('nav-modules').onclick=function(){if(S.sem)openModules(S.sem,S.semIdx);};
+
+/* ── PLAYER ── */
+var fakeT=null;
+function openPlayer(mod){
+  S.mod=mod; S.vidDone=false; updateCtx();
+  initP(S.uni.id,S.sem.id,mod.id);
+  var p=getP(S.uni.id,S.sem.id,mod.id);
+  var first=-1;
+  for(var i=0;i<VIDEOS.length;i++){if(p.videos.indexOf(i)<0){first=i;break;}}
+  S.vidIdx=first>=0?first:0;
+  el('nav-player').style.display='flex';
+  el('nav-contact').style.display='flex';
+  setTopbar([S.uni.emoji+' '+S.uni.name, S.sem.title, mod.title], mod.title, true);
+  renderPlayer();
+  showView('player');
+}
+el('nav-player').onclick=function(){if(S.mod)renderPlayer();showView('player');};
+
+function renderPlayer(){
+  var vid=VIDEOS[S.vidIdx];
+  var p=getP(S.uni.id,S.sem.id,S.mod.id);
+  var done=p.videos.length, pct=Math.round((done/VIDEOS.length)*100);
+  var isDone=p.videos.indexOf(S.vidIdx)>=0;
+
+  el('progFill').style.width=pct+'%';
+  el('progPct').textContent=pct+'%';
+  el('ptsChip').textContent='⭐ '+done*2+' pts';
+
+  el('vovTitle').textContent=vid.title;
+  el('vovDur').textContent=vid.dur;
+  el('vidOverlay').style.display='flex';
+  el('vidPlaying').style.display='none';
+  S.vidDone=false;
+
+  el('viNum').textContent='Video '+(S.vidIdx+1)+' of '+VIDEOS.length;
+  el('viName').textContent=vid.title;
+  el('viDesc').textContent=vid.desc;
+
+  el('btnDone').disabled=true; el('btnDone').textContent='✓ Mark as complete';
+  el('btnNxt').disabled=!isDone;
+  if(isDone){el('btnDone').textContent='✓ Completed';el('btnDone').disabled=true;el('btnNxt').disabled=false;}
+
+  el('sumBody').textContent=vid.summary;
+  var kl=el('kiList'); kl.innerHTML='';
+  vid.keys.forEach(function(k,i){
+    var item=document.createElement('div'); item.className='ki-item';
+    item.innerHTML='<div class="ki-dot">'+(i+1)+'</div><div class="ki-text">'+k+'</div>';
+    kl.appendChild(item);
+  });
+
+  renderQuiz();
+  renderVidList();
+  renderCommunity();
+  renderResources();
+  var pr=document.querySelector('.pl-right'); if(pr)pr.scrollTop=0;
+}
+
+el('btnPlay').onclick=function(){
+  var vid=VIDEOS[S.vidIdx];
+  el('vidOverlay').style.display='none';
+  el('vidPlaying').style.display='flex';
+  el('nowPlayTitle').textContent=vid.title;
+  var bar=el('fakeBar'); bar.style.width='0%';
+  var w=0; if(fakeT)clearInterval(fakeT);
+  fakeT=setInterval(function(){
+    w+=1; bar.style.width=w+'%';
+    if(w>=100){
+      clearInterval(fakeT); S.vidDone=true;
+      if(getP(S.uni.id,S.sem.id,S.mod.id).videos.indexOf(S.vidIdx)<0)
+        el('btnDone').disabled=false;
+    }
+  },40);
+};
+
+el('btnDone').onclick=function(){
+  var p=getP(S.uni.id,S.sem.id,S.mod.id);
+  if(p.videos.indexOf(S.vidIdx)<0) p.videos.push(S.vidIdx);
+  var done=p.videos.length, pct=Math.round((done/VIDEOS.length)*100);
+  el('btnDone').textContent='✓ Completed'; el('btnDone').disabled=true; el('btnNxt').disabled=false;
+  el('progFill').style.width=pct+'%'; el('progPct').textContent=pct+'%';
+  el('ptsChip').textContent='⭐ '+done*2+' pts';
+  el('progCircle').style.strokeDashoffset=188.5-(188.5*(pct/100));
+  el('pcPct').textContent=pct+'%'; el('pcSub').textContent=done+' of '+VIDEOS.length+' completed';
+  renderVidList();
+  /* save to Supabase */
+  saveProgressToDB(S.uni.id, S.sem.id, S.mod.id);
+  if(done===VIDEOS.length) setTimeout(showModal,600);
+};
+
+el('btnNxt').onclick=function(){
+  if(S.vidIdx<VIDEOS.length-1){S.vidIdx++;if(fakeT)clearInterval(fakeT);renderPlayer();}
+};
+
+/* ── QUIZ STATE ── */
+var quizState = { qIdx:0, score:0, answered:false, done:false };
+
+function renderQuiz(){
+  var qs = VIDEOS[S.vidIdx].quizzes;
+  var p  = getP(S.uni.id,S.sem.id,S.mod.id);
+  var savedScore = p.quizScores ? p.quizScores[S.vidIdx] : undefined;
+
+  /* reset quiz state for this video */
+  quizState = { qIdx:0, score:0, answered:false, done:false };
+
+  if(savedScore !== undefined){
+    /* already completed — show result */
+    showQuizResult(savedScore, qs.length, false);
+    return;
+  }
+  showQuizQuestion();
+}
+
+function showQuizQuestion(){
+  var qs  = VIDEOS[S.vidIdx].quizzes;
+  var q   = qs[quizState.qIdx];
+  var num = quizState.qIdx + 1;
+  var pct = Math.round((num / qs.length) * 100);
+
+  el('qzBody').style.display='block';
+  el('qzResult').style.display='none';
+  el('qzQNum').textContent = num + ' / ' + qs.length;
+  el('qzProgressFill').style.width = pct + '%';
+  el('qzQ').textContent = q.q;
+
+  var opts = el('qzOpts'); opts.innerHTML='';
+  var fb   = el('qzFb');   fb.style.display='none'; fb.className='qz-fb';
+  el('qzNextBtn').style.display='none';
+  quizState.answered = false;
+
+  q.opts.forEach(function(opt,i){
+    var b = document.createElement('button');
+    b.className='qz-opt'; b.textContent=opt;
+    b.onclick = (function(idx){ return function(){ answerQuiz(idx, q.correct); }; })(i);
+    opts.appendChild(b);
+  });
+}
+
+function answerQuiz(i, correct){
+  if(quizState.answered) return;
+  quizState.answered = true;
+
+  var btns = el('qzOpts').querySelectorAll('.qz-opt');
+  btns.forEach(function(b){ b.disabled=true; });
+
+  var fb = el('qzFb');
+  if(i === correct){
+    btns[i].classList.add('correct');
+    fb.className='qz-fb ok'; fb.textContent='✓ Correct!';
+    quizState.score++;
+  } else {
+    btns[i].classList.add('wrong');
+    btns[correct].classList.add('correct');
+    fb.className='qz-fb bad'; fb.textContent='✗ Not quite — correct answer highlighted.';
+  }
+  fb.style.display='block';
+
+  var qs = VIDEOS[S.vidIdx].quizzes;
+  var isLast = quizState.qIdx >= qs.length - 1;
+
+  if(isLast){
+    el('qzNextBtn').textContent = 'See my results →';
+    el('qzNextBtn').style.display='block';
+    quizState.done = true;
+  } else {
+    el('qzNextBtn').textContent = 'Next question →';
+    el('qzNextBtn').style.display='block';
+  }
+}
+window.quizNext = function(){
+  if(quizState.done){
+    var qs  = VIDEOS[S.vidIdx].quizzes;
+    var p   = getP(S.uni.id,S.sem.id,S.mod.id);
+    if(!p.quizScores) p.quizScores = {};
+    p.quizScores[S.vidIdx] = quizState.score;
+    showQuizResult(quizState.score, qs.length, true);
+  } else {
+    quizState.qIdx++;
+    showQuizQuestion();
+  }
+};
+window.quizRetry = function(){
+  var p = getP(S.uni.id,S.sem.id,S.mod.id);
+  if(p.quizScores) delete p.quizScores[S.vidIdx];
+  quizState = { qIdx:0, score:0, answered:false, done:false };
+  showQuizQuestion();
+};
+
+function showQuizResult(score, total, fresh){
+  el('qzBody').style.display='none';
+  el('qzResult').style.display='block';
+  el('qzProgressFill').style.width='100%';
+  el('qzQNum').textContent = total + ' / ' + total;
+
+  var pct = Math.round((score / total) * 100);
+  var circle = el('qzScoreCircle');
+  var title  = el('qzResultTitle');
+  var sub    = el('qzResultSub');
+
+  circle.textContent = score + '/' + total;
+
+  if(pct >= 80){
+    circle.style.borderColor = 'var(--success)';
+    circle.style.color = 'var(--success)';
+    circle.style.background = 'rgba(67,233,123,.08)';
+    title.textContent = pct===100 ? '🏆 Perfect score!' : '🎉 Excellent work!';
+    sub.textContent = 'You scored '+score+' out of '+total+'. Strong understanding — keep it up!';
+  } else if(pct >= 50){
+    circle.style.borderColor = 'var(--warning)';
+    circle.style.color = 'var(--warning)';
+    circle.style.background = 'rgba(249,168,37,.08)';
+    title.textContent = '👍 Good effort!';
+    sub.textContent = 'You scored '+score+' out of '+total+'. Review the key ideas and retry to improve.';
+  } else {
+    circle.style.borderColor = 'var(--accent3)';
+    circle.style.color = 'var(--accent3)';
+    circle.style.background = 'rgba(255,101,132,.08)';
+    title.textContent = '📚 Keep studying!';
+    sub.textContent = 'You scored '+score+' out of '+total+'. Re-watch the video and retry the quiz.';
+  }
+}
+
+function renderVidList(){
+  var p=getP(S.uni.id,S.sem.id,S.mod.id);
+  var list=el('vidList'); list.innerHTML='';
+  VIDEOS.forEach(function(v,i){
+    var done=p.videos.indexOf(i)>=0, active=i===S.vidIdx;
+    var item=document.createElement('div'); item.className='vid-item'+(active?' active':'');
+    item.innerHTML='<div class="vi-dot '+(done?'done':active?'cur':'')+'">'+(done?'✓':i+1)+'</div><div class="vi-item-t">'+v.title+'</div><div class="vi-item-d">'+v.dur+'</div>';
+    item.onclick=(function(idx){return function(){if(fakeT)clearInterval(fakeT);S.vidIdx=idx;S.vidDone=false;renderPlayer();};})(i);
+    list.appendChild(item);
+  });
+}
+
+/* ── MODAL ── */
+function showModal(){
+  el('mTitle').textContent=S.mod.title+' — Complete!';
+  el('mSub').textContent='You finished all '+VIDEOS.length+' videos in '+S.sem.title+'. Book a private session to go even deeper!';
+  el('compModal').classList.add('open');
+}
+el('btnModalStay').onclick=function(){el('compModal').classList.remove('open');};
+el('btnModalBook').onclick=function(){el('compModal').classList.remove('open');openContact();};
+
+/* ── CONTACT ── */
+function openContact(){
+  el('cName').value=S.user?S.user.name:'';
+  el('cEmail').value='';
+  el('cUni').value=S.uni?S.uni.name:'';
+  el('cSem').value=S.sem?S.sem.title:'';
+  el('cMod').value=S.mod?S.mod.title:'';
+  el('cFormCard').style.display='block';
+  el('cSuccess').style.display='none';
+  setTopbar([],'Book Private Tutoring',false);
+  showView('contact');
+}
+el('nav-contact').onclick=openContact;
+el('nav-pricing').onclick=function(){ openPricing(); };
+el('btnSubmitContact').onclick=function(){el('cFormCard').style.display='none';el('cSuccess').style.display='block';};
+el('btnBackDash').onclick=function(){renderDashboard();};
+el('nav-dashboard').onclick=function(){renderDashboard();};
+
+/* ═══════════════════════════════════════════
+   COMMUNITY — classmates + public discussion
+═══════════════════════════════════════════ */
+
+/* Simulated classmates pool */
+var CLASSMATES = [
+  {id:'s1', name:'Sarah M.',    initials:'SM', color:'#6c63ff', status:'online',  vidsDone:[0,1,2,3]},
+  {id:'s2', name:'Omar K.',     initials:'OK', color:'#ff6584', status:'online',  vidsDone:[0,1,2]},
+  {id:'s3', name:'Lena T.',     initials:'LT', color:'#43e97b', status:'online',  vidsDone:[0,1,2,3,4]},
+  {id:'s4', name:'James R.',    initials:'JR', color:'#f9a825', status:'away',    vidsDone:[0]},
+  {id:'s5', name:'Nour A.',     initials:'NA', color:'#56ccf2', status:'away',    vidsDone:[0,1]},
+  {id:'s6', name:'Priya S.',    initials:'PS', color:'#a18cd1', status:'offline', vidsDone:[0,1,2]},
+  {id:'s7', name:'Youssef B.',  initials:'YB', color:'#38f9d7', status:'offline', vidsDone:[0]}
+];
+
+/* Pre-seeded discussion messages per module key */
+var DISC_STORE = {};
+
+function getDiscKey(){
+  if(!S.uni||!S.sem||!S.mod) return 'global';
+  return S.uni.id+'_'+S.sem.id+'_'+S.mod.id;
+}
+
+function seedMessages(){
+  var key = getDiscKey();
+  if(DISC_STORE[key]) return;
+  DISC_STORE[key] = [
+    {sid:'s3', name:'Lena T.',   color:'#43e97b', initials:'LT', text:'Hey everyone! Just finished all 5 videos — the applied examples section was really eye-opening. Make sure you pause and try each problem before watching the solution!', time:'2h ago'},
+    {sid:'s1', name:'Sarah M.',  color:'#6c63ff', initials:'SM', text:'Agreed! I struggled with Core Concepts Part 2 at first. Anyone else find the edge cases tricky?', time:'1h 45m ago'},
+    {sid:'s2', name:'Omar K.',   color:'#ff6584', initials:'OK', text:'Yes! I rewatched that part twice. The key for me was connecting it back to Part 1 — once I did that it clicked 🙌', time:'1h 30m ago'},
+    {sid:'s4', name:'James R.',  color:'#f9a825', initials:'JR', text:'Quick question — do we need to memorise all the formulas for the exam or just understand the concepts?', time:'58m ago'},
+    {sid:'s3', name:'Lena T.',   color:'#43e97b', initials:'LT', text:'From what the tutor said in the summary video, it\'s more about application than memorisation. Focus on the worked examples!', time:'52m ago'},
+    {sid:'s5', name:'Nour A.',   color:'#56ccf2', initials:'NA', text:'I made a one-page cheat sheet summarising all the key ideas from each video — highly recommend doing that as revision 📝', time:'30m ago'}
+  ];
+}
+
+function switchCommTab(tab){
+  el('tabStudents').classList.toggle('active', tab==='students');
+  el('tabDisc').classList.toggle('active', tab==='disc');
+  el('panelStudents').classList.toggle('active', tab==='students');
+  el('panelDisc').classList.toggle('active', tab==='disc');
+  if(tab==='disc') scrollDiscToBottom();
+}
+window.switchCommTab = switchCommTab;
+
+function renderCommunity(){
+  seedMessages();
+  renderStudents();
+  renderDisc();
+  /* load real messages from Supabase in background */
+  loadDiscFromDB();
+}
+
+function renderStudents(){
+  var list = el('studentList');
+  if(!list) return;
+  list.innerHTML = '';
+  var onlineCount = 0;
+
+  /* show the logged-in user first */
+  var mePct = Math.round((getP(S.uni.id,S.sem.id,S.mod.id).videos.length / VIDEOS.length)*100);
+  var meCard = document.createElement('div');
+  meCard.className = 'student-card';
+  meCard.innerHTML =
+    '<div class="stu-avatar" style="background:linear-gradient(135deg,var(--accent),#9b59b6);">AB'+
+      '<div class="stu-online-dot" style="background:var(--success);"></div>'+
+    '</div>'+
+    '<div class="stu-info">'+
+      '<div class="stu-name">'+S.user.name+' <span style="font-size:10px;color:var(--accent2);font-weight:600;">(You)</span></div>'+
+      '<div class="stu-prog-row">'+
+        '<div class="stu-prog-bar"><div class="stu-prog-fill" style="width:'+mePct+'%;background:linear-gradient(90deg,var(--accent),var(--accent2));"></div></div>'+
+        '<span class="stu-prog-pct">'+mePct+'%</span>'+
+      '</div>'+
+    '</div>'+
+    '<span class="stu-badge stu-badge-online">● Online</span>';
+  list.appendChild(meCard);
+  onlineCount++;
+
+  CLASSMATES.forEach(function(stu){
+    var donePct = Math.round((stu.vidsDone.length / VIDEOS.length)*100);
+    var badgeClass = stu.status==='online'?'stu-badge-online':stu.status==='away'?'stu-badge-away':'stu-badge-offline';
+    var badgeLabel = stu.status==='online'?'● Online':stu.status==='away'?'◐ Away':'○ Offline';
+    var dotColor = stu.status==='online'?'var(--success)':stu.status==='away'?'var(--warning)':'var(--text3)';
+    if(stu.status==='online') onlineCount++;
+
+    var card = document.createElement('div');
+    card.className = 'student-card';
+    card.innerHTML =
+      '<div class="stu-avatar" style="background:'+stu.color+';">'+stu.initials+
+        '<div class="stu-online-dot" style="background:'+dotColor+';"></div>'+
+      '</div>'+
+      '<div class="stu-info">'+
+        '<div class="stu-name">'+stu.name+'</div>'+
+        '<div class="stu-prog-row">'+
+          '<div class="stu-prog-bar"><div class="stu-prog-fill" style="width:'+donePct+'%;background:'+stu.color+';opacity:.8;"></div></div>'+
+          '<span class="stu-prog-pct">'+donePct+'%</span>'+
+        '</div>'+
+      '</div>'+
+      '<span class="stu-badge '+badgeClass+'">'+badgeLabel+'</span>';
+    list.appendChild(card);
+  });
+
+  el('onlinePill').textContent = onlineCount + ' online';
+  el('onlineCount').textContent = '';
+}
+
+function renderDisc(){
+  var key = getDiscKey();
+  var msgs = DISC_STORE[key] || [];
+  var container = el('discMsgs');
+  if(!container) return;
+  container.innerHTML = '';
+
+  msgs.forEach(function(m){
+    var isMe = m.isMe;
+    var row = document.createElement('div');
+    row.className = 'msg-row' + (isMe?' mine':'');
+
+    /* build media html */
+    var mediaHtml = '';
+    if(m.media && m.media.length){
+      m.media.forEach(function(med){
+        if(med.type==='image'){
+          mediaHtml += '<div class="msg-media-img"><img src="'+med.url+'" alt="image" onclick="this.requestFullscreen&&this.requestFullscreen()"></div>';
+        } else {
+          mediaHtml += '<div class="msg-media-audio"><audio controls src="'+med.url+'"></audio></div>';
+        }
+      });
+    }
+
+    row.innerHTML =
+      '<div class="msg-avatar" style="background:'+(isMe?'linear-gradient(135deg,var(--accent),#9b59b6)':m.color)+';">'+m.initials+'</div>'+
+      '<div class="msg-body">'+
+        '<div class="msg-meta">'+m.name+' · '+m.time+'</div>'+
+        (m.text ? '<div class="msg-bubble '+(isMe?'msg-bubble-mine':'msg-bubble-other')+'">'+m.text+'</div>' : '')+
+        mediaHtml+
+      '</div>';
+    container.appendChild(row);
+  });
+
+  var cnt = msgs.length;
+  el('msgCount').textContent = cnt > 0 ? cnt : '';
+  scrollDiscToBottom();
+}
+
+function scrollDiscToBottom(){
+  var c = el('discMsgs');
+  if(c) setTimeout(function(){c.scrollTop=c.scrollHeight;},50);
+}
+
+/* ── STUDY ALONE ── */
+var studyAlone = false;
+function toggleStudyAlone(){
+  studyAlone = !studyAlone;
+  var bar     = el('studyAloneBar');
+  var toggle  = el('saToggle');
+  var section = el('communitySection');
+  var subText = el('saSubText');
+  var icon    = el('saIcon');
+
+  toggle.classList.toggle('on', studyAlone);
+  bar.classList.toggle('solo-mode', studyAlone);
+  section.classList.toggle('hidden', studyAlone);
+
+  if(studyAlone){
+    subText.textContent = 'Solo mode — community is hidden';
+    icon.textContent = '🎧';
+    icon.style.filter = 'grayscale(0)';
+  } else {
+    subText.textContent = 'Community is visible — toggle to focus solo';
+    icon.textContent = '👥';
+    icon.style.filter = '';
+  }
+}
+window.toggleStudyAlone = toggleStudyAlone;
+
+/* ── RESOURCES ── */
+var LESSON_FILES = [
+  {name:'Chapter 1 — Introduction & Foundations.pdf', type:'pdf',  size:'2.4 MB', badge:'new'},
+  {name:'Chapter 2 — Core Concepts.pdf',              type:'pdf',  size:'3.1 MB', badge:''},
+  {name:'Chapter 3 — Applied Methods.pdf',            type:'pdf',  size:'2.8 MB', badge:''},
+  {name:'Lecture Slides — Full Module.pptx',          type:'ppt',  size:'8.6 MB', badge:''},
+  {name:'Formula Sheet & Reference.docx',             type:'doc',  size:'540 KB', badge:'new'},
+  {name:'Practice Exercises.docx',                    type:'doc',  size:'780 KB', badge:''},
+  {name:'Supplementary Reading List.pdf',             type:'pdf',  size:'190 KB', badge:''},
+  {name:'Data Sets & Examples.xlsx',                  type:'xls',  size:'1.2 MB', badge:''}
+];
+var EXAM_FILES = [
+  {name:'Final Exam 2024 — With Answers.pdf',  type:'exam', size:'1.8 MB', badge:'new',  year:'2024'},
+  {name:'Final Exam 2023 — With Answers.pdf',  type:'exam', size:'1.6 MB', badge:'',     year:'2023'},
+  {name:'Midterm Exam 2024.pdf',               type:'exam', size:'980 KB', badge:'new',  year:'2024'},
+  {name:'Midterm Exam 2023.pdf',               type:'exam', size:'870 KB', badge:'',     year:'2023'},
+  {name:'Mock Exam Paper 1.pdf',               type:'exam', size:'1.1 MB', badge:'',     year:'Mock'},
+  {name:'Mock Exam Paper 2.pdf',               type:'exam', size:'1.0 MB', badge:'',     year:'Mock'},
+  {name:'Exam Marking Criteria.pdf',           type:'pdf',  size:'320 KB', badge:'',     year:'Guide'}
+];
+var FILE_ICONS = {
+  pdf: {icon:'📄', cls:'pdf'}, doc:{icon:'📝', cls:'doc'},
+  ppt: {icon:'📊', cls:'ppt'}, xls:{icon:'📈', cls:'xls'},
+  zip: {icon:'🗜️', cls:'zip'}, exam:{icon:'📋', cls:'exam'}
+};
+function switchResTab(tab){
+  el('resTabLessons').classList.toggle('active', tab==='lessons');
+  el('resTabExams').classList.toggle('active',   tab==='exams');
+  el('resPanelLessons').classList.toggle('active', tab==='lessons');
+  el('resPanelExams').classList.toggle('active',   tab==='exams');
+}
+window.switchResTab = switchResTab;
+
+function renderResources(){
+  buildFileList('lessonFileList', LESSON_FILES, false);
+  buildFileList('examFileList',   EXAM_FILES,   true);
+}
+function buildFileList(cid, files, isExam){
+  var c = el(cid); if(!c) return; c.innerHTML='';
+  files.forEach(function(f){
+    var extCls = FILE_ICONS[f.type] ? FILE_ICONS[f.type].cls : 'pdf';
+    var extLabel = f.type==='exam' ? 'PDF' : f.type.toUpperCase();
+    var badgeHtml = f.badge==='new'
+      ? '<span class="res-badge res-badge-new">New</span>'
+      : (isExam && f.year ? '<span class="res-badge res-badge-exam">'+f.year+'</span>' : '');
+    var item = document.createElement('a');
+    item.className='res-file'; item.href='#';
+    item.onclick=function(e){
+      e.preventDefault();
+      alert('📥 Downloading: '+f.name+'\n\nIn the live version this triggers a real file download.');
+    };
+    item.innerHTML=
+      '<span class="res-file-ext '+extCls+'">'+extLabel+'</span>'+
+      '<div class="res-file-info">'+
+        '<span class="res-file-name">'+f.name.replace(/\.[^.]+$/,'')+'</span>'+
+        '<span class="res-file-size">'+f.size+'</span>'+
+        badgeHtml+
+      '</div>'+
+      '<div class="res-file-dl"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>';
+    c.appendChild(item);
+  });
+}
+
+var pendingMedia = []; /* [{type:'image'|'audio', url:..., name:...}] */
+
+function updatePreviewStrip(){
+  var strip = el('mediaPreview');
+  if(!pendingMedia.length){ strip.style.display='none'; strip.innerHTML=''; return; }
+  strip.style.display='flex';
+  strip.className='media-preview-strip';
+  strip.innerHTML='';
+  pendingMedia.forEach(function(m, i){
+    var thumb = document.createElement('div');
+    if(m.type==='image'){
+      thumb.className='media-thumb';
+      thumb.innerHTML='<img src="'+m.url+'" alt="image"><button class="media-remove" data-idx="'+i+'">✕</button>';
+    } else {
+      thumb.className='media-thumb-audio';
+      thumb.innerHTML=
+        '<span class="media-thumb-audio-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg></span>'+
+        '<span class="media-thumb-audio-name">'+m.name+'</span>'+
+        '<button class="media-remove" data-idx="'+i+'" style="position:static;width:14px;height:14px;margin-left:auto;background:var(--bg5);">✕</button>';
+    }
+    strip.appendChild(thumb);
+  });
+  strip.querySelectorAll('.media-remove').forEach(function(btn){
+    btn.onclick=function(){
+      var idx=parseInt(this.getAttribute('data-idx'));
+      pendingMedia.splice(idx,1);
+      updatePreviewStrip();
+      updateAttachBtnState();
+    };
+  });
+}
+
+function updateAttachBtnState(){
+  var hasImg = pendingMedia.some(function(m){return m.type==='image';});
+  var hasAud = pendingMedia.some(function(m){return m.type==='audio';});
+  el('imgLabel').classList.toggle('has-file', hasImg);
+  el('audioRecordBtn').classList.toggle('has-file', hasAud);
+}
+
+el('imgInput').onchange = function(){
+  var files = Array.prototype.slice.call(this.files);
+  files.forEach(function(file){
+    var reader = new FileReader();
+    reader.onload = function(e){
+      pendingMedia.push({type:'image', url:e.target.result, name:file.name});
+      updatePreviewStrip();
+      updateAttachBtnState();
+    };
+    reader.readAsDataURL(file);
+  });
+  el('imgInput').value='';
+};
+
+/* ── AUDIO RECORDING ── */
+var mediaRecorder = null;
+var recChunks     = [];
+var recTimerInt   = null;
+var recSecs       = 0;
+var recBlob       = null;
+var MAX_REC_SECS  = 60;
+
+function openRecordModal(){
+  el('recordModal').classList.add('open');
+  el('recStateIdle').style.display     = 'block';
+  el('recStateRecording').style.display= 'none';
+  el('recStatePreview').style.display  = 'none';
+  recBlob = null;
+}
+function closeRecordModal(){
+  el('recordModal').classList.remove('open');
+  stopRecording(false);
+}
+
+function startRecording(){
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    alert('Your browser does not support audio recording. Please use Chrome or Firefox.');
+    return;
+  }
+  navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+    recChunks = []; recSecs = 0;
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = function(e){ if(e.data.size>0) recChunks.push(e.data); };
+    mediaRecorder.onstop = function(){
+      stream.getTracks().forEach(function(t){t.stop();});
+      recBlob = new Blob(recChunks, {type:'audio/webm'});
+      var url  = URL.createObjectURL(recBlob);
+      el('recAudioPreview').src = url;
+      var m = Math.floor(recSecs/60), s = recSecs%60;
+      el('recPreviewDur').textContent = 'Duration: ' + m + ':' + (s<10?'0':'') + s;
+      el('recStateRecording').style.display = 'none';
+      el('recStatePreview').style.display   = 'block';
+    };
+    mediaRecorder.start(100);
+    el('recStateIdle').style.display      = 'none';
+    el('recStateRecording').style.display = 'block';
+    el('recBarFill').style.width = '0%';
+    el('recTimer').textContent = '0:00';
+    clearInterval(recTimerInt);
+    recTimerInt = setInterval(function(){
+      recSecs++;
+      var m = Math.floor(recSecs/60), s = recSecs%60;
+      el('recTimer').textContent = m + ':' + (s<10?'0':'') + s;
+      el('recBarFill').style.width = Math.min((recSecs/MAX_REC_SECS)*100, 100) + '%';
+      if(recSecs >= MAX_REC_SECS) stopRecording(true);
+    }, 1000);
+  }).catch(function(err){
+    alert('Microphone access denied. Please allow microphone access and try again.\n\n'+err.message);
+  });
+}
+
+function stopRecording(auto){
+  clearInterval(recTimerInt);
+  if(mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+}
+
+function discardRecording(){
+  recBlob = null;
+  el('recStatePreview').style.display = 'none';
+  el('recStateIdle').style.display    = 'block';
+  el('recAudioPreview').src = '';
+}
+
+function sendRecording(){
+  if(!recBlob) return;
+  var url  = URL.createObjectURL(recBlob);
+  var m = Math.floor(recSecs/60), s = recSecs%60;
+  var durStr = m + ':' + (s<10?'0':'') + s;
+  pendingMedia.push({type:'audio', url:url, name:'Voice message ('+durStr+')'});
+  updatePreviewStrip();
+  updateAttachBtnState();
+  closeRecordModal();
+}
+
+el('audioRecordBtn').onclick = openRecordModal;
+el('recStartBtn').onclick    = startRecording;
+el('recStopBtn').onclick     = function(){ stopRecording(false); };
+el('recDiscardBtn').onclick  = discardRecording;
+el('recSendBtn').onclick     = sendRecording;
+el('recCancelBtn').onclick   = closeRecordModal;
+
+function sendMessage(){
+  var input = el('discInput');
+  var text = input.value.trim();
+  if(!text && !pendingMedia.length) return;
+  var key = getDiscKey();
+  if(!DISC_STORE[key]) DISC_STORE[key]=[];
+
+  var mediaSnapshot = pendingMedia.slice();
+  pendingMedia = [];
+  updatePreviewStrip();
+  updateAttachBtnState();
+
+  var initials = S.user ? S.user.name.split(' ').map(function(n){return n[0];}).join('').toUpperCase().slice(0,2) : 'ME';
+
+  DISC_STORE[key].push({
+    isMe: true, sid:'me',
+    name: S.user ? S.user.name : 'You',
+    initials: initials,
+    color:'linear-gradient(135deg,var(--accent),#9b59b6)',
+    text: text, time:'Just now',
+    media: mediaSnapshot
+  });
+  input.value='';
+  input.style.height='auto';
+  renderDisc();
+
+  /* save to Supabase */
+  var mediaUrl = mediaSnapshot.length && mediaSnapshot[0].url ? mediaSnapshot[0].url : null;
+  saveMessageToDB(text, mediaUrl);
+
+  /* simulate reply only if text was sent */
+  if(text){
+    var replies=['Great point! That\'s exactly what I was thinking too 👍','Thanks for sharing that — really helpful!','I had the same question. Let\'s ask the tutor in the next session.','Totally agree. The key idea from video 3 really connects here.','Good question! I think the answer is in the applied examples section 🎯'];
+    var responder=CLASSMATES[Math.floor(Math.random()*3)];
+    setTimeout(function(){
+      DISC_STORE[key].push({isMe:false,sid:responder.id,name:responder.name,initials:responder.initials,color:responder.color,text:replies[Math.floor(Math.random()*replies.length)],time:'Just now'});
+      renderDisc();
+    },1800+Math.random()*1500);
+  }
+}
+
+el('discSendBtn').onclick = sendMessage;
+el('discInput').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}});
+el('discInput').addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px';});
+
+/* ── PRICING ── */
+function openPricing(){
+  setTopbar([],'Plans & Pricing',false);
+  showView('pricing');
+}
+var currentPlan = null;
+window.selectPlan = function(name, price, modules){
+  currentPlan = {name:name, price:price, modules:modules};
+  var emojis = {Starter:'🚀', Essential:'📚', Pro:'⭐', Premium:'👑'};
+  var subs = {
+    Starter:  '2 modules of your choice + full resource access',
+    Essential:'4 modules of your choice + full resource access',
+    Pro:      '6 modules of your choice + full resource access',
+    Premium:  'All modules + personal tutoring session included'
+  };
+  el('purEmoji').textContent = emojis[name]||'🎉';
+  el('purTitle').textContent = 'Get '+name+' Plan';
+  el('purSub').textContent   = subs[name]||'';
+  el('purPrice').textContent = price;
+  el('purchaseModal').classList.add('open');
+};
+window.completePurchase = function(){
+  el('purchaseModal').classList.remove('open');
+  if(!currentPlan) return;
+  setTimeout(function(){
+    alert('✅ Payment successful!\n\nWelcome to the '+currentPlan.name+' plan ('+currentPlan.price+').\n\nIn the live version your modules are now unlocked. Connect Stripe or any payment provider to go live.');
+  },200);
+};
+
+})();
+</script>
+</body>
+</html>
