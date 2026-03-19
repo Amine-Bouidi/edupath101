@@ -482,15 +482,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 /* PROFILE POPUP & PAGE */
 .profile-popup-ov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,10,30,.92);z-index:9998;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
 .profile-popup-ov.open{display:flex;}
-/* Consent popup */
-.consent-popup-ov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,10,30,.95);z-index:9999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(10px);}
-.consent-popup-ov.open{display:flex;}
-.consent-box{background:var(--card);border:1px solid var(--border);border-radius:20px;max-width:520px;width:92%;padding:32px 28px;max-height:85vh;overflow-y:auto;}
-.consent-box h2{font-family:'Sora',sans-serif;font-size:20px;margin-bottom:12px;}
-.consent-check{display:flex;align-items:flex-start;gap:10px;margin:16px 0;padding:12px;background:var(--bg);border-radius:10px;cursor:pointer;}
-.consent-check input{width:20px;height:20px;accent-color:var(--accent2);flex-shrink:0;margin-top:2px;cursor:pointer;}
-.consent-check label{font-size:13px;color:var(--text2);line-height:1.5;cursor:pointer;}
-.consent-check label a{color:var(--accent2);text-decoration:underline;}
+
 /* Privacy page */
 .privacy-page{max-width:700px;margin:0 auto;padding:24px;line-height:1.8;color:var(--text2);font-size:14px;}
 .privacy-page h2{font-family:'Sora',sans-serif;font-size:22px;color:var(--text1);margin:24px 0 12px;}
@@ -907,31 +899,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 </div>
 
 <!-- APP -->
-<!-- CONSENT POPUP -->
-<div class="consent-popup-ov" id="consentPopup">
-  <div class="consent-box">
-    <div style="text-align:center;font-size:40px;margin-bottom:8px;">🔒</div>
-    <h2 style="text-align:center;">Before we start</h2>
-    <p style="text-align:center;color:var(--text3);font-size:13px;margin-bottom:16px;">To use EduPath, please review and accept our policies.</p>
-
-    <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;max-height:200px;overflow-y:auto;font-size:12px;color:var(--text3);line-height:1.7;">
-      <strong style="color:var(--text1);">Privacy Policy Summary</strong><br><br>
-      We collect your name, email, and university info through Google Sign-in to provide our educational services. Your WhatsApp number is collected for payment verification. We store your learning progress and quiz scores to track your advancement.<br><br>
-      <strong style="color:var(--text1);">We will never:</strong> sell your personal data to third parties, share your information with other students, or use your data for advertising.<br><br>
-      <strong style="color:var(--text1);">Refund Policy:</strong> All purchases are final once module access has been activated. If you experience technical issues preventing access to paid content, contact us via WhatsApp for assistance.<br><br>
-      <strong style="color:var(--text1);">Data Storage:</strong> Your data is stored securely on Google Firebase servers (EU region). You may request deletion of your account and data at any time by contacting us via WhatsApp.<br><br>
-      Read the full <a href="#" onclick="event.preventDefault();el('consentPopup').classList.remove('open');openPrivacyPage();" style="color:var(--accent2);">Privacy Policy</a>.
-    </div>
-
-    <div class="consent-check" onclick="el('consentCb').click();">
-      <input type="checkbox" id="consentCb" onchange="updateConsentBtn()">
-      <label for="consentCb">I have read and agree to the <a href="#" onclick="event.preventDefault();event.stopPropagation();el('consentPopup').classList.remove('open');openPrivacyPage();">Privacy Policy</a>, <a href="#" onclick="event.preventDefault();event.stopPropagation();el('consentPopup').classList.remove('open');openPrivacyPage();">Terms of Service</a>, and <a href="#" onclick="event.preventDefault();event.stopPropagation();el('consentPopup').classList.remove('open');openPrivacyPage();">Refund Policy</a>.</label>
-    </div>
-
-    <button id="consentAcceptBtn" class="pp-save-btn" style="opacity:.5;" disabled onclick="acceptConsent()">Accept & Continue</button>
-  </div>
-</div>
-
 <!-- PROFILE SETUP POPUP (first login) -->
 <div class="profile-popup-ov" id="profilePopup">
   <div class="profile-popup">
@@ -1084,7 +1051,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
       <!-- PRIVACY POLICY VIEW -->
       <div class="view" id="view-privacy" style="display:none;">
         <div class="privacy-page">
-          <h2>🔒 Privacy Policy</h2>
+
+          <!-- Language toggle -->
+          <div style="display:flex;gap:8px;margin-bottom:20px;">
+            <button id="privLangEn" style="padding:8px 20px;border-radius:8px;border:1px solid var(--accent2);background:var(--accent2);color:#fff;font-size:13px;font-weight:600;cursor:pointer;" onclick="el('privEn').style.display='block';el('privAr').style.display='none';el('privLangEn').style.background='var(--accent2)';el('privLangEn').style.color='#fff';el('privLangAr').style.background='transparent';el('privLangAr').style.color='var(--text2)';">English</button>
+            <button id="privLangAr" style="padding:8px 20px;border-radius:8px;border:1px solid var(--accent2);background:transparent;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;" onclick="el('privAr').style.display='block';el('privEn').style.display='none';el('privLangAr').style.background='var(--accent2)';el('privLangAr').style.color='#fff';el('privLangEn').style.background='transparent';el('privLangEn').style.color='var(--text2)';">العربية</button>
+          </div>
+
+          <!-- ENGLISH VERSION -->
+          <div id="privEn">
+          <h2>🔒 Privacy Policy & Refund Policy</h2>
           <p style="color:var(--text3);font-size:12px;">Last updated: March 19, 2026</p>
 
           <h3>1. Who we are</h3>
@@ -1110,9 +1086,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
           <p>To exercise any of these rights, contact us via WhatsApp at <strong>+212 606-248409</strong>.</p>
 
           <h3>7. Refund Policy</h3>
-          <p>All purchases are <strong>final</strong> once module access has been activated by the administrator. This is because our digital content is immediately accessible upon activation.</p>
-          <p>However, if you experience technical issues that prevent you from accessing your paid content, contact us via WhatsApp and we will resolve the issue or provide a refund at our discretion.</p>
-          <p>If you purchase a plan by mistake and contact us <strong>before activation</strong>, we will issue a full refund.</p>
+          <p>You may request a <strong>full refund within 24 hours</strong> of your purchase, regardless of the reason. To request a refund, contact us via WhatsApp at +212 606-248409 with your order details.</p>
+          <p>After the 24-hour window, <strong>all purchases are final</strong> and non-refundable. This is because our digital content is immediately accessible upon activation.</p>
+          <p>If you experience technical issues that prevent you from accessing paid content at any time, contact us via WhatsApp and we will resolve the issue promptly.</p>
 
           <h3>8. Cookies and local storage</h3>
           <p>We use browser local storage to remember your login state and interface preferences. We do not use third-party tracking cookies. Your trial period is tracked via our secure database, not browser cookies.</p>
@@ -1124,7 +1100,54 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
           <p>For any questions about this privacy policy or your personal data:<br>
           <strong>Name:</strong> Amine Bouidi<br>
           <strong>WhatsApp:</strong> +212 606-248409<br>
-          <strong>Email:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="42202d372b262b32302d77777702252f232b2e6c212d2f">[email&#160;protected]</a></p>
+          <strong>Email:</strong> bouidipro555@gmail.com</p>
+          </div>
+
+          <!-- ARABIC VERSION -->
+          <div id="privAr" style="display:none;direction:rtl;text-align:right;font-family:'Segoe UI',Tahoma,Arial,sans-serif;">
+          <h2>🔒 سياسة الخصوصية وسياسة الاسترجاع</h2>
+          <p style="color:var(--text3);font-size:12px;">آخر تحديث: 19 مارس 2026</p>
+
+          <h3>1. من نحن</h3>
+          <p>EduPath ("نحن") هي منصة تعليمية يديرها أمين بويدي، مقرها المغرب. نقدم دروس فيديو عبر الإنترنت، اختبارات، وموارد دراسية لطلاب الدراسات الإنجليزية في الجامعات المغربية.</p>
+
+          <h3>2. المعلومات التي نجمعها</h3>
+          <p><strong>معلومات الحساب:</strong> عند تسجيل الدخول عبر Google، نتلقى اسمك وعنوان بريدك الإلكتروني وصورة ملفك الشخصي. يتم ذلك بشكل آمن عبر نظام OAuth من Google — لا نرى أو نخزن كلمة مرور Google الخاصة بك أبداً.</p>
+          <p><strong>معلومات الملف الشخصي:</strong> يمكنك تقديم رقم WhatsApp الخاص بك، الفئة العمرية، الجنس، الجامعة، والفصل الدراسي الحالي بشكل اختياري لتخصيص تجربتك.</p>
+          <p><strong>بيانات التعلم:</strong> نتتبع تقدمك في الفيديوهات، نتائج الاختبارات، وإتمام الوحدات لإظهار تقدمك.</p>
+          <p><strong>معلومات الدفع:</strong> عند شراء خطة، نسجل الخطة المختارة، الوحدات المحددة، وطريقة الدفع. لا نعالج أو نخزن أرقام بطاقات الائتمان — جميع المدفوعات تتم عبر خدمات خارجية (Cash Plus، Wafa Cash، تحويل بنكي، أو CMI).</p>
+
+          <h3>3. كيف نستخدم معلوماتك</h3>
+          <p>نستخدم بياناتك لتقديم وتحسين خدماتنا التعليمية، تتبع تقدمك في التعلم، معالجة طلباتك وتفعيل الوصول للوحدات، التواصل معك عبر WhatsApp بشأن حسابك، وضمان أمان منصتنا.</p>
+
+          <h3>4. ما لا نفعله أبداً</h3>
+          <p><strong>لن نقوم أبداً</strong> ببيع أو تأجير أو مشاركة معلوماتك الشخصية مع أطراف ثالثة لأغراض تسويقية. لن نشارك درجاتك أو تقدمك أو بياناتك الشخصية مع طلاب آخرين أو جامعتك أو أي مؤسسة خارجية. لن نستخدم بياناتك للإعلانات.</p>
+
+          <h3>5. تخزين البيانات والأمان</h3>
+          <p>يتم تخزين بياناتك على خوادم Google Firebase الموجودة في الاتحاد الأوروبي. جميع عمليات نقل البيانات مشفرة عبر HTTPS. الوصول إلى قاعدة البيانات محمي بقواعد أمان Firebase.</p>
+
+          <h3>6. حقوقك</h3>
+          <p>وفقاً للقانون المغربي 09-08 المتعلق بحماية البيانات الشخصية، لديك الحق في: الوصول إلى بياناتك الشخصية في أي وقت عبر صفحة ملفك الشخصي، تصحيح أو تحديث معلوماتك، طلب حذف حسابك وجميع البيانات المرتبطة به، وسحب موافقتك في أي وقت.</p>
+          <p>لممارسة أي من هذه الحقوق، اتصل بنا عبر WhatsApp على <strong dir="ltr">+212 606-248409</strong>.</p>
+
+          <h3>7. سياسة الاسترجاع</h3>
+          <p>يمكنك طلب <strong>استرجاع كامل خلال 24 ساعة</strong> من عملية الشراء، بغض النظر عن السبب. لطلب الاسترجاع، اتصل بنا عبر WhatsApp على +212 606-248409 مع تفاصيل طلبك.</p>
+          <p>بعد فترة الـ 24 ساعة، <strong>جميع المشتريات نهائية</strong> وغير قابلة للاسترجاع. وذلك لأن المحتوى الرقمي يصبح متاحاً فور التفعيل.</p>
+          <p>إذا واجهت مشاكل تقنية تمنعك من الوصول إلى المحتوى المدفوع في أي وقت، اتصل بنا عبر WhatsApp وسنحل المشكلة فوراً.</p>
+
+          <h3>8. ملفات تعريف الارتباط</h3>
+          <p>نستخدم التخزين المحلي للمتصفح لتذكر حالة تسجيل الدخول وتفضيلات الواجهة. لا نستخدم ملفات تعريف الارتباط من أطراف ثالثة. يتم تتبع فترتك التجريبية عبر قاعدة بياناتنا الآمنة.</p>
+
+          <h3>9. تغييرات على هذه السياسة</h3>
+          <p>قد نقوم بتحديث سياسة الخصوصية هذه من وقت لآخر. سنقوم بإعلام المستخدمين بالتغييرات المهمة عبر المنصة.</p>
+
+          <h3>10. اتصل بنا</h3>
+          <p>لأي أسئلة حول سياسة الخصوصية هذه أو بياناتك الشخصية:<br>
+          <strong>الاسم:</strong> أمين بويدي<br>
+          <strong>WhatsApp:</strong> <span dir="ltr">+212 606-248409</span><br>
+          <strong>البريد الإلكتروني:</strong> bouidipro555@gmail.com</p>
+          </div>
+
         </div>
       </div>
         <div style="max-width:500px;margin:0 auto;padding:24px;">
@@ -1705,7 +1728,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 (function(){
 
 /* ── SIDEBAR TOGGLE ── */
@@ -2364,7 +2387,7 @@ function enterApp(name, email){
   showAdminIfNeeded();
   // Check if profile setup needed (first login)
   if(email && email !== ''){
-    setTimeout(function(){ checkConsent(email, name); }, 500);
+    setTimeout(function(){ checkProfileSetup(email, name); }, 500);
   }
   renderDashboard();
 }
@@ -3440,38 +3463,7 @@ function updateConsentBtn(){
   btn.style.opacity = cb.checked ? '1' : '.5';
 }
 
-window.acceptConsent = function(){
-  if(!el('consentCb').checked) return;
-  var email = S.user ? S.user.email : '';
-  if(email){
-    var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
-    db.collection('users').doc(docId).set({
-      consentAccepted: true,
-      consentDate: new Date().toISOString()
-    }, {merge: true}).catch(function(){});
-  }
-  el('consentPopup').classList.remove('open');
-  // Now check if profile setup is needed
-  if(email) checkProfileSetup(email, S.user.name);
-};
-
-function checkConsent(email, name){
-  if(!email || email === '') return;
-  if(isAdmin()) return;
-  var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
-  db.collection('users').doc(docId).get().then(function(doc){
-    if(doc.exists && doc.data().consentAccepted){
-      // Consent already given, check profile
-      checkProfileSetup(email, name);
-    } else {
-      // Show consent popup
-      el('consentPopup').classList.add('open');
-    }
-  }).catch(function(){
-    el('consentPopup').classList.add('open');
-  });
-}
-
+/* ── CONSENT & PRIVACY ── */
 function openPrivacyPage(){
   setTopbar([],'Privacy Policy',false);
   showView('privacy');
@@ -4052,4 +4044,19 @@ checkTrialStatus = function(){
       el('paywallOverlay').style.display='none';
       if(trialInterval){ clearInterval(trialInterval); trialInterval=null; }
     } else {
-      origCheckTrialStatu
+      origCheckTrialStatus();
+    }
+  });
+};
+
+/* ── AUTO LOGIN CHECK ── */
+firebase.auth().onAuthStateChanged(function(user){
+  if(user && !S.user){
+    enterApp(user.displayName || 'User', user.email || '');
+  }
+});
+
+})();
+</script>
+</body>
+</html>
