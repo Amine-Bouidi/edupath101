@@ -821,7 +821,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
         <input type="password" id="loginPass" placeholder="Enter password">
       </div>
       <button class="btn-login" id="btnSignIn" style="background:var(--bg3);color:var(--text);">Sign in with demo →</button>
-      <button class="btn-demo" id="btnFillDemo">👆 Fill demo credentials (demo / demo123)</button>
+      
     </div>
 
     <!-- TESTIMONIALS -->
@@ -955,7 +955,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
     <h2>Your free trial has ended</h2>
     <p>You've explored EduPath for 48 hours! To keep accessing all videos, quizzes, resources, and community features — choose a plan that fits you.</p>
     <button class="pw-btn" onclick="el('paywallOverlay').style.display='none';showView('pricing');">🔓 View Plans & Pricing</button>
-    <div class="pw-sub">Starting from just $10/month · Cancel anytime</div>
+    <div class="pw-sub">Starting from just 100 DH/month · Cancel anytime</div>
   </div>
 </div>
 <div id="app" class="screen" style="flex-direction:row;">
@@ -1137,11 +1137,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 
           <div class="plans-grid">
 
-            <!-- $10 -->
+            <!-- 100 DH -->
             <div class="plan-card">
               <div class="plan-top">
                 <div class="plan-name">Starter</div>
-                <div class="plan-price"><span class="plan-currency">$</span>10</div>
+                <div class="plan-price"><span class="plan-currency"></span>100<span style="font-size:16px;font-weight:400;color:var(--text2);"> DH</span></div>
                 <div class="plan-billing">one-time payment</div>
               </div>
               <div class="plan-modules-badge">
@@ -1157,14 +1157,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
                 <li><span class="pf-check">✓</span> Community discussion access</li>
                 <li class="pf-dim"><span class="pf-cross">✗</span> Personal tutoring session</li>
               </ul>
-              <button class="plan-btn plan-btn-outline" onclick="selectPlan('Starter','$10',2)">Get Starter</button>
+              <button class="plan-btn plan-btn-outline" onclick="selectPlan('Starter','100 DH',2)">Get Starter</button>
             </div>
 
-            <!-- $20 -->
+            <!-- 200 DH -->
             <div class="plan-card">
               <div class="plan-top">
                 <div class="plan-name">Essential</div>
-                <div class="plan-price"><span class="plan-currency">$</span>20</div>
+                <div class="plan-price"><span class="plan-currency"></span>200<span style="font-size:16px;font-weight:400;color:var(--text2);"> DH</span></div>
                 <div class="plan-billing">one-time payment</div>
               </div>
               <div class="plan-modules-badge">
@@ -1180,15 +1180,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
                 <li><span class="pf-check">✓</span> Community discussion access</li>
                 <li class="pf-dim"><span class="pf-cross">✗</span> Personal tutoring session</li>
               </ul>
-              <button class="plan-btn plan-btn-outline" onclick="selectPlan('Essential','$20',4)">Get Essential</button>
+              <button class="plan-btn plan-btn-outline" onclick="selectPlan('Essential','200 DH',4)">Get Essential</button>
             </div>
 
-            <!-- $30 — popular -->
+            <!-- 1100 DH — popular -->
             <div class="plan-card plan-card-popular">
               <div class="plan-popular-badge">⭐ Most popular</div>
               <div class="plan-top">
                 <div class="plan-name">Pro</div>
-                <div class="plan-price"><span class="plan-currency">$</span>30</div>
+                <div class="plan-price"><span class="plan-currency"></span>300<span style="font-size:16px;font-weight:400;color:var(--text2);"> DH</span></div>
                 <div class="plan-billing">one-time payment</div>
               </div>
               <div class="plan-modules-badge plan-modules-badge-accent">
@@ -1204,14 +1204,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
                 <li><span class="pf-check">✓</span> Community discussion access</li>
                 <li class="pf-dim"><span class="pf-cross">✗</span> Personal tutoring session</li>
               </ul>
-              <button class="plan-btn plan-btn-accent" onclick="selectPlan('Pro','$30',6)">Get Pro</button>
+              <button class="plan-btn plan-btn-accent" onclick="selectPlan('Pro','300 DH',6)">Get Pro</button>
             </div>
 
-            <!-- $100 — premium -->
+            <!-- 100 DH0 — premium -->
             <div class="plan-card plan-card-premium">
               <div class="plan-top">
                 <div class="plan-name">Premium</div>
-                <div class="plan-price"><span class="plan-currency">$</span>100</div>
+                <div class="plan-price"><span class="plan-currency"></span>1000<span style="font-size:16px;font-weight:400;color:var(--text2);"> DH</span></div>
                 <div class="plan-billing">one-time payment</div>
               </div>
               <div class="plan-modules-badge plan-modules-badge-gold">
@@ -1229,7 +1229,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
                 <li><span class="pf-check pf-gold">✓</span> Personalised study plan</li>
                 <li><span class="pf-check pf-gold">✓</span> Priority tutor support</li>
               </ul>
-              <button class="plan-btn plan-btn-gold" onclick="selectPlan('Premium','$100','all')">Get Premium</button>
+              <button class="plan-btn plan-btn-gold" onclick="selectPlan('Premium','1000 DH','all')">Get Premium</button>
             </div>
 
           </div>
@@ -1474,7 +1474,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
       <div style="font-size:40px;margin-bottom:8px;" id="purEmoji">🚀</div>
       <h2 style="font-family:'Sora',sans-serif;font-size:22px;margin-bottom:4px;" id="purTitle">Get Starter Plan</h2>
       <p style="color:var(--text3);font-size:13px;margin-bottom:4px;" id="purSub">2 modules of your choice</p>
-      <div style="font-family:'Sora',sans-serif;font-size:36px;font-weight:800;color:var(--accent2);margin:8px 0;" id="purPrice">$10</div>
+      <div style="font-family:'Sora',sans-serif;font-size:36px;font-weight:800;color:var(--accent2);margin:8px 0;" id="purPrice">100 DH</div>
       <div style="font-size:11px;color:var(--text3);margin-bottom:16px;">One-time payment · Instant access</div>
     </div>
 
@@ -1641,7 +1641,7 @@ function closeMobileMenu(){
   el('mobileOverlay').classList.remove('open');
 }
 
-var CREDS = { username: 'demo', password: 'demo123', name: 'Amine B.' };
+var CREDS = { username: 'admin', password: 'ea101admin!', name: 'Demo Student' };
 
 /* ── YOUTUBE VIDEO MAPPING ──
    Default video for all modules. To add specific videos per module, use:
@@ -2286,7 +2286,7 @@ function doLogin(){
   if(u===CREDS.username && p===CREDS.password){
     enterApp(CREDS.name, '');
   } else {
-    el('loginErr').textContent='Incorrect username or password. Try: demo / demo123';
+    el('loginErr').textContent='Incorrect username or password.';
     el('loginErr').style.display='block';
   }
 }
@@ -2301,14 +2301,8 @@ function googleSignIn(){
     el('loginErr').style.display='block';
   });
 }
-function fillDemo(){
-  el('loginUser').value='demo';
-  el('loginPass').value='demo123';
-  el('loginErr').style.display='none';
-}
 el('btnGoogleSignIn').onclick=googleSignIn;
 el('btnSignIn').onclick=doLogin;
-el('btnFillDemo').onclick=fillDemo;
 el('loginUser').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
 el('loginPass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
 el('btnSignOut').onclick=function(){
@@ -3294,9 +3288,9 @@ window.selectPayMethod = function(labelEl, method){
   var info = el('checkoutPayInfo');
   var instructions = {
     cmi: '<div style="font-size:13px;font-weight:600;margin-bottom:6px;">🏦 CMI Bank Card Payment</div><div style="font-size:12px;color:var(--text2);line-height:1.6;">Pay securely via CMI card. After confirming, send your payment screenshot via WhatsApp.</div>',
-    cashplus: '<div style="font-size:13px;font-weight:600;margin-bottom:6px;">💵 Cash Plus Transfer</div><div style="font-size:12px;color:var(--text2);line-height:1.6;">Send <strong style="color:var(--accent2);">'+currentPlan.price+'</strong> (MAD equivalent) to any Cash Plus agent.<br>Agent Number: <strong style="color:var(--text1);">0606248409</strong><br>Send receipt via WhatsApp.</div>',
-    wafacash: '<div style="font-size:13px;font-weight:600;margin-bottom:6px;">💰 Wafa Cash Transfer</div><div style="font-size:12px;color:var(--text2);line-height:1.6;">Send <strong style="color:var(--accent2);">'+currentPlan.price+'</strong> (MAD equivalent) via Wafa Cash.<br>Number: <strong style="color:var(--text1);">0606248409</strong><br>Send receipt via WhatsApp.</div>',
-    bank: '<div style="font-size:13px;font-weight:600;margin-bottom:6px;">🏧 Bank Transfer</div><div style="font-size:12px;color:var(--text2);line-height:1.6;">Transfer <strong style="color:var(--accent2);">'+currentPlan.price+'</strong> (MAD equivalent).<br>RIB: <strong style="color:var(--text1);">007 585 00 14422000300824 32</strong><br>Bank: <strong>Attijariwafa Bank</strong><br>Send proof via WhatsApp.</div>'
+    cashplus: '<div style="font-size:13px;font-weight:600;margin-bottom:6px;">💵 Cash Plus Transfer</div><div style="font-size:12px;color:var(--text2);line-height:1.6;">Send <strong style="color:var(--accent2);">'+currentPlan.price+'</strong> (DH equivalent) to any Cash Plus agent.<br>Agent Number: <strong style="color:var(--text1);">0606248409</strong><br>Send receipt via WhatsApp.</div>',
+    wafacash: '<div style="font-size:13px;font-weight:600;margin-bottom:6px;">💰 Wafa Cash Transfer</div><div style="font-size:12px;color:var(--text2);line-height:1.6;">Send <strong style="color:var(--accent2);">'+currentPlan.price+'</strong> (DH equivalent) via Wafa Cash.<br>Number: <strong style="color:var(--text1);">0606248409</strong><br>Send receipt via WhatsApp.</div>',
+    bank: '<div style="font-size:13px;font-weight:600;margin-bottom:6px;">🏧 Bank Transfer</div><div style="font-size:12px;color:var(--text2);line-height:1.6;">Transfer <strong style="color:var(--accent2);">'+currentPlan.price+'</strong> (DH equivalent).<br>RIB: <strong style="color:var(--text1);">007 585 00 14422000300824 32</strong><br>Bank: <strong>Attijariwafa Bank</strong><br>Send proof via WhatsApp.</div>'
   };
   info.innerHTML = instructions[method] || '';
   info.style.display = 'block';
