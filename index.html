@@ -254,6 +254,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .mod-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
 .mod-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:22px;cursor:pointer;transition:all .2s;}
 .mod-card:hover{border-color:var(--border2);transform:translateY(-2px);}
+.mod-card.locked{opacity:.6;cursor:not-allowed;position:relative;}
+.mod-card.locked:hover{transform:none;border-color:var(--border);}
+.mod-lock-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(10,10,30,.5);border-radius:var(--r);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px);}
+.mod-lock-badge{background:rgba(0,0,0,.7);color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;}
 .mc-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;}
 .mc-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#9b59b6);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
 .mc-title{font-family:'Sora',sans-serif;font-size:14px;font-weight:600;margin-bottom:3px;}
@@ -2367,19 +2371,81 @@ el('nav-semesters').onclick=function(){closeMobileMenu();if(S.uni)openSemesters(
 function openModules(sem,idx){
   S.sem=sem; S.semIdx=idx; S.mod=null; updateCtx();
   var mods=getMods(idx,S.uni.id);
-  var grid=el('modGrid'); grid.innerHTML='';
-  mods.forEach(function(mod){
-    var p=getP(S.uni.id,sem.id,mod.id),dv=p.videos.length,pct=Math.round((dv/VIDEOS.length)*100);
-    var isAll=dv===VIDEOS.length,isSome=dv>0&&!isAll;
-    var badge=isSome?'<span class="badge b-prog">'+pct+'%</span>':isAll?'<span class="badge b-done">✓ Done</span>':'<span class="badge b-new">New</span>';
-    var card=document.createElement('div'); card.className='mod-card';
-    card.innerHTML='<div class="mc-head"><div class="mc-icon">'+mod.icon+'</div><div><div class="mc-title">'+mod.title+'</div><div class="mc-desc">'+mod.desc+'</div></div></div><div class="pbar"><div class="pfill" style="width:'+pct+'%"></div></div><div class="mc-footer"><span class="mc-vids">5 videos'+(dv>0?' · '+dv+' done':'')+'</span>'+badge+'</div>';
-    card.onclick=(function(m){return function(){openPlayer(m);};})(mod);
-    grid.appendChild(card);
-  });
+  var grid=el('modGrid'); grid.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);">Loading modules...</div>';
+
+  // Check subscription for enabled modules
+  var email = S.user ? S.user.email : '';
+  var isAdminUser = email && ADMIN_EMAILS.indexOf(email.toLowerCase()) !== -1;
+  var isDemoUser = S.user && S.user.name === 'Demo Student';
+
+  if(isAdminUser || isDemoUser){
+    renderModuleGrid(grid, mods, sem, idx, null);
+  } else if(email){
+    var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
+    db.collection('subscriptions').doc(docId).get().then(function(doc){
+      if(doc.exists && doc.data().active){
+        var subData = doc.data();
+        var isExpired = subData.expiresAt && new Date(subData.expiresAt) < new Date();
+        if(!isExpired){
+          renderModuleGrid(grid, mods, sem, idx, subData);
+        } else {
+          renderModuleGrid(grid, mods, sem, idx, null);
+        }
+      } else {
+        renderModuleGrid(grid, mods, sem, idx, null);
+      }
+    }).catch(function(){
+      renderModuleGrid(grid, mods, sem, idx, null);
+    });
+  } else {
+    renderModuleGrid(grid, mods, sem, idx, null);
+  }
+
   setTopbar([S.uni.emoji+' '+S.uni.name, sem.title], sem.title+' — '+sem.sub, false);
   el('nav-modules').style.display='flex';
   showView('modules');
+}
+
+function renderModuleGrid(grid, mods, sem, idx, subData){
+  grid.innerHTML='';
+  // Determine which modules are unlocked
+  var enabledIndices = [];
+  if(subData && subData.modules){
+    enabledIndices = subData.modules.filter(function(m){return m.enabled;}).map(function(m){return m.index;});
+  }
+  // Check if user is on active trial
+  var onTrial = false;
+  if(S.user && S.user.email && S.user.email !== ''){
+    var remaining = getTrialRemaining(S.user.email);
+    if(remaining > 0 || remaining === -1) onTrial = true;
+  }
+  // Admin and demo always unlocked
+  var isAdminUser = S.user && S.user.email && ADMIN_EMAILS.indexOf(S.user.email.toLowerCase()) !== -1;
+  var isDemoUser = S.user && S.user.name === 'Demo Student';
+  var allUnlocked = isAdminUser || isDemoUser || onTrial;
+
+  mods.forEach(function(mod, modIdx){
+    var p=getP(S.uni.id,sem.id,mod.id),dv=p.videos.length,pct=Math.round((dv/VIDEOS.length)*100);
+    var isAll=dv===VIDEOS.length,isSome=dv>0&&!isAll;
+    var badge=isSome?'<span class="badge b-prog">'+pct+'%</span>':isAll?'<span class="badge b-done">✓ Done</span>':'<span class="badge b-new">New</span>';
+
+    var isUnlocked = allUnlocked || enabledIndices.indexOf(modIdx) !== -1;
+
+    var card=document.createElement('div');
+    card.className = 'mod-card' + (isUnlocked ? '' : ' locked');
+    card.innerHTML='<div class="mc-head"><div class="mc-icon">'+mod.icon+'</div><div><div class="mc-title">'+mod.title+'</div><div class="mc-desc">'+mod.desc+'</div></div></div><div class="pbar"><div class="pfill" style="width:'+pct+'%"></div></div><div class="mc-footer"><span class="mc-vids">5 videos'+(dv>0?' · '+dv+' done':'')+'</span>'+badge+'</div>';
+
+    if(isUnlocked){
+      card.onclick=(function(m){return function(){openPlayer(m);};})(mod);
+    } else {
+      card.innerHTML += '<div class="mod-lock-overlay"><div class="mod-lock-badge">🔒 Upgrade to access</div></div>';
+      card.onclick=function(){
+        showView('pricing');
+        setTopbar([],'Plans & Pricing',false);
+      };
+    }
+    grid.appendChild(card);
+  });
 }
 el('nav-modules').onclick=function(){closeMobileMenu();if(S.sem)openModules(S.sem,S.semIdx);};
 
