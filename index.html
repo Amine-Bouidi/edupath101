@@ -475,6 +475,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .toggle .slider:before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;}
 .toggle input:checked+.slider{background:#43e97b;}
 .toggle input:checked+.slider:before{transform:translateX(18px);}
+/* PROFILE POPUP & PAGE */
+.profile-popup-ov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,10,30,.92);z-index:9998;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
+.profile-popup-ov.open{display:flex;}
+.profile-popup{background:var(--card);border:1px solid var(--border);border-radius:20px;max-width:480px;width:92%;padding:32px 28px;text-align:center;}
+.profile-popup h2{font-family:'Sora',sans-serif;font-size:22px;margin-bottom:6px;}
+.profile-popup .pp-sub{color:var(--text2);font-size:13px;line-height:1.6;margin-bottom:20px;}
+.profile-popup .pp-change{color:var(--text3);font-size:11px;margin-bottom:18px;font-style:italic;}
+.pp-field{text-align:left;margin-bottom:14px;}
+.pp-field label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;}
+.pp-field input,.pp-field select{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text1);font-size:14px;box-sizing:border-box;}
+.pp-field input:read-only{opacity:.6;cursor:not-allowed;}
+.pp-field select{-webkit-appearance:auto;}
+.pp-save-btn{background:linear-gradient(135deg,var(--accent2),#9b59b6);color:#fff;border:none;padding:13px 32px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;width:100%;margin-top:6px;}
+.pp-save-btn:hover{opacity:.9;}
+.pp-save-btn:disabled{opacity:.5;cursor:not-allowed;}
+/* Sidebar profile link */
+.sb-profile-link{cursor:pointer;transition:opacity .2s;}
+.sb-profile-link:hover{opacity:.8;}
 .pricing-wrap{max-width:1060px;margin:0 auto;padding:0 4px;}
 .pricing-hero{text-align:center;margin-bottom:36px;}
 .pricing-hero-tag{display:inline-block;background:rgba(108,99,255,.15);color:var(--accent2);font-size:12px;font-weight:700;padding:6px 16px;border-radius:20px;margin-bottom:14px;letter-spacing:.5px;}
@@ -870,6 +888,37 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 </div>
 
 <!-- APP -->
+<!-- PROFILE SETUP POPUP (first login) -->
+<div class="profile-popup-ov" id="profilePopup">
+  <div class="profile-popup">
+    <div style="font-size:44px;margin-bottom:8px;">👋</div>
+    <h2>Welcome to EduPath!</h2>
+    <p class="pp-sub">Let's set up your profile so we can show you the right content for your university and semester.</p>
+    <p class="pp-change">You can change these anytime from your profile settings.</p>
+    <div class="pp-field">
+      <label>Full name</label>
+      <input type="text" id="ppName" placeholder="Your name">
+    </div>
+    <div class="pp-field">
+      <label>Email (from Google)</label>
+      <input type="email" id="ppEmail" readonly>
+    </div>
+    <div class="pp-field">
+      <label>WhatsApp number</label>
+      <input type="tel" id="ppWhatsapp" placeholder="+212 6XX-XXXXXX">
+    </div>
+    <div class="pp-field">
+      <label>University</label>
+      <select id="ppUni"><option value="">— Select your university —</option></select>
+    </div>
+    <div class="pp-field">
+      <label>Current semester</label>
+      <select id="ppSem"><option value="">— Select your semester —</option></select>
+    </div>
+    <button class="pp-save-btn" id="ppSaveBtn" disabled>Complete Setup</button>
+  </div>
+</div>
+
 <!-- TRIAL BANNER -->
 <div id="trialBanner" class="trial-banner">
   🎓 Free trial — <span class="trial-time" id="trialCountdown">47h 59m</span> remaining
@@ -911,6 +960,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
       <div class="sb-sec" style="margin-top:12px;">Account</div>
       <div class="sb-item" id="nav-pricing"><span class="sb-icon">💎</span><span class="sb-item-label"> Plans & Pricing</span></div>
       <div class="sb-item" id="nav-admin" style="display:none;"><span class="sb-icon">⚙️</span><span class="sb-item-label"> Admin Panel</span></div>
+      <div class="sb-item" id="nav-profile"><span class="sb-icon">👤</span><span class="sb-item-label"> My Profile</span></div>
       <div class="sb-item" id="nav-contact"   style="display:none;"><span class="sb-icon">💬</span><span class="sb-item-label"> Book tutoring</span></div>
     </div>
     <div class="sb-ctx" id="sbCtx" style="display:none;">
@@ -961,6 +1011,37 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
       <div class="view" id="view-modules">
         <div class="sec-hdr" style="margin-bottom:18px;">Choose a module</div>
         <div class="mod-grid" id="modGrid"></div>
+      </div>
+
+      <!-- PROFILE VIEW -->
+      <div class="view" id="view-profile" style="display:none;">
+        <div style="max-width:500px;margin:0 auto;padding:24px;">
+          <h2 style="font-family:'Sora',sans-serif;font-size:22px;margin-bottom:20px;">👤 My Profile</h2>
+          <div class="admin-section">
+            <div class="pp-field">
+              <label>Full name</label>
+              <input type="text" id="profName" class="admin-input" style="margin:0;">
+            </div>
+            <div class="pp-field">
+              <label>Email</label>
+              <input type="email" id="profEmail" class="admin-input" style="margin:0;" readonly>
+            </div>
+            <div class="pp-field">
+              <label>WhatsApp number</label>
+              <input type="tel" id="profWhatsapp" class="admin-input" style="margin:0;" placeholder="+212 6XX-XXXXXX">
+            </div>
+            <div class="pp-field">
+              <label>University</label>
+              <select id="profUni" class="admin-select" style="margin:0;"></select>
+            </div>
+            <div class="pp-field">
+              <label>Current semester</label>
+              <select id="profSem" class="admin-select" style="margin:0;"></select>
+            </div>
+            <button class="pp-save-btn" id="profSaveBtn" style="margin-top:16px;">💾 Save Changes</button>
+            <div id="profMsg" class="admin-msg" style="margin-top:10px;"></div>
+          </div>
+        </div>
       </div>
 
       <!-- CONTACT -->
@@ -2047,7 +2128,7 @@ function getP(u,s,m){var k=u+'_'+s+'_'+m;return S.progress[k]||{videos:[],quizze
 /* ── HELPERS ── */
 function el(id){return document.getElementById(id);}
 function showView(id){
-  ['dashboard','semesters','modules','contact','pricing','admin'].forEach(function(v){
+  ['dashboard','semesters','modules','contact','pricing','admin','profile'].forEach(function(v){
     var e=el('view-'+v); if(e){e.style.display='none';e.classList.remove('active');}
   });
   var pl=el('view-player');
@@ -2058,7 +2139,7 @@ function showView(id){
     var t=el('view-'+id);
     if(t){t.style.display='block';t.classList.add('active');}
   }
-  ['dashboard','semesters','modules','player','contact','pricing','admin'].forEach(function(n){
+  ['dashboard','semesters','modules','player','contact','pricing','admin','profile'].forEach(function(n){
     var e=el('nav-'+n); if(e) e.classList.toggle('active',n===id);
   });
 }
@@ -2169,6 +2250,10 @@ function enterApp(name, email){
   }
   startTrialTimer();
   showAdminIfNeeded();
+  // Check if profile setup needed (first login)
+  if(email && email !== ''){
+    setTimeout(function(){ checkProfileSetup(email, name); }, 500);
+  }
   renderDashboard();
 }
 function doLogin(){
@@ -3124,6 +3209,132 @@ window.completePurchase = function(){
   },300);
 };
 
+/* ── PROFILE SYSTEM ── */
+function populateProfileDropdowns(uniElId, semElId, selUni, selSem){
+  var uniSel = el(uniElId);
+  uniSel.innerHTML = '<option value="">— Select your university —</option>';
+  UNIVERSITIES.forEach(function(u){
+    var opt = document.createElement('option');
+    opt.value = u.id; opt.textContent = u.name;
+    if(selUni === u.id) opt.selected = true;
+    uniSel.appendChild(opt);
+  });
+  var semSel = el(semElId);
+  semSel.innerHTML = '<option value="">— Select your semester —</option>';
+  SEMESTERS.forEach(function(s){
+    var opt = document.createElement('option');
+    opt.value = s.id; opt.textContent = s.title;
+    if(selSem === s.id) opt.selected = true;
+    semSel.appendChild(opt);
+  });
+}
+
+function checkProfileSetup(email, name){
+  if(!email || email === '') return;
+  if(isAdmin()) return;
+  var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
+  db.collection('users').doc(docId).get().then(function(doc){
+    if(doc.exists && doc.data().profileComplete) return;
+    showProfilePopup(name, email);
+  }).catch(function(){ showProfilePopup(name, email); });
+}
+
+function showProfilePopup(name, email){
+  el('ppName').value = name || '';
+  el('ppEmail').value = email || '';
+  el('ppWhatsapp').value = '';
+  populateProfileDropdowns('ppUni','ppSem','','');
+  el('ppSaveBtn').disabled = true;
+  el('profilePopup').classList.add('open');
+  validateProfilePopup();
+}
+
+function validateProfilePopup(){
+  var name = el('ppName').value.trim();
+  var uni = el('ppUni').value;
+  var sem = el('ppSem').value;
+  el('ppSaveBtn').disabled = !(name && uni && sem);
+}
+
+el('ppName').addEventListener('input', validateProfilePopup);
+el('ppUni').addEventListener('change', validateProfilePopup);
+el('ppSem').addEventListener('change', validateProfilePopup);
+
+el('ppSaveBtn').onclick = function(){
+  var email = el('ppEmail').value;
+  var profileData = {
+    name: el('ppName').value.trim(),
+    email: email,
+    whatsapp: el('ppWhatsapp').value.trim(),
+    university: el('ppUni').value,
+    semester: el('ppSem').value,
+    profileComplete: true,
+    lastLogin: new Date().toISOString()
+  };
+  var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
+  db.collection('users').doc(docId).set(profileData, {merge: true}).then(function(){
+    el('profilePopup').classList.remove('open');
+    S.user.name = profileData.name;
+    S.user.university = profileData.university;
+    S.user.semester = profileData.semester;
+    el('sbName').textContent = profileData.name;
+    var initials = profileData.name.split(' ').map(function(w){return w[0];}).join('').substring(0,2).toUpperCase();
+    el('sbAvatar').textContent = initials;
+  }).catch(function(e){
+    alert('Error saving profile: ' + e.message);
+  });
+};
+
+// Profile page
+function openProfile(){
+  if(!S.user || !S.user.email) return;
+  setTopbar([],'My Profile',false);
+  showView('profile');
+  var email = S.user.email;
+  var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
+  el('profEmail').value = email;
+  el('profName').value = S.user.name || '';
+  populateProfileDropdowns('profUni','profSem','','');
+  db.collection('users').doc(docId).get().then(function(doc){
+    if(doc.exists){
+      var d = doc.data();
+      el('profName').value = d.name || S.user.name || '';
+      el('profWhatsapp').value = d.whatsapp || '';
+      populateProfileDropdowns('profUni','profSem', d.university||'', d.semester||'');
+    }
+  }).catch(function(){});
+}
+
+el('profSaveBtn').onclick = function(){
+  var email = S.user.email;
+  if(!email) return;
+  var profileData = {
+    name: el('profName').value.trim(),
+    whatsapp: el('profWhatsapp').value.trim(),
+    university: el('profUni').value,
+    semester: el('profSem').value,
+    profileComplete: true
+  };
+  var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
+  var msgEl = el('profMsg');
+  db.collection('users').doc(docId).set(profileData, {merge: true}).then(function(){
+    msgEl.className = 'admin-msg success';
+    msgEl.textContent = '✅ Profile updated!';
+    S.user.name = profileData.name;
+    S.user.university = profileData.university;
+    S.user.semester = profileData.semester;
+    el('sbName').textContent = profileData.name;
+    var initials = profileData.name.split(' ').map(function(w){return w[0];}).join('').substring(0,2).toUpperCase();
+    el('sbAvatar').textContent = initials;
+    setTimeout(function(){ msgEl.className='admin-msg'; }, 3000);
+  }).catch(function(e){
+    msgEl.className = 'admin-msg error';
+    msgEl.textContent = '❌ Error: ' + e.message;
+  });
+};
+
+el('nav-profile').onclick = function(){ closeMobileMenu(); openProfile(); };
+
 /* ── ADMIN PANEL ── */
 var ADMIN_EMAILS = ['bouidipro555@gmail.com']; // <-- Add your Google email(s) here
 
@@ -3215,8 +3426,14 @@ function loadAdminUsers(){
         total++;
         var sub = subs[u.email];
         var statusClass='trial', statusText='🕐 Trial';
-        var uniText = sub && sub.university && sub.university !== 'all' ? sub.university : '—';
-        var semText = sub && sub.semester ? sub.semester : '—';
+        var uniText = u.university || (sub && sub.university && sub.university !== 'all' ? sub.university : '—');
+        var semText = u.semester || (sub && sub.semester ? sub.semester : '—');
+        // Resolve uni name
+        var uniObj = UNIVERSITIES.find(function(x){return x.id===uniText;});
+        if(uniObj) uniText = uniObj.name.split('—')[0].trim();
+        // Resolve sem name
+        var semObj = SEMESTERS.find(function(x){return x.id===semText;});
+        if(semObj) semText = semObj.title;
 
         if(sub && sub.active){
           var isExpired = sub.expiresAt && new Date(sub.expiresAt) < new Date();
@@ -3235,7 +3452,7 @@ function loadAdminUsers(){
         var lastLogin = u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : '';
 
         html += '<div class="au-row" onclick="toggleAdminExpand(\''+rowId+'\')">' +
-          '<div><div class="au-name">'+(u.name||'Unknown')+'</div><div class="au-email">'+u.email+'</div></div>' +
+          '<div><div class="au-name">'+(u.name||'Unknown')+'</div><div class="au-email">'+u.email+(u.whatsapp?' · 📱'+u.whatsapp:'')+'</div></div>' +
           '<div class="au-uni">'+uniText+'</div>' +
           '<div class="au-sem">'+semText+'</div>' +
           '<div><span class="au-status '+statusClass+'">'+statusText+'</span></div>' +
