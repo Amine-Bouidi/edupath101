@@ -434,8 +434,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .paywall-box .pw-btn:hover{opacity:.9;}
 .paywall-box .pw-sub{color:var(--text3);font-size:12px;}
 /* ADMIN PANEL */
-.admin-panel{padding:12px 24px;max-width:900px;margin:0 auto;}
-.admin-panel h2{font-family:'Sora',sans-serif;font-size:22px;margin-bottom:14px;}
+.admin-panel{padding:0 24px 12px;max-width:900px;margin:0 auto;}
+.admin-panel h2{display:none;}
 .admin-section{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;}
 .admin-section h3{font-size:15px;margin-bottom:14px;color:var(--accent2);}
 .admin-input{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text1);font-size:14px;margin-bottom:10px;box-sizing:border-box;}
@@ -459,6 +459,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .au-status.trial{background:rgba(249,168,37,.15);color:#f9a825;}
 .au-status.expired{background:rgba(224,82,82,.15);color:#e05252;}
 .au-status.none{background:rgba(255,255,255,.05);color:var(--text3);}
+.au-status.pending{background:rgba(108,99,255,.15);color:var(--accent2);}
 .au-actions-btn{background:var(--accent2);color:#fff;border:none;padding:5px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-weight:600;}
 .au-actions-btn:hover{opacity:.85;}
 /* Expandable detail panel */
@@ -3426,45 +3427,62 @@ function loadAdminUsers(){
 
   var planLabels = {starter:'🎯 Starter',semester:'📚 Semester',year:'🎓 Year',vip:'👑 VIP'};
 
-  db.collection('subscriptions').get().then(function(subSnap){
+  // Fetch subscriptions, orders, and users in parallel
+  Promise.all([
+    db.collection('subscriptions').get(),
+    db.collection('orders').get(),
+    db.collection('users').get()
+  ]).then(function(results){
+    var subSnap = results[0];
+    var orderSnap = results[1];
+    var userSnap = results[2];
+
     var subs = {};
     subSnap.forEach(function(doc){ subs[doc.data().email] = doc.data(); });
 
-    return db.collection('users').get().then(function(userSnap){
-      if(userSnap.empty){
-        listEl.innerHTML='<div style="color:var(--text3);font-size:13px;padding:20px 0;text-align:center;">No users yet. Users will appear here after they sign in.</div>';
-        el('statTotal').textContent='0'; el('statActive').textContent='0'; el('statTrial').textContent='0'; el('statExpired').textContent='0';
-        return;
+    var pendingOrders = {};
+    orderSnap.forEach(function(doc){
+      var d = doc.data();
+      if(d.status === 'pending'){
+        pendingOrders[d.email] = d;
       }
-      var html='';
-      var total=0, active=0, trial=0, expired=0;
-      userSnap.forEach(function(doc){
-        var u = doc.data();
-        if(ADMIN_EMAILS.indexOf(u.email.toLowerCase()) !== -1) return;
-        total++;
-        var sub = subs[u.email];
-        var statusClass='trial', statusText='🕐 Trial';
-        var uniText = u.university || (sub && sub.university && sub.university !== 'all' ? sub.university : '—');
-        var semText = u.semester || (sub && sub.semester ? sub.semester : '—');
-        // Resolve uni name
-        var uniObj = UNIVERSITIES.find(function(x){return x.id===uniText;});
-        if(uniObj) uniText = uniObj.name.split('—')[0].trim();
-        // Resolve sem name
-        var semObj = SEMESTERS.find(function(x){return x.id===semText;});
-        if(semObj) semText = semObj.title;
+    });
 
-        if(sub && sub.active){
-          var isExpired = sub.expiresAt && new Date(sub.expiresAt) < new Date();
-          if(isExpired){
-            statusClass='expired'; statusText='⚠️ Expired'; expired++;
-          } else {
-            statusClass='paid'; statusText=planLabels[sub.plan]||'✅ Active'; active++;
-          }
-        } else if(sub && !sub.active){
-          statusClass='expired'; statusText='🚫 Revoked'; expired++;
+    if(userSnap.empty){
+      listEl.innerHTML='<div style="color:var(--text3);font-size:13px;padding:20px 0;text-align:center;">No users yet.</div>';
+      el('statTotal').textContent='0'; el('statActive').textContent='0'; el('statTrial').textContent='0'; el('statExpired').textContent='0';
+      return;
+    }
+    var html='';
+    var total=0, active=0, trial=0, expired=0;
+    userSnap.forEach(function(doc){
+      var u = doc.data();
+      if(ADMIN_EMAILS.indexOf(u.email.toLowerCase()) !== -1) return;
+      total++;
+      var sub = subs[u.email];
+      var pending = pendingOrders[u.email];
+      var statusClass='trial', statusText='🕐 Trial';
+      var uniText = u.university || (sub && sub.university && sub.university !== 'all' ? sub.university : '—');
+      var semText = u.semester || (sub && sub.semester ? sub.semester : '—');
+      var uniObj = UNIVERSITIES.find(function(x){return x.id===uniText;});
+      if(uniObj) uniText = uniObj.name.split('—')[0].trim();
+      var semObj = SEMESTERS.find(function(x){return x.id===semText;});
+      if(semObj) semText = semObj.title;
+
+      if(sub && sub.active){
+        var isExpired = sub.expiresAt && new Date(sub.expiresAt) < new Date();
+        if(isExpired){
+          statusClass='expired'; statusText='⚠️ Expired'; expired++;
         } else {
-          trial++;
+          statusClass='paid'; statusText=planLabels[sub.plan]||'✅ Active'; active++;
         }
+      } else if(sub && !sub.active){
+        statusClass='expired'; statusText='🚫 Revoked'; expired++;
+      } else if(pending){
+        statusClass='pending'; statusText='💳 Pending'; trial++;
+      } else {
+        trial++;
+      }
 
         var rowId = 'auRow_' + doc.id;
         var lastLogin = u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : '';
@@ -3514,7 +3532,6 @@ function loadAdminUsers(){
       el('statActive').textContent = active;
       el('statTrial').textContent = trial;
       el('statExpired').textContent = expired;
-    });
   }).catch(function(err){
     listEl.innerHTML='<div style="color:#e05252;font-size:13px;padding:12px 0;">Error: ' + err.message + '</div>';
   });
@@ -3557,40 +3574,42 @@ function toggleAdminExpand(id){
 
 function autoLoadModules(rowId, uniId, semId, email){
   var modEl = el(rowId+'_mods');
-  var semIdx = SEMESTERS.findIndex(function(s){return s.id===semId;});
-  var mods = getMods(semIdx, uniId);
-  if(!mods || mods.length===0){
-    modEl.innerHTML='<div style="color:var(--text3);font-size:12px;grid-column:1/-1;text-align:center;padding:8px;">No modules found for this combination</div>';
+  var semIdx = -1;
+  for(var i=0; i<SEMESTERS.length; i++){
+    if(SEMESTERS[i].id === semId){ semIdx = i; break; }
+  }
+  if(semIdx === -1){
+    modEl.innerHTML='<div style="color:#e05252;font-size:12px;grid-column:1/-1;text-align:center;padding:8px;">Could not find semester: '+semId+'</div>';
     return;
   }
-  // Check existing subscription for pre-checked modules
+  var mods = getMods(semIdx, uniId);
+  if(!mods || mods.length===0){
+    modEl.innerHTML='<div style="color:var(--text3);font-size:12px;grid-column:1/-1;text-align:center;padding:8px;">No modules found for '+uniId+' / '+semId+'</div>';
+    return;
+  }
   var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
   db.collection('subscriptions').doc(docId).get().then(function(doc){
     var enabledModules = [];
     if(doc.exists && doc.data().modules){
       enabledModules = doc.data().modules.filter(function(m){return m.enabled;}).map(function(m){return m.index;});
     }
-    var h='';
-    mods.forEach(function(m, i){
-      var isOn = enabledModules.indexOf(i) !== -1;
-      var toggleId = rowId+'_mod_'+i;
-      h+='<div class="au-mod-item">' +
-        '<label for="'+toggleId+'">'+m.title+'</label>' +
-        '<div class="toggle"><input type="checkbox" id="'+toggleId+'"'+(isOn?' checked':'')+' ><span class="slider"></span></div>' +
-      '</div>';
-    });
-    modEl.innerHTML = h;
+    renderModToggles(modEl, mods, enabledModules, rowId);
   }).catch(function(){
-    var h='';
-    mods.forEach(function(m, i){
-      var toggleId = rowId+'_mod_'+i;
-      h+='<div class="au-mod-item">' +
-        '<label for="'+toggleId+'">'+m.title+'</label>' +
-        '<div class="toggle"><input type="checkbox" id="'+toggleId+'"><span class="slider"></span></div>' +
-      '</div>';
-    });
-    modEl.innerHTML = h;
+    renderModToggles(modEl, mods, [], rowId);
   });
+}
+
+function renderModToggles(modEl, mods, enabledModules, rowId){
+  var h='';
+  mods.forEach(function(m, i){
+    var isOn = enabledModules.indexOf(i) !== -1;
+    var toggleId = rowId+'_mod_'+i;
+    h+='<div class="au-mod-item">' +
+      '<label for="'+toggleId+'">'+(m.icon||'')+ ' ' +m.title+'</label>' +
+      '<div class="toggle"><input type="checkbox" id="'+toggleId+'"'+(isOn?' checked':'')+' ><span class="slider"></span></div>' +
+    '</div>';
+  });
+  modEl.innerHTML = h;
 }
 
 function adminSaveUser(email, rowId){
