@@ -3494,7 +3494,7 @@ function loadAdminUsers(){
           '<div style="text-align:center;"><button class="au-actions-btn" onclick="event.stopPropagation();toggleAdminExpand(\''+safeRowId+'\')">Manage</button></div>' +
         '</div>' +
         '<div class="au-expand" id="'+safeRowId+'" data-email="'+u.email+'" data-uni="'+userUniId+'" data-sem="'+userSemId+'">' +
-          '<input type="hidden" id="'+safeRowId+'_plan" value="'+(sub?sub.plan:'starter')+'">' +
+          '<input type="hidden" id="'+safeRowId+'_plan" value="'+(sub?sub.plan:(pending?pending.plan:'starter'))+'">' +
           '<input type="hidden" id="'+safeRowId+'_dur" value="180">' +
           (userUniId && userSemId ?
             '<div style="font-size:12px;color:var(--text2);margin-bottom:10px;padding:8px 12px;background:rgba(108,99,255,.06);border-radius:8px;">📚 <strong style="color:var(--text1);">' + uniText + '</strong> · <strong style="color:var(--text1);">' + semText + '</strong> — Toggle modules ON/OFF below</div>' :
@@ -3568,30 +3568,79 @@ function autoLoadModules(rowId, uniId, semId, email){
     modEl.innerHTML='<div style="color:var(--text3);font-size:12px;grid-column:1/-1;text-align:center;padding:8px;">No modules found for '+uniId+' / '+semId+'</div>';
     return;
   }
+  // Get plan limit and existing modules
+  var planVal = el(rowId+'_plan') ? el(rowId+'_plan').value : 'starter';
+  var planLimits = {starter:2, essential:2, semester:4, pro:6, year:999, vip:999};
+  var maxMods = planLimits[planVal] || 2;
+
   var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
   db.collection('subscriptions').doc(docId).get().then(function(doc){
     var enabledModules = [];
     if(doc.exists && doc.data().modules){
       enabledModules = doc.data().modules.filter(function(m){return m.enabled;}).map(function(m){return m.index;});
     }
-    renderModToggles(modEl, mods, enabledModules, rowId);
+    // Also check plan from subscription
+    if(doc.exists && doc.data().plan){
+      maxMods = planLimits[doc.data().plan] || maxMods;
+    }
+    renderModToggles(modEl, mods, enabledModules, rowId, maxMods);
   }).catch(function(){
-    renderModToggles(modEl, mods, [], rowId);
+    renderModToggles(modEl, mods, [], rowId, maxMods);
   });
 }
 
-function renderModToggles(modEl, mods, enabledModules, rowId){
+function renderModToggles(modEl, mods, enabledModules, rowId, maxMods){
   var h='';
+  h += '<div id="'+rowId+'_limit" style="font-size:11px;color:var(--text2);margin-bottom:8px;padding:6px 10px;background:rgba(108,99,255,.08);border-radius:6px;text-align:center;grid-column:1/-1;">';
+  var onCount = enabledModules.length;
+  if(maxMods >= 999){
+    h += '♾️ Unlimited modules — all can be enabled';
+  } else {
+    h += '🎯 <strong>'+onCount+' / '+maxMods+'</strong> modules enabled (based on plan)';
+  }
+  h += '</div>';
   mods.forEach(function(m, i){
     var isOn = enabledModules.indexOf(i) !== -1;
     var toggleId = rowId+'_mod_'+i;
-    h+='<div class="au-mod-item">' +
+    var disabled = (!isOn && onCount >= maxMods && maxMods < 999) ? ' disabled' : '';
+    var dimStyle = disabled ? 'opacity:.5;' : '';
+    h+='<div class="au-mod-item" style="'+dimStyle+'">' +
       '<label for="'+toggleId+'">'+(m.icon||'')+ ' ' +m.title+'</label>' +
-      '<div class="toggle"><input type="checkbox" id="'+toggleId+'"'+(isOn?' checked':'')+' ><span class="slider"></span></div>' +
+      '<div class="toggle"><input type="checkbox" id="'+toggleId+'"'+(isOn?' checked':'')+disabled+' onchange="enforceModLimit(\''+rowId+'\','+maxMods+')"><span class="slider"></span></div>' +
     '</div>';
   });
   modEl.innerHTML = h;
 }
+
+window.enforceModLimit = function(rowId, maxMods){
+  if(maxMods >= 999) return;
+  var modEl = el(rowId+'_mods');
+  var cbs = modEl.querySelectorAll('input[type=checkbox]');
+  var onCount = 0;
+  cbs.forEach(function(cb){ if(cb.checked) onCount++; });
+  // Update counter
+  var limitEl = el(rowId+'_limit');
+  if(limitEl){
+    if(onCount >= maxMods){
+      limitEl.innerHTML = '🎯 <strong>'+onCount+' / '+maxMods+'</strong> modules enabled — <span style="color:#f9a825;">limit reached</span>';
+      limitEl.style.background = 'rgba(249,168,37,.1)';
+    } else {
+      limitEl.innerHTML = '🎯 <strong>'+onCount+' / '+maxMods+'</strong> modules enabled (based on plan)';
+      limitEl.style.background = 'rgba(108,99,255,.08)';
+    }
+  }
+  // Disable/enable unchecked toggles
+  cbs.forEach(function(cb){
+    var item = cb.closest('.au-mod-item');
+    if(!cb.checked){
+      cb.disabled = onCount >= maxMods;
+      if(item) item.style.opacity = onCount >= maxMods ? '.5' : '1';
+    } else {
+      cb.disabled = false;
+      if(item) item.style.opacity = '1';
+    }
+  });
+};
 
 window.adminSaveUser = function(email, rowId){
   var expandEl = el(rowId);
