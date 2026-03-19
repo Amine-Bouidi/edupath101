@@ -2410,18 +2410,22 @@ function renderModuleGrid(grid, mods, sem, idx, subData){
   grid.innerHTML='';
   // Determine which modules are unlocked
   var enabledIndices = [];
+  var hasSubscription = false;
   if(subData && subData.modules){
     enabledIndices = subData.modules.filter(function(m){return m.enabled;}).map(function(m){return m.index;});
-  }
-  // Check if user is on active trial
-  var onTrial = false;
-  if(S.user && S.user.email && S.user.email !== ''){
-    var remaining = getTrialRemaining(S.user.email);
-    if(remaining > 0 || remaining === -1) onTrial = true;
+    hasSubscription = true;
   }
   // Admin and demo always unlocked
   var isAdminUser = S.user && S.user.email && ADMIN_EMAILS.indexOf(S.user.email.toLowerCase()) !== -1;
   var isDemoUser = S.user && S.user.name === 'Demo Student';
+
+  // Trial only applies if NO active subscription
+  var onTrial = false;
+  if(!hasSubscription && S.user && S.user.email && S.user.email !== ''){
+    var remaining = getTrialRemaining(S.user.email);
+    if(remaining > 0 || remaining === -1) onTrial = true;
+  }
+
   var allUnlocked = isAdminUser || isDemoUser || onTrial;
 
   mods.forEach(function(mod, modIdx){
