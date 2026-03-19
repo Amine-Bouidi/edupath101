@@ -2178,32 +2178,39 @@ function updateCtx(){
 /* ── FREE TRIAL SYSTEM (48 hours) ── */
 var TRIAL_HOURS = 48;
 var trialInterval = null;
+var cachedTrialData = null;
 
-function getTrialData(email){
-  if(!email) return null;
-  var key = 'trial_' + email.replace(/[^a-zA-Z0-9]/g,'_');
-  var raw = localStorage.getItem(key);
-  if(!raw){
-    var data = { created: Date.now(), upgraded: false };
-    localStorage.setItem(key, JSON.stringify(data));
-    return data;
+function loadTrialFromFirestore(email, callback){
+  if(!email){ callback(null); return; }
+  if(cachedTrialData && cachedTrialData.email === email){
+    callback(cachedTrialData);
+    return;
   }
-  return JSON.parse(raw);
-}
-
-function setTrialUpgraded(email){
-  if(!email) return;
-  var key = 'trial_' + email.replace(/[^a-zA-Z0-9]/g,'_');
-  var data = getTrialData(email);
-  data.upgraded = true;
-  localStorage.setItem(key, JSON.stringify(data));
+  var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
+  db.collection('users').doc(docId).get().then(function(doc){
+    if(doc.exists){
+      var d = doc.data();
+      var created = d.trialStartedAt || d.lastLogin || new Date().toISOString();
+      cachedTrialData = { email: email, created: new Date(created).getTime(), upgraded: false };
+      // Save trialStartedAt if not set yet
+      if(!d.trialStartedAt){
+        db.collection('users').doc(docId).set({ trialStartedAt: created }, {merge: true}).catch(function(){});
+      }
+      callback(cachedTrialData);
+    } else {
+      cachedTrialData = { email: email, created: Date.now(), upgraded: false };
+      callback(cachedTrialData);
+    }
+  }).catch(function(){
+    cachedTrialData = { email: email, created: Date.now(), upgraded: false };
+    callback(cachedTrialData);
+  });
 }
 
 function getTrialRemaining(email){
-  var data = getTrialData(email);
-  if(!data) return 0;
-  if(data.upgraded) return -1;
-  var elapsed = Date.now() - data.created;
+  if(!cachedTrialData || cachedTrialData.email !== email) return 0;
+  if(cachedTrialData.upgraded) return -1;
+  var elapsed = Date.now() - cachedTrialData.created;
   var total = TRIAL_HOURS * 60 * 60 * 1000;
   return Math.max(0, total - elapsed);
 }
@@ -2240,8 +2247,11 @@ function checkTrialStatus(){
 
 function startTrialTimer(){
   if(trialInterval) clearInterval(trialInterval);
-  checkTrialStatus();
-  trialInterval = setInterval(checkTrialStatus, 1000);
+  if(!S.user || !S.user.email || S.user.email === '') return;
+  loadTrialFromFirestore(S.user.email, function(){
+    checkTrialStatus();
+    trialInterval = setInterval(checkTrialStatus, 1000);
+  });
 }
 
 /* ── LOGIN ── */
