@@ -3493,16 +3493,41 @@ function loadAdminUsers(){
           '<div><span class="au-status '+statusClass+'">'+statusText+'</span></div>' +
           '<div style="text-align:center;"><button class="au-actions-btn" onclick="event.stopPropagation();toggleAdminExpand(\''+safeRowId+'\')">Manage</button></div>' +
         '</div>' +
-        '<div class="au-expand" id="'+safeRowId+'" data-email="'+u.email+'" data-uni="'+userUniId+'" data-sem="'+userSemId+'">' +
-          '<input type="hidden" id="'+safeRowId+'_plan" value="'+(sub?sub.plan:(pending?pending.plan:'starter'))+'">' +
+        '<div class="au-expand" id="'+safeRowId+'" data-email="'+u.email+'" data-uni="'+userUniId+'" data-sem="'+userSemId+'" data-plan="'+(sub?sub.plan:(pending?pending.plan:''))+'" data-order-mods="'+(pending&&pending.modules?pending.modules.join(','):'')+'">';
+
+        // Order info section
+        if(pending){
+          var payLabels = {cmi:'🏦 CMI',cashplus:'💵 Cash Plus',wafacash:'💰 Wafa Cash',bank:'🏧 Bank Transfer'};
+          var pendingPlanLabel = planLabels[pending.plan] || pending.plan;
+          html += '<div style="background:rgba(108,99,255,.08);border:1px solid rgba(108,99,255,.2);border-radius:10px;padding:12px;margin-bottom:12px;">' +
+            '<div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:8px;">📋 Student\'s order</div>' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:12px;">' +
+              '<div><span style="color:var(--text3);">Plan:</span> <strong style="color:var(--text1);">'+pendingPlanLabel+'</strong></div>' +
+              '<div><span style="color:var(--text3);">Price:</span> <strong style="color:var(--text1);">'+(pending.price||'—')+'</strong></div>' +
+              '<div><span style="color:var(--text3);">Payment:</span> <strong style="color:var(--text1);">'+(payLabels[pending.paymentMethod]||pending.paymentMethod||'—')+'</strong></div>' +
+            '</div>' +
+            (pending.modules && pending.modules.length > 0 ? '<div style="margin-top:8px;font-size:11px;color:var(--text3);">Requested modules: <strong style="color:var(--text1);">' + pending.modules.map(function(idx){return '#'+(idx+1);}).join(', ') + '</strong></div>' : '') +
+          '</div>';
+        } else if(sub && sub.active) {
+          html += '<div style="background:rgba(67,233,123,.08);border:1px solid rgba(67,233,123,.2);border-radius:10px;padding:12px;margin-bottom:12px;">' +
+            '<div style="font-size:12px;font-weight:700;color:#43e97b;margin-bottom:4px;">✅ Active subscription</div>' +
+            '<div style="font-size:12px;"><span style="color:var(--text3);">Plan:</span> <strong style="color:var(--text1);">'+(planLabels[sub.plan]||sub.plan)+'</strong> · <span style="color:var(--text3);">Expires:</span> <strong style="color:var(--text1);">'+(sub.expiresAt?new Date(sub.expiresAt).toLocaleDateString():'Lifetime')+'</strong></div>' +
+          '</div>';
+        } else {
+          html += '<div style="background:rgba(249,168,37,.06);border:1px solid rgba(249,168,37,.2);border-radius:10px;padding:12px;margin-bottom:12px;">' +
+            '<div style="font-size:12px;color:#f9a825;">⚠️ No order or subscription yet — student is on free trial</div>' +
+          '</div>';
+        }
+
+        html += '<input type="hidden" id="'+safeRowId+'_plan" value="'+(sub?sub.plan:(pending?pending.plan:''))+'">' +
           '<input type="hidden" id="'+safeRowId+'_dur" value="180">' +
           (userUniId && userSemId ?
-            '<div style="font-size:12px;color:var(--text2);margin-bottom:10px;padding:8px 12px;background:rgba(108,99,255,.06);border-radius:8px;">📚 <strong style="color:var(--text1);">' + uniText + '</strong> · <strong style="color:var(--text1);">' + semText + '</strong> — Toggle modules ON/OFF below</div>' :
-            '<div style="font-size:12px;color:#f9a825;margin-bottom:10px;padding:8px 12px;background:rgba(249,168,37,.06);border-radius:8px;">⚠️ Student hasn\'t set university/semester in profile yet</div>'
+            '<div style="font-size:12px;color:var(--text2);margin-bottom:10px;padding:8px 12px;background:rgba(108,99,255,.06);border-radius:8px;">📚 <strong style="color:var(--text1);">' + uniText + '</strong> · <strong style="color:var(--text1);">' + semText + '</strong></div>' :
+            ''
           ) +
           '<div class="au-mod-list" id="'+safeRowId+'_mods"></div>' +
           '<div style="display:flex;gap:8px;margin-top:14px;">' +
-            '<button class="admin-btn small" onclick="adminSaveUser(\''+u.email+'\',\''+safeRowId+'\')">💾 Save Changes</button>' +
+            '<button class="admin-btn small" onclick="adminSaveUser(\''+u.email+'\',\''+safeRowId+'\')">💾 Save & Activate</button>' +
             '<button class="admin-btn small danger" onclick="adminRevoke(\''+u.email+'\')">🚫 Revoke Access</button>' +
           '</div>' +
           '<div id="'+safeRowId+'_msg" class="admin-msg" style="margin-top:8px;"></div>' +
@@ -3555,6 +3580,14 @@ window.toggleAdminExpand = function(id){
 
 function autoLoadModules(rowId, uniId, semId, email){
   var modEl = el(rowId+'_mods');
+  var expandEl = el(rowId);
+  var planVal = expandEl.dataset.plan || '';
+
+  if(!planVal){
+    modEl.innerHTML='<div style="color:var(--text3);font-size:12px;grid-column:1/-1;text-align:center;padding:12px;">No order placed yet — modules will appear after the student chooses a plan</div>';
+    return;
+  }
+
   var semIdx = -1;
   for(var i=0; i<SEMESTERS.length; i++){
     if(SEMESTERS[i].id === semId){ semIdx = i; break; }
@@ -3565,13 +3598,13 @@ function autoLoadModules(rowId, uniId, semId, email){
   }
   var mods = getMods(semIdx, uniId);
   if(!mods || mods.length===0){
-    modEl.innerHTML='<div style="color:var(--text3);font-size:12px;grid-column:1/-1;text-align:center;padding:8px;">No modules found for '+uniId+' / '+semId+'</div>';
+    modEl.innerHTML='<div style="color:var(--text3);font-size:12px;grid-column:1/-1;text-align:center;padding:8px;">No modules found</div>';
     return;
   }
-  // Get plan limit and existing modules
-  var planVal = el(rowId+'_plan') ? el(rowId+'_plan').value : 'starter';
+
   var planLimits = {starter:2, essential:2, semester:4, pro:6, year:999, vip:999};
   var maxMods = planLimits[planVal] || 2;
+  var orderMods = expandEl.dataset.orderMods ? expandEl.dataset.orderMods.split(',').map(Number) : [];
 
   var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
   db.collection('subscriptions').doc(docId).get().then(function(doc){
@@ -3579,34 +3612,37 @@ function autoLoadModules(rowId, uniId, semId, email){
     if(doc.exists && doc.data().modules){
       enabledModules = doc.data().modules.filter(function(m){return m.enabled;}).map(function(m){return m.index;});
     }
-    // Also check plan from subscription
     if(doc.exists && doc.data().plan){
       maxMods = planLimits[doc.data().plan] || maxMods;
     }
-    renderModToggles(modEl, mods, enabledModules, rowId, maxMods);
+    renderModToggles(modEl, mods, enabledModules, rowId, maxMods, orderMods);
   }).catch(function(){
-    renderModToggles(modEl, mods, [], rowId, maxMods);
+    renderModToggles(modEl, mods, [], rowId, maxMods, orderMods);
   });
 }
 
-function renderModToggles(modEl, mods, enabledModules, rowId, maxMods){
+function renderModToggles(modEl, mods, enabledModules, rowId, maxMods, orderMods){
+  orderMods = orderMods || [];
   var h='';
-  h += '<div id="'+rowId+'_limit" style="font-size:11px;color:var(--text2);margin-bottom:8px;padding:6px 10px;background:rgba(108,99,255,.08);border-radius:6px;text-align:center;grid-column:1/-1;">';
   var onCount = enabledModules.length;
+  h += '<div id="'+rowId+'_limit" style="font-size:11px;color:var(--text2);margin-bottom:8px;padding:6px 10px;background:rgba(108,99,255,.08);border-radius:6px;text-align:center;grid-column:1/-1;">';
   if(maxMods >= 999){
     h += '♾️ Unlimited modules — all can be enabled';
   } else {
-    h += '🎯 <strong>'+onCount+' / '+maxMods+'</strong> modules enabled (based on plan)';
+    h += '🎯 <strong>'+onCount+' / '+maxMods+'</strong> modules enabled';
+    if(onCount >= maxMods) h += ' — <span style="color:#f9a825;">limit reached</span>';
   }
   h += '</div>';
   mods.forEach(function(m, i){
     var isOn = enabledModules.indexOf(i) !== -1;
+    var wasRequested = orderMods.indexOf(i) !== -1;
     var toggleId = rowId+'_mod_'+i;
     var disabled = (!isOn && onCount >= maxMods && maxMods < 999) ? ' disabled' : '';
     var dimStyle = disabled ? 'opacity:.5;' : '';
+    var requestedBadge = wasRequested ? '<span style="font-size:10px;background:rgba(108,99,255,.15);color:var(--accent2);padding:2px 6px;border-radius:8px;margin-left:6px;">requested</span>' : '';
     h+='<div class="au-mod-item" style="'+dimStyle+'">' +
-      '<label for="'+toggleId+'">'+(m.icon||'')+ ' ' +m.title+'</label>' +
-      '<div class="toggle"><input type="checkbox" id="'+toggleId+'"'+(isOn?' checked':'')+disabled+' onchange="enforceModLimit(\''+rowId+'\','+maxMods+')"><span class="slider"></span></div>' +
+      '<label for="'+toggleId+'">'+(m.icon||'')+ ' ' +m.title+requestedBadge+'</label>' +
+      "<div class=\"toggle\"><input type=\"checkbox\" id=\""+toggleId+"\""+(isOn?' checked':'')+disabled+" onchange=\"enforceModLimit('"+rowId+"',"+maxMods+")\"><span class=\"slider\"></span></div>" +
     '</div>';
   });
   modEl.innerHTML = h;
