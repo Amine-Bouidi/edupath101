@@ -3207,8 +3207,8 @@ window.completePurchase = function(){
       selectedModNames.push(allMods[i] ? allMods[i].title : 'Module '+(i+1));
     }
   });
-  var planLimits = {starter:2, essential:2, semester:4, pro:6, year:999, vip:999};
-  var maxModules = planLimits[currentPlan.name.toLowerCase()] || 2;
+  var planLimits = {starter:2, essential:4, semester:4, pro:6, year:999, vip:999};
+  var maxModules = currentPlan.modules === 'all' ? 999 : parseInt(currentPlan.modules) || planLimits[currentPlan.name.toLowerCase()] || 2;
   var email = S.user ? S.user.email : '';
   if(email){
     db.collection('orders').add({
@@ -3614,7 +3614,7 @@ function autoLoadModules(rowId, uniId, semId, email){
     return;
   }
 
-  var planLimits = {starter:2, essential:2, semester:4, pro:6, year:999, vip:999};
+  var planLimits = {starter:2, essential:4, semester:4, pro:6, year:999, vip:999};
   var maxMods = parseInt(expandEl.dataset.maxMods) || planLimits[planVal] || 2;
   var orderMods = expandEl.dataset.orderMods ? expandEl.dataset.orderMods.split(',').map(Number) : [];
 
