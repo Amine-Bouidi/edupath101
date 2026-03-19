@@ -434,8 +434,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .paywall-box .pw-btn:hover{opacity:.9;}
 .paywall-box .pw-sub{color:var(--text3);font-size:12px;}
 /* ADMIN PANEL */
-.admin-panel{padding:24px;max-width:900px;margin:0 auto;}
-.admin-panel h2{font-family:'Sora',sans-serif;font-size:22px;margin-bottom:20px;}
+.admin-panel{padding:12px 24px;max-width:900px;margin:0 auto;}
+.admin-panel h2{font-family:'Sora',sans-serif;font-size:22px;margin-bottom:14px;}
 .admin-section{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;}
 .admin-section h3{font-size:15px;margin-bottom:14px;color:var(--accent2);}
 .admin-input{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text1);font-size:14px;margin-bottom:10px;box-sizing:border-box;}
@@ -1262,7 +1262,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
         <h2>⚙️ Admin Panel</h2>
 
         <!-- QUICK STATS -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;text-align:center;margin-bottom:20px;">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center;margin-bottom:14px;">
           <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;">
             <div style="font-size:26px;font-weight:800;color:var(--accent2);" id="statTotal">0</div>
             <div style="font-size:11px;color:var(--text3);">Total Users</div>
@@ -3430,7 +3430,7 @@ function loadAdminUsers(){
     var subs = {};
     subSnap.forEach(function(doc){ subs[doc.data().email] = doc.data(); });
 
-    return db.collection('users').orderBy('lastLogin','desc').get().then(function(userSnap){
+    return db.collection('users').get().then(function(userSnap){
       if(userSnap.empty){
         listEl.innerHTML='<div style="color:var(--text3);font-size:13px;padding:20px 0;text-align:center;">No users yet. Users will appear here after they sign in.</div>';
         el('statTotal').textContent='0'; el('statActive').textContent='0'; el('statTrial').textContent='0'; el('statExpired').textContent='0';
@@ -3668,8 +3668,8 @@ if(el('adminSearch')){
 if(el('btnAdminGrant')) el('btnAdminGrant').onclick = adminGrantAccess;
 el('nav-admin').onclick = function(){
   closeMobileMenu();
+  setTopbar([],'Admin Panel',false);
   showView('admin');
-  populateAdminUnis();
   loadAdminUsers();
 };
 
