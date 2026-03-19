@@ -3086,16 +3086,26 @@ window.selectPlan = function(name, price, modules){
   el('purTitle').textContent = 'Get '+name+' Plan';
   el('purSub').textContent   = subs[name]||'';
   el('purPrice').textContent = price;
-  var uniSel = el('checkoutUni');
-  uniSel.innerHTML = '<option value="">— Select your university —</option>';
-  UNIVERSITIES.forEach(function(u){
-    var opt = document.createElement('option');
-    opt.value = u.id; opt.textContent = u.name;
-    uniSel.appendChild(opt);
-  });
-  el('checkoutSem').innerHTML = '<option value="">— Select your semester —</option>';
-  el('checkoutModules').innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:16px;">Select university & semester first</div>';
-  el('checkoutModCount').textContent = '0 / ' + (modules === 'all' ? 'All' : modules) + ' selected';
+
+  // Get user's profile uni/sem
+  var profileUni = (S.user && S.user.university) ? S.user.university : '';
+  var profileSem = (S.user && S.user.semester) ? S.user.semester : '';
+
+  // If not in S.user, try to load from Firestore
+  if(!profileUni && S.user && S.user.email){
+    var docId = S.user.email.replace(/[^a-zA-Z0-9]/g,'_');
+    db.collection('users').doc(docId).get().then(function(doc){
+      if(doc.exists){
+        var d = doc.data();
+        profileUni = d.university || '';
+        profileSem = d.semester || '';
+        fillCheckoutDropdowns(profileUni, profileSem, modules);
+      }
+    }).catch(function(){});
+  }
+
+  fillCheckoutDropdowns(profileUni, profileSem, modules);
+
   el('checkoutPayInfo').style.display = 'none';
   selectedPayMethod = null;
   el('checkoutConfirmBtn').disabled = true;
@@ -3104,6 +3114,37 @@ window.selectPlan = function(name, price, modules){
   document.querySelectorAll('#checkoutPayMethods input').forEach(function(i){ i.checked=false; });
   el('purchaseModal').classList.add('open');
 };
+
+function fillCheckoutDropdowns(profileUni, profileSem, modules){
+  var uniSel = el('checkoutUni');
+  uniSel.innerHTML = '<option value="">— Select your university —</option>';
+  UNIVERSITIES.forEach(function(u){
+    var opt = document.createElement('option');
+    opt.value = u.id; opt.textContent = u.name;
+    if(profileUni === u.id) opt.selected = true;
+    uniSel.appendChild(opt);
+  });
+
+  // If uni is pre-filled, load semesters
+  var semSel = el('checkoutSem');
+  semSel.innerHTML = '<option value="">— Select your semester —</option>';
+  if(profileUni){
+    SEMESTERS.forEach(function(s){
+      var opt = document.createElement('option');
+      opt.value = s.id; opt.textContent = s.title;
+      if(profileSem === s.id) opt.selected = true;
+      semSel.appendChild(opt);
+    });
+  }
+
+  // If both are pre-filled, load modules
+  if(profileUni && profileSem){
+    checkoutLoadModules();
+  } else {
+    el('checkoutModules').innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:16px;">Select university & semester first</div>';
+  }
+  el('checkoutModCount').textContent = '0 / ' + (modules === 'all' ? 'All' : modules) + ' selected';
+}
 
 window.checkoutLoadSemesters = function(){
   var uniId = el('checkoutUni').value;
