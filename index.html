@@ -482,6 +482,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 /* PROFILE POPUP & PAGE */
 .profile-popup-ov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,10,30,.92);z-index:9998;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
 .profile-popup-ov.open{display:flex;}
+/* Consent popup */
+.consent-popup-ov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,10,30,.95);z-index:9999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(10px);}
+.consent-popup-ov.open{display:flex;}
+.consent-box{background:var(--card);border:1px solid var(--border);border-radius:20px;max-width:520px;width:92%;padding:32px 28px;max-height:85vh;overflow-y:auto;}
+.consent-box h2{font-family:'Sora',sans-serif;font-size:20px;margin-bottom:12px;}
+.consent-check{display:flex;align-items:flex-start;gap:10px;margin:16px 0;padding:12px;background:var(--bg);border-radius:10px;cursor:pointer;}
+.consent-check input{width:20px;height:20px;accent-color:var(--accent2);flex-shrink:0;margin-top:2px;cursor:pointer;}
+.consent-check label{font-size:13px;color:var(--text2);line-height:1.5;cursor:pointer;}
+.consent-check label a{color:var(--accent2);text-decoration:underline;}
+/* Privacy page */
+.privacy-page{max-width:700px;margin:0 auto;padding:24px;line-height:1.8;color:var(--text2);font-size:14px;}
+.privacy-page h2{font-family:'Sora',sans-serif;font-size:22px;color:var(--text1);margin:24px 0 12px;}
+.privacy-page h3{font-family:'Sora',sans-serif;font-size:16px;color:var(--text1);margin:20px 0 8px;}
+.privacy-page p{margin-bottom:12px;}
+.privacy-page strong{color:var(--text1);}
 .profile-popup{background:var(--card);border:1px solid var(--border);border-radius:20px;max-width:480px;width:92%;padding:32px 28px;text-align:center;}
 .profile-popup h2{font-family:'Sora',sans-serif;font-size:22px;margin-bottom:6px;}
 .profile-popup .pp-sub{color:var(--text2);font-size:13px;line-height:1.6;margin-bottom:20px;}
@@ -892,6 +907,31 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 </div>
 
 <!-- APP -->
+<!-- CONSENT POPUP -->
+<div class="consent-popup-ov" id="consentPopup">
+  <div class="consent-box">
+    <div style="text-align:center;font-size:40px;margin-bottom:8px;">🔒</div>
+    <h2 style="text-align:center;">Before we start</h2>
+    <p style="text-align:center;color:var(--text3);font-size:13px;margin-bottom:16px;">To use EduPath, please review and accept our policies.</p>
+
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;max-height:200px;overflow-y:auto;font-size:12px;color:var(--text3);line-height:1.7;">
+      <strong style="color:var(--text1);">Privacy Policy Summary</strong><br><br>
+      We collect your name, email, and university info through Google Sign-in to provide our educational services. Your WhatsApp number is collected for payment verification. We store your learning progress and quiz scores to track your advancement.<br><br>
+      <strong style="color:var(--text1);">We will never:</strong> sell your personal data to third parties, share your information with other students, or use your data for advertising.<br><br>
+      <strong style="color:var(--text1);">Refund Policy:</strong> All purchases are final once module access has been activated. If you experience technical issues preventing access to paid content, contact us via WhatsApp for assistance.<br><br>
+      <strong style="color:var(--text1);">Data Storage:</strong> Your data is stored securely on Google Firebase servers (EU region). You may request deletion of your account and data at any time by contacting us via WhatsApp.<br><br>
+      Read the full <a href="#" onclick="event.preventDefault();el('consentPopup').classList.remove('open');openPrivacyPage();" style="color:var(--accent2);">Privacy Policy</a>.
+    </div>
+
+    <div class="consent-check" onclick="el('consentCb').click();">
+      <input type="checkbox" id="consentCb" onchange="updateConsentBtn()">
+      <label for="consentCb">I have read and agree to the <a href="#" onclick="event.preventDefault();event.stopPropagation();el('consentPopup').classList.remove('open');openPrivacyPage();">Privacy Policy</a>, <a href="#" onclick="event.preventDefault();event.stopPropagation();el('consentPopup').classList.remove('open');openPrivacyPage();">Terms of Service</a>, and <a href="#" onclick="event.preventDefault();event.stopPropagation();el('consentPopup').classList.remove('open');openPrivacyPage();">Refund Policy</a>.</label>
+    </div>
+
+    <button id="consentAcceptBtn" class="pp-save-btn" style="opacity:.5;" disabled onclick="acceptConsent()">Accept & Continue</button>
+  </div>
+</div>
+
 <!-- PROFILE SETUP POPUP (first login) -->
 <div class="profile-popup-ov" id="profilePopup">
   <div class="profile-popup">
@@ -985,6 +1025,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
       <div class="sb-item" id="nav-pricing"><span class="sb-icon">💎</span><span class="sb-item-label"> Plans & Pricing</span></div>
       <div class="sb-item" id="nav-admin" style="display:none;"><span class="sb-icon">⚙️</span><span class="sb-item-label"> Admin Panel</span></div>
       <div class="sb-item" id="nav-profile"><span class="sb-icon">👤</span><span class="sb-item-label"> My Profile</span></div>
+      <div class="sb-item" id="nav-privacy"><span class="sb-icon">🔒</span><span class="sb-item-label"> Privacy Policy</span></div>
       <div class="sb-item" id="nav-contact"   style="display:none;"><span class="sb-icon">💬</span><span class="sb-item-label"> Book tutoring</span></div>
     </div>
     <div class="sb-ctx" id="sbCtx" style="display:none;">
@@ -1039,6 +1080,53 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 
       <!-- PROFILE VIEW -->
       <div class="view" id="view-profile" style="display:none;">
+
+      <!-- PRIVACY POLICY VIEW -->
+      <div class="view" id="view-privacy" style="display:none;">
+        <div class="privacy-page">
+          <h2>🔒 Privacy Policy</h2>
+          <p style="color:var(--text3);font-size:12px;">Last updated: March 19, 2026</p>
+
+          <h3>1. Who we are</h3>
+          <p>EduPath ("we", "our", "us") is an educational platform operated by Amine Bouidi, based in Morocco. We provide online video courses, quizzes, and study resources for English Studies students at Moroccan universities.</p>
+
+          <h3>2. Information we collect</h3>
+          <p><strong>Account information:</strong> When you sign in with Google, we receive your name, email address, and profile picture. This is handled securely through Google's OAuth system — we never see or store your Google password.</p>
+          <p><strong>Profile information:</strong> You may voluntarily provide your WhatsApp number, age range, gender, university, and current semester to personalize your experience.</p>
+          <p><strong>Learning data:</strong> We track your video progress, quiz scores, and module completion to show your advancement and provide personalized learning paths.</p>
+          <p><strong>Payment information:</strong> When you purchase a plan, we record your chosen plan, selected modules, and payment method. We do not process or store credit card numbers — all payments are made through external services (Cash Plus, Wafa Cash, bank transfer, or CMI).</p>
+
+          <h3>3. How we use your information</h3>
+          <p>We use your data to: provide and improve our educational services, track your learning progress, process your orders and activate module access, communicate with you about your account via WhatsApp, and ensure the security of our platform.</p>
+
+          <h3>4. What we never do</h3>
+          <p><strong>We will never</strong> sell, rent, or share your personal information with third parties for marketing purposes. We will never share your grades, progress, or personal details with other students, your university, or any external organization. We will never use your data for advertising or profiling.</p>
+
+          <h3>5. Data storage and security</h3>
+          <p>Your data is stored on Google Firebase servers located in the European Union (europe-west region). All data transmission is encrypted via HTTPS. Access to the database is protected by Firebase security rules — only you can access your own profile data, and only the platform administrator can manage subscriptions.</p>
+
+          <h3>6. Your rights</h3>
+          <p>In accordance with Moroccan Law 09-08 on the protection of personal data, you have the right to: access your personal data at any time through your profile page, correct or update your information, request the deletion of your account and all associated data, and withdraw your consent at any time.</p>
+          <p>To exercise any of these rights, contact us via WhatsApp at <strong>+212 606-248409</strong>.</p>
+
+          <h3>7. Refund Policy</h3>
+          <p>All purchases are <strong>final</strong> once module access has been activated by the administrator. This is because our digital content is immediately accessible upon activation.</p>
+          <p>However, if you experience technical issues that prevent you from accessing your paid content, contact us via WhatsApp and we will resolve the issue or provide a refund at our discretion.</p>
+          <p>If you purchase a plan by mistake and contact us <strong>before activation</strong>, we will issue a full refund.</p>
+
+          <h3>8. Cookies and local storage</h3>
+          <p>We use browser local storage to remember your login state and interface preferences. We do not use third-party tracking cookies. Your trial period is tracked via our secure database, not browser cookies.</p>
+
+          <h3>9. Changes to this policy</h3>
+          <p>We may update this privacy policy from time to time. We will notify users of significant changes via the platform. Continued use of EduPath after changes constitutes acceptance of the updated policy.</p>
+
+          <h3>10. Contact</h3>
+          <p>For any questions about this privacy policy or your personal data:<br>
+          <strong>Name:</strong> Amine Bouidi<br>
+          <strong>WhatsApp:</strong> +212 606-248409<br>
+          <strong>Email:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="42202d372b262b32302d77777702252f232b2e6c212d2f">[email&#160;protected]</a></p>
+        </div>
+      </div>
         <div style="max-width:500px;margin:0 auto;padding:24px;">
           <h2 style="font-family:'Sora',sans-serif;font-size:22px;margin-bottom:20px;">👤 My Profile</h2>
           <div class="admin-section">
@@ -1617,7 +1705,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 (function(){
 
 /* ── SIDEBAR TOGGLE ── */
@@ -2142,7 +2230,7 @@ function getP(u,s,m){var k=u+'_'+s+'_'+m;return S.progress[k]||{videos:[],quizze
 /* ── HELPERS ── */
 function el(id){return document.getElementById(id);}
 function showView(id){
-  ['dashboard','semesters','modules','contact','pricing','admin','profile'].forEach(function(v){
+  ['dashboard','semesters','modules','contact','pricing','admin','profile','privacy'].forEach(function(v){
     var e=el('view-'+v); if(e){e.style.display='none';e.classList.remove('active');}
   });
   var pl=el('view-player');
@@ -2153,7 +2241,7 @@ function showView(id){
     var t=el('view-'+id);
     if(t){t.style.display='block';t.classList.add('active');}
   }
-  ['dashboard','semesters','modules','player','contact','pricing','admin','profile'].forEach(function(n){
+  ['dashboard','semesters','modules','player','contact','pricing','admin','profile','privacy'].forEach(function(n){
     var e=el('nav-'+n); if(e) e.classList.toggle('active',n===id);
   });
 }
@@ -2276,7 +2364,7 @@ function enterApp(name, email){
   showAdminIfNeeded();
   // Check if profile setup needed (first login)
   if(email && email !== ''){
-    setTimeout(function(){ checkProfileSetup(email, name); }, 500);
+    setTimeout(function(){ checkConsent(email, name); }, 500);
   }
   renderDashboard();
 }
@@ -3344,6 +3432,51 @@ window.completePurchase = function(){
   },300);
 };
 
+/* ── CONSENT & PRIVACY ── */
+function updateConsentBtn(){
+  var cb = el('consentCb');
+  var btn = el('consentAcceptBtn');
+  btn.disabled = !cb.checked;
+  btn.style.opacity = cb.checked ? '1' : '.5';
+}
+
+window.acceptConsent = function(){
+  if(!el('consentCb').checked) return;
+  var email = S.user ? S.user.email : '';
+  if(email){
+    var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
+    db.collection('users').doc(docId).set({
+      consentAccepted: true,
+      consentDate: new Date().toISOString()
+    }, {merge: true}).catch(function(){});
+  }
+  el('consentPopup').classList.remove('open');
+  // Now check if profile setup is needed
+  if(email) checkProfileSetup(email, S.user.name);
+};
+
+function checkConsent(email, name){
+  if(!email || email === '') return;
+  if(isAdmin()) return;
+  var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
+  db.collection('users').doc(docId).get().then(function(doc){
+    if(doc.exists && doc.data().consentAccepted){
+      // Consent already given, check profile
+      checkProfileSetup(email, name);
+    } else {
+      // Show consent popup
+      el('consentPopup').classList.add('open');
+    }
+  }).catch(function(){
+    el('consentPopup').classList.add('open');
+  });
+}
+
+function openPrivacyPage(){
+  setTopbar([],'Privacy Policy',false);
+  showView('privacy');
+}
+
 /* ── PROFILE SYSTEM ── */
 function populateProfileDropdowns(uniElId, semElId, selUni, selSem){
   var uniSel = el(uniElId);
@@ -3475,6 +3608,7 @@ el('profSaveBtn').onclick = function(){
 };
 
 el('nav-profile').onclick = function(){ closeMobileMenu(); openProfile(); };
+el('nav-privacy').onclick = function(){ closeMobileMenu(); openPrivacyPage(); };
 
 /* ── ADMIN PANEL ── */
 var ADMIN_EMAILS = ['bouidipro555@gmail.com']; // <-- Add your Google email(s) here
@@ -3918,19 +4052,4 @@ checkTrialStatus = function(){
       el('paywallOverlay').style.display='none';
       if(trialInterval){ clearInterval(trialInterval); trialInterval=null; }
     } else {
-      origCheckTrialStatus();
-    }
-  });
-};
-
-/* ── AUTO LOGIN CHECK ── */
-firebase.auth().onAuthStateChanged(function(user){
-  if(user && !S.user){
-    enterApp(user.displayName || 'User', user.email || '');
-  }
-});
-
-})();
-</script>
-</body>
-</html>
+      origCheckTrialStatu
