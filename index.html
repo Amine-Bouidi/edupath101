@@ -1281,34 +1281,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
           </div>
         </div>
 
-        <!-- QUICK GRANT (for new users not yet registered) -->
-        <div class="admin-section" style="border-left:3px solid var(--accent2);">
-          <h3>➕ Quick Grant — New Student</h3>
-          <p style="font-size:12px;color:var(--text3);margin-bottom:12px;">Use this to pre-activate a student who hasn't logged in yet. For existing users, use the table below.</p>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <input type="email" id="adminEmail" class="admin-input" placeholder="Student's email" style="margin:0;">
-            <select id="adminPlan" class="admin-select" style="margin:0;">
-              <option value="">— Plan —</option>
-              <option value="starter">🎯 Starter ($10)</option>
-              <option value="semester">📚 Semester ($20)</option>
-              <option value="year">🎓 Year ($30)</option>
-              <option value="vip">👑 VIP ($100)</option>
-            </select>
-            <select id="adminUni" class="admin-select" style="margin:0;">
-              <option value="all">All Universities</option>
-            </select>
-            <select id="adminDuration" class="admin-select" style="margin:0;">
-              <option value="30">30 days</option>
-              <option value="90">90 days</option>
-              <option value="180">6 months</option>
-              <option value="365">1 year</option>
-              <option value="9999">Lifetime</option>
-            </select>
-          </div>
-          <button class="admin-btn" id="btnAdminGrant" style="margin-top:12px;">✅ Activate Access</button>
-          <div id="adminMsg" class="admin-msg"></div>
-        </div>
-
         <!-- ALL USERS TABLE -->
         <div class="admin-section">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
@@ -3496,6 +3468,8 @@ function loadAdminUsers(){
 
         var rowId = 'auRow_' + doc.id;
         var lastLogin = u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : '';
+        var userUniId = u.university || '';
+        var userSemId = u.semester || '';
 
         html += '<div class="au-row" onclick="toggleAdminExpand(\''+rowId+'\')">' +
           '<div><div class="au-name">'+(u.name||'Unknown')+'</div><div class="au-email">'+u.email+(u.whatsapp?' · 📱'+u.whatsapp:'')+'</div></div>' +
@@ -3504,23 +3478,9 @@ function loadAdminUsers(){
           '<div><span class="au-status '+statusClass+'">'+statusText+'</span></div>' +
           '<div style="text-align:center;"><button class="au-actions-btn" onclick="event.stopPropagation();toggleAdminExpand(\''+rowId+'\')">Manage</button></div>' +
         '</div>' +
-        '<div class="au-expand" id="'+rowId+'">' +
-          '<div class="au-expand-grid">' +
-            '<div>' +
-              '<label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px;">University</label>' +
-              '<select class="admin-select" style="margin:0;" id="'+rowId+'_uni" onchange="adminLoadModules(\''+rowId+'\',\''+u.email+'\')">' +
-                '<option value="">— Select —</option>' +
-                buildUniOptions(sub ? sub.university : '') +
-              '</select>' +
-            '</div>' +
-            '<div>' +
-              '<label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px;">Semester</label>' +
-              '<select class="admin-select" style="margin:0;" id="'+rowId+'_sem" onchange="adminLoadModules(\''+rowId+'\',\''+u.email+'\')">' +
-                '<option value="">— Select —</option>' +
-                buildSemOptions(sub ? sub.semester : '') +
-              '</select>' +
-            '</div>' +
-            '<div>' +
+        '<div class="au-expand" id="'+rowId+'" data-email="'+u.email+'" data-uni="'+userUniId+'" data-sem="'+userSemId+'">' +
+          '<div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">' +
+            '<div style="flex:1;min-width:140px;">' +
               '<label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px;">Plan</label>' +
               '<select class="admin-select" style="margin:0;" id="'+rowId+'_plan">' +
                 '<option value="">— Plan —</option>' +
@@ -3530,17 +3490,18 @@ function loadAdminUsers(){
                 '<option value="vip"'+(sub&&sub.plan==='vip'?' selected':'')+'>👑 VIP</option>' +
               '</select>' +
             '</div>' +
-            '<div>' +
+            '<div style="flex:1;min-width:140px;">' +
               '<label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px;">Duration</label>' +
               '<select class="admin-select" style="margin:0;" id="'+rowId+'_dur">' +
                 '<option value="30">30 days</option><option value="90">90 days</option><option value="180">6 months</option><option value="365">1 year</option><option value="9999">Lifetime</option>' +
               '</select>' +
             '</div>' +
           '</div>' +
-          '<label style="font-size:11px;color:var(--text3);display:block;margin-bottom:8px;">Module Access</label>' +
-          '<div class="au-mod-list" id="'+rowId+'_mods">' +
-            '<div style="color:var(--text3);font-size:12px;grid-column:1/-1;text-align:center;padding:8px;">Select university & semester to see modules</div>' +
-          '</div>' +
+          (userUniId && userSemId ?
+            '<div style="font-size:11px;color:var(--text3);margin-bottom:8px;">Modules for <strong style="color:var(--text1);">' + uniText + '</strong> · <strong style="color:var(--text1);">' + semText + '</strong></div>' :
+            '<div style="font-size:11px;color:#f9a825;margin-bottom:8px;">⚠️ Student hasn\'t set university/semester in profile yet</div>'
+          ) +
+          '<div class="au-mod-list" id="'+rowId+'_mods"></div>' +
           '<div style="display:flex;gap:8px;margin-top:14px;">' +
             '<button class="admin-btn small" onclick="adminSaveUser(\''+u.email+'\',\''+rowId+'\')">💾 Save Changes</button>' +
             '<button class="admin-btn small danger" onclick="adminRevoke(\''+u.email+'\')">🚫 Revoke Access</button>' +
@@ -3579,38 +3540,63 @@ function buildSemOptions(selected){
 
 function toggleAdminExpand(id){
   var e = el(id);
-  if(e) e.classList.toggle('open');
+  if(!e) return;
+  var wasOpen = e.classList.contains('open');
+  e.classList.toggle('open');
+  if(!wasOpen){
+    var uniId = e.dataset.uni;
+    var semId = e.dataset.sem;
+    var email = e.dataset.email;
+    if(uniId && semId){
+      autoLoadModules(id, uniId, semId, email);
+    } else {
+      el(id+'_mods').innerHTML = '<div style="color:#f9a825;font-size:12px;grid-column:1/-1;text-align:center;padding:8px;">Student hasn\'t set university/semester yet</div>';
+    }
+  }
 }
 
-function adminLoadModules(rowId, email){
-  var uniId = el(rowId+'_uni').value;
-  var semId = el(rowId+'_sem').value;
+function autoLoadModules(rowId, uniId, semId, email){
   var modEl = el(rowId+'_mods');
-  if(!uniId || !semId){
-    modEl.innerHTML='<div style="color:var(--text3);font-size:12px;grid-column:1/-1;text-align:center;padding:8px;">Select university & semester to see modules</div>';
-    return;
-  }
-  // Get modules for this uni+sem
   var semIdx = SEMESTERS.findIndex(function(s){return s.id===semId;});
   var mods = getMods(semIdx, uniId);
   if(!mods || mods.length===0){
-    modEl.innerHTML='<div style="color:var(--text3);font-size:12px;grid-column:1/-1;text-align:center;padding:8px;">No modules found</div>';
+    modEl.innerHTML='<div style="color:var(--text3);font-size:12px;grid-column:1/-1;text-align:center;padding:8px;">No modules found for this combination</div>';
     return;
   }
-  var h='';
-  mods.forEach(function(m, i){
-    var toggleId = rowId+'_mod_'+i;
-    h+='<div class="au-mod-item">' +
-      '<label for="'+toggleId+'">'+m.title+'</label>' +
-      '<div class="toggle"><input type="checkbox" id="'+toggleId+'" checked><span class="slider"></span></div>' +
-    '</div>';
+  // Check existing subscription for pre-checked modules
+  var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
+  db.collection('subscriptions').doc(docId).get().then(function(doc){
+    var enabledModules = [];
+    if(doc.exists && doc.data().modules){
+      enabledModules = doc.data().modules.filter(function(m){return m.enabled;}).map(function(m){return m.index;});
+    }
+    var h='';
+    mods.forEach(function(m, i){
+      var isOn = enabledModules.indexOf(i) !== -1;
+      var toggleId = rowId+'_mod_'+i;
+      h+='<div class="au-mod-item">' +
+        '<label for="'+toggleId+'">'+m.title+'</label>' +
+        '<div class="toggle"><input type="checkbox" id="'+toggleId+'"'+(isOn?' checked':'')+' ><span class="slider"></span></div>' +
+      '</div>';
+    });
+    modEl.innerHTML = h;
+  }).catch(function(){
+    var h='';
+    mods.forEach(function(m, i){
+      var toggleId = rowId+'_mod_'+i;
+      h+='<div class="au-mod-item">' +
+        '<label for="'+toggleId+'">'+m.title+'</label>' +
+        '<div class="toggle"><input type="checkbox" id="'+toggleId+'"><span class="slider"></span></div>' +
+      '</div>';
+    });
+    modEl.innerHTML = h;
   });
-  modEl.innerHTML = h;
 }
 
 function adminSaveUser(email, rowId){
-  var uni = el(rowId+'_uni').value;
-  var sem = el(rowId+'_sem').value;
+  var expandEl = el(rowId);
+  var uni = expandEl.dataset.uni || '';
+  var sem = expandEl.dataset.sem || '';
   var plan = el(rowId+'_plan').value;
   var days = parseInt(el(rowId+'_dur').value);
   var msgEl = el(rowId+'_msg');
@@ -3679,7 +3665,7 @@ if(el('adminSearch')){
   });
 }
 
-el('btnAdminGrant').onclick = adminGrantAccess;
+if(el('btnAdminGrant')) el('btnAdminGrant').onclick = adminGrantAccess;
 el('nav-admin').onclick = function(){
   closeMobileMenu();
   showView('admin');
