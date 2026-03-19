@@ -3198,15 +3198,25 @@ window.completePurchase = function(){
   var uni = el('checkoutUni').value;
   var sem = el('checkoutSem').value;
   var selectedMods = [];
+  var selectedModNames = [];
+  var semIdx = SEMESTERS.findIndex(function(s){return s.id===sem;});
+  var allMods = getMods(semIdx >= 0 ? semIdx : 0, uni);
   document.querySelectorAll('.checkout-mod-cb').forEach(function(cb, i){
-    if(cb.checked) selectedMods.push(i);
+    if(cb.checked){
+      selectedMods.push(i);
+      selectedModNames.push(allMods[i] ? allMods[i].title : 'Module '+(i+1));
+    }
   });
+  var planLimits = {starter:2, essential:2, semester:4, pro:6, year:999, vip:999};
+  var maxModules = planLimits[currentPlan.name.toLowerCase()] || 2;
   var email = S.user ? S.user.email : '';
   if(email){
     db.collection('orders').add({
       email: email, name: S.user.name || '',
-      plan: currentPlan.name.toLowerCase(), price: currentPlan.price,
-      university: uni, semester: sem, modules: selectedMods,
+      plan: currentPlan.name.toLowerCase(), planLabel: currentPlan.name,
+      price: currentPlan.price, maxModules: maxModules,
+      university: uni, semester: sem,
+      modules: selectedMods, moduleNames: selectedModNames,
       paymentMethod: selectedPayMethod, status: 'pending',
       createdAt: new Date().toISOString()
     }).catch(function(e){ console.log('Order save error:', e); });
@@ -3493,12 +3503,13 @@ function loadAdminUsers(){
           '<div><span class="au-status '+statusClass+'">'+statusText+'</span></div>' +
           '<div style="text-align:center;"><button class="au-actions-btn" onclick="event.stopPropagation();toggleAdminExpand(\''+safeRowId+'\')">Manage</button></div>' +
         '</div>' +
-        '<div class="au-expand" id="'+safeRowId+'" data-email="'+u.email+'" data-uni="'+userUniId+'" data-sem="'+userSemId+'" data-plan="'+(sub?sub.plan:(pending?pending.plan:''))+'" data-order-mods="'+(pending&&pending.modules?pending.modules.join(','):'')+'">';
+        '<div class="au-expand" id="'+safeRowId+'" data-email="'+u.email+'" data-uni="'+userUniId+'" data-sem="'+userSemId+'" data-plan="'+(sub?sub.plan:(pending?pending.plan:''))+'" data-max-mods="'+(pending&&pending.maxModules?pending.maxModules:(sub?'999':'0'))+'" data-order-mods="'+(pending&&pending.modules?pending.modules.join(','):'')+'">';
 
         // Order info section
         if(pending){
           var payLabels = {cmi:'🏦 CMI',cashplus:'💵 Cash Plus',wafacash:'💰 Wafa Cash',bank:'🏧 Bank Transfer'};
-          var pendingPlanLabel = planLabels[pending.plan] || pending.plan;
+          var pendingPlanLabel = pending.planLabel || planLabels[pending.plan] || pending.plan;
+          var modNamesDisplay = pending.moduleNames && pending.moduleNames.length > 0 ? pending.moduleNames.join(', ') : (pending.modules ? pending.modules.map(function(idx){return 'Module '+(idx+1);}).join(', ') : '—');
           html += '<div style="background:rgba(108,99,255,.08);border:1px solid rgba(108,99,255,.2);border-radius:10px;padding:12px;margin-bottom:12px;">' +
             '<div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:8px;">📋 Student\'s order</div>' +
             '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:12px;">' +
@@ -3506,7 +3517,8 @@ function loadAdminUsers(){
               '<div><span style="color:var(--text3);">Price:</span> <strong style="color:var(--text1);">'+(pending.price||'—')+'</strong></div>' +
               '<div><span style="color:var(--text3);">Payment:</span> <strong style="color:var(--text1);">'+(payLabels[pending.paymentMethod]||pending.paymentMethod||'—')+'</strong></div>' +
             '</div>' +
-            (pending.modules && pending.modules.length > 0 ? '<div style="margin-top:8px;font-size:11px;color:var(--text3);">Requested modules: <strong style="color:var(--text1);">' + pending.modules.map(function(idx){return '#'+(idx+1);}).join(', ') + '</strong></div>' : '') +
+            '<div style="margin-top:8px;font-size:11px;color:var(--text3);">Requested modules: <strong style="color:var(--text1);">' + modNamesDisplay + '</strong></div>' +
+            '<div style="margin-top:4px;font-size:11px;color:var(--text3);">Module limit: <strong style="color:var(--accent2);">'+(pending.maxModules||'—')+' modules</strong></div>' +
           '</div>';
         } else if(sub && sub.active) {
           html += '<div style="background:rgba(67,233,123,.08);border:1px solid rgba(67,233,123,.2);border-radius:10px;padding:12px;margin-bottom:12px;">' +
@@ -3603,7 +3615,7 @@ function autoLoadModules(rowId, uniId, semId, email){
   }
 
   var planLimits = {starter:2, essential:2, semester:4, pro:6, year:999, vip:999};
-  var maxMods = planLimits[planVal] || 2;
+  var maxMods = parseInt(expandEl.dataset.maxMods) || planLimits[planVal] || 2;
   var orderMods = expandEl.dataset.orderMods ? expandEl.dataset.orderMods.split(',').map(Number) : [];
 
   var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
