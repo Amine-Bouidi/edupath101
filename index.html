@@ -3552,7 +3552,7 @@ function buildSemOptions(selected){
   return h;
 }
 
-function toggleAdminExpand(id){
+window.toggleAdminExpand = function(id){
   var e = el(id);
   if(!e) return;
   var wasOpen = e.classList.contains('open');
@@ -3609,7 +3609,7 @@ function renderModToggles(modEl, mods, enabledModules, rowId){
   modEl.innerHTML = h;
 }
 
-function adminSaveUser(email, rowId){
+window.adminSaveUser = function(email, rowId){
   var expandEl = el(rowId);
   var uni = expandEl.dataset.uni || '';
   var sem = expandEl.dataset.sem || '';
@@ -3654,7 +3654,7 @@ function adminSaveUser(email, rowId){
   });
 }
 
-function adminRevoke(email){
+window.adminRevoke = function(email){
   if(!confirm('Revoke access for ' + email + '?')) return;
   var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
   db.collection('subscriptions').doc(docId).update({active: false}).then(function(){
