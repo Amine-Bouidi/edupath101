@@ -434,7 +434,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .paywall-box .pw-btn:hover{opacity:.9;}
 .paywall-box .pw-sub{color:var(--text3);font-size:12px;}
 /* ADMIN PANEL */
-.admin-panel{padding:24px;max-width:700px;margin:0 auto;}
+.admin-panel{padding:24px;max-width:900px;margin:0 auto;}
 .admin-panel h2{font-family:'Sora',sans-serif;font-size:22px;margin-bottom:20px;}
 .admin-section{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;}
 .admin-section h3{font-size:15px;margin-bottom:14px;color:var(--accent2);}
@@ -443,16 +443,38 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .admin-btn{background:var(--accent2);color:#fff;border:none;padding:10px 24px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-right:8px;margin-top:6px;}
 .admin-btn:hover{opacity:.9;}
 .admin-btn.danger{background:#e05252;}
+.admin-btn.small{padding:5px 12px;font-size:12px;margin:0;}
 .admin-msg{padding:10px 14px;border-radius:8px;margin-top:10px;font-size:13px;display:none;}
 .admin-msg.success{display:block;background:rgba(67,233,123,.15);color:#43e97b;border:1px solid rgba(67,233,123,.3);}
 .admin-msg.error{display:block;background:rgba(224,82,82,.15);color:#e05252;border:1px solid rgba(224,82,82,.3);}
-.admin-user-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;gap:8px;flex-wrap:wrap;}
-.admin-user-row:last-child{border-bottom:none;}
-.admin-user-email{color:var(--text1);font-weight:600;flex:1;min-width:180px;}
-.admin-user-plan{color:var(--accent2);font-size:12px;background:rgba(108,99,255,.15);padding:3px 10px;border-radius:12px;}
-.admin-user-expires{color:var(--text3);font-size:12px;}
-.admin-revoke{background:none;border:1px solid #e05252;color:#e05252;padding:4px 12px;border-radius:8px;font-size:11px;cursor:pointer;}
-.admin-revoke:hover{background:#e05252;color:#fff;}
+/* User table row */
+.au-row{display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr 80px;gap:8px;padding:12px;align-items:center;border-bottom:1px solid var(--border);font-size:13px;cursor:pointer;transition:background .15s;}
+.au-row:hover{background:rgba(108,99,255,.06);}
+.au-row:last-child{border-bottom:none;}
+.au-name{font-weight:600;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.au-email{font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.au-uni,.au-sem{font-size:12px;color:var(--text2);}
+.au-status{font-size:11px;padding:3px 10px;border-radius:12px;display:inline-block;font-weight:600;}
+.au-status.paid{background:rgba(67,233,123,.15);color:#43e97b;}
+.au-status.trial{background:rgba(249,168,37,.15);color:#f9a825;}
+.au-status.expired{background:rgba(224,82,82,.15);color:#e05252;}
+.au-status.none{background:rgba(255,255,255,.05);color:var(--text3);}
+.au-actions-btn{background:var(--accent2);color:#fff;border:none;padding:5px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-weight:600;}
+.au-actions-btn:hover{opacity:.85;}
+/* Expandable detail panel */
+.au-expand{display:none;grid-column:1/-1;background:var(--bg);border-radius:10px;padding:16px;margin-top:8px;}
+.au-expand.open{display:block;}
+.au-expand-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.au-mod-list{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.au-mod-item{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;}
+.au-mod-item label{color:var(--text1);flex:1;cursor:pointer;}
+/* Toggle switch */
+.toggle{position:relative;width:40px;height:22px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:var(--border);border-radius:22px;transition:.2s;}
+.toggle .slider:before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;}
+.toggle input:checked+.slider{background:#43e97b;}
+.toggle input:checked+.slider:before{transform:translateX(18px);}
 .pricing-wrap{max-width:1060px;margin:0 auto;padding:0 4px;}
 .pricing-hero{text-align:center;margin-bottom:36px;}
 .pricing-hero-tag{display:inline-block;background:rgba(108,99,255,.15);color:var(--accent2);font-size:12px;font-weight:700;padding:6px 16px;border-radius:20px;margin-bottom:14px;letter-spacing:.5px;}
@@ -1118,58 +1140,71 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
       <div class="admin-panel">
         <h2>⚙️ Admin Panel</h2>
 
-        <!-- GRANT ACCESS -->
-        <div class="admin-section">
-          <h3>🔓 Grant User Access</h3>
-          <input type="email" id="adminEmail" class="admin-input" placeholder="Student's Google email (e.g. student@gmail.com)">
-          <select id="adminPlan" class="admin-select">
-            <option value="">— Select Plan —</option>
-            <option value="starter">🎯 Starter — 1 Module ($10)</option>
-            <option value="semester">📚 Full Semester — All Modules ($20)</option>
-            <option value="year">🎓 Full Year — All Semesters ($30)</option>
-            <option value="vip">👑 VIP — Everything + Tutoring ($100)</option>
-          </select>
-          <select id="adminUni" class="admin-select">
-            <option value="all">All Universities</option>
-          </select>
-          <select id="adminDuration" class="admin-select">
-            <option value="30">30 days</option>
-            <option value="90">90 days (3 months)</option>
-            <option value="180">180 days (6 months)</option>
-            <option value="365">365 days (1 year)</option>
-            <option value="9999">Lifetime</option>
-          </select>
-          <div>
-            <button class="admin-btn" id="btnAdminGrant">✅ Activate Access</button>
+        <!-- QUICK STATS -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;text-align:center;margin-bottom:20px;">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;">
+            <div style="font-size:26px;font-weight:800;color:var(--accent2);" id="statTotal">0</div>
+            <div style="font-size:11px;color:var(--text3);">Total Users</div>
           </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;">
+            <div style="font-size:26px;font-weight:800;color:#43e97b;" id="statActive">0</div>
+            <div style="font-size:11px;color:var(--text3);">Paid Users</div>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;">
+            <div style="font-size:26px;font-weight:800;color:#f9a825;" id="statTrial">0</div>
+            <div style="font-size:11px;color:var(--text3);">On Trial</div>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;">
+            <div style="font-size:26px;font-weight:800;color:#e05252;" id="statExpired">0</div>
+            <div style="font-size:11px;color:var(--text3);">Expired</div>
+          </div>
+        </div>
+
+        <!-- QUICK GRANT (for new users not yet registered) -->
+        <div class="admin-section" style="border-left:3px solid var(--accent2);">
+          <h3>➕ Quick Grant — New Student</h3>
+          <p style="font-size:12px;color:var(--text3);margin-bottom:12px;">Use this to pre-activate a student who hasn't logged in yet. For existing users, use the table below.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <input type="email" id="adminEmail" class="admin-input" placeholder="Student's email" style="margin:0;">
+            <select id="adminPlan" class="admin-select" style="margin:0;">
+              <option value="">— Plan —</option>
+              <option value="starter">🎯 Starter ($10)</option>
+              <option value="semester">📚 Semester ($20)</option>
+              <option value="year">🎓 Year ($30)</option>
+              <option value="vip">👑 VIP ($100)</option>
+            </select>
+            <select id="adminUni" class="admin-select" style="margin:0;">
+              <option value="all">All Universities</option>
+            </select>
+            <select id="adminDuration" class="admin-select" style="margin:0;">
+              <option value="30">30 days</option>
+              <option value="90">90 days</option>
+              <option value="180">6 months</option>
+              <option value="365">1 year</option>
+              <option value="9999">Lifetime</option>
+            </select>
+          </div>
+          <button class="admin-btn" id="btnAdminGrant" style="margin-top:12px;">✅ Activate Access</button>
           <div id="adminMsg" class="admin-msg"></div>
         </div>
 
-        <!-- ACTIVE USERS -->
+        <!-- ALL USERS TABLE -->
         <div class="admin-section">
-          <h3>👥 Active Subscribers</h3>
-          <input type="text" id="adminSearch" class="admin-input" placeholder="Search by email...">
-          <div id="adminUserList" style="max-height:400px;overflow-y:auto;">
-            <div style="color:var(--text3);font-size:13px;padding:12px 0;text-align:center;">Loading users...</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+            <h3 style="margin:0;">👥 All Users</h3>
+            <input type="text" id="adminSearch" class="admin-input" placeholder="🔍 Search by name or email..." style="margin:0;max-width:280px;flex:1;">
           </div>
-        </div>
-
-        <!-- QUICK STATS -->
-        <div class="admin-section">
-          <h3>📊 Quick Stats</h3>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;text-align:center;">
-            <div style="background:var(--bg);border-radius:10px;padding:16px;">
-              <div style="font-size:24px;font-weight:800;color:var(--accent2);" id="statTotal">0</div>
-              <div style="font-size:11px;color:var(--text3);">Total Users</div>
-            </div>
-            <div style="background:var(--bg);border-radius:10px;padding:16px;">
-              <div style="font-size:24px;font-weight:800;color:#43e97b;" id="statActive">0</div>
-              <div style="font-size:11px;color:var(--text3);">Active Subs</div>
-            </div>
-            <div style="background:var(--bg);border-radius:10px;padding:16px;">
-              <div style="font-size:24px;font-weight:800;color:#f9a825;" id="statTrial">0</div>
-              <div style="font-size:11px;color:var(--text3);">On Trial</div>
-            </div>
+          <!-- Table header -->
+          <div style="display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr 80px;gap:8px;padding:8px 12px;background:var(--bg);border-radius:8px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">
+            <div>Student</div>
+            <div>University</div>
+            <div>Semester</div>
+            <div>Status</div>
+            <div style="text-align:center;">Actions</div>
+          </div>
+          <!-- User rows container -->
+          <div id="adminUserList" style="max-height:500px;overflow-y:auto;">
+            <div style="color:var(--text3);font-size:13px;padding:20px 0;text-align:center;">Loading users...</div>
           </div>
         </div>
 
@@ -2965,62 +3000,199 @@ function adminGrantAccess(){
 
 function loadAdminUsers(){
   var listEl = el('adminUserList');
-  listEl.innerHTML='<div style="color:var(--text3);font-size:13px;padding:12px 0;text-align:center;">Loading...</div>';
+  listEl.innerHTML='<div style="color:var(--text3);font-size:13px;padding:20px 0;text-align:center;">Loading...</div>';
 
   var planLabels = {starter:'🎯 Starter',semester:'📚 Semester',year:'🎓 Year',vip:'👑 VIP'};
 
-  // First get all subscriptions
   db.collection('subscriptions').get().then(function(subSnap){
     var subs = {};
     subSnap.forEach(function(doc){ subs[doc.data().email] = doc.data(); });
 
-    // Then get all users
     return db.collection('users').orderBy('lastLogin','desc').get().then(function(userSnap){
       if(userSnap.empty){
-        listEl.innerHTML='<div style="color:var(--text3);font-size:13px;padding:12px 0;text-align:center;">No users yet.</div>';
-        el('statTotal').textContent='0'; el('statActive').textContent='0'; el('statTrial').textContent='0';
+        listEl.innerHTML='<div style="color:var(--text3);font-size:13px;padding:20px 0;text-align:center;">No users yet. Users will appear here after they sign in.</div>';
+        el('statTotal').textContent='0'; el('statActive').textContent='0'; el('statTrial').textContent='0'; el('statExpired').textContent='0';
         return;
       }
       var html='';
-      var total=0, active=0, trial=0;
+      var total=0, active=0, trial=0, expired=0;
       userSnap.forEach(function(doc){
         var u = doc.data();
         if(ADMIN_EMAILS.indexOf(u.email.toLowerCase()) !== -1) return;
         total++;
         var sub = subs[u.email];
-        var statusHtml='';
+        var statusClass='trial', statusText='🕐 Trial';
+        var uniText = sub && sub.university && sub.university !== 'all' ? sub.university : '—';
+        var semText = sub && sub.semester ? sub.semester : '—';
+
         if(sub && sub.active){
-          var expired = sub.expiresAt && new Date(sub.expiresAt) < new Date();
-          if(expired){
-            statusHtml='<span style="color:#e05252;font-size:12px;">⚠️ Expired</span>';
+          var isExpired = sub.expiresAt && new Date(sub.expiresAt) < new Date();
+          if(isExpired){
+            statusClass='expired'; statusText='⚠️ Expired'; expired++;
           } else {
-            active++;
-            var expText = sub.expiresAt ? new Date(sub.expiresAt).toLocaleDateString() : '♾️ Lifetime';
-            statusHtml='<span class="admin-user-plan">'+(planLabels[sub.plan]||sub.plan)+'</span> <span class="admin-user-expires">until '+expText+'</span>';
+            statusClass='paid'; statusText=planLabels[sub.plan]||'✅ Active'; active++;
           }
+        } else if(sub && !sub.active){
+          statusClass='expired'; statusText='🚫 Revoked'; expired++;
         } else {
           trial++;
-          statusHtml='<span style="color:#f9a825;font-size:12px;">🕐 Free trial</span>';
         }
-        var lastLogin = u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() + ' ' + new Date(u.lastLogin).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '—';
-        html += '<div class="admin-user-row">' +
-          '<div style="flex:1;min-width:0;">' +
-            '<div class="admin-user-email">' + u.email + '</div>' +
-            '<div style="font-size:11px;color:var(--text3);">' + (u.name||'') + ' · Last: ' + lastLogin + '</div>' +
+
+        var rowId = 'auRow_' + doc.id;
+        var lastLogin = u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : '';
+
+        html += '<div class="au-row" onclick="toggleAdminExpand(\''+rowId+'\')">' +
+          '<div><div class="au-name">'+(u.name||'Unknown')+'</div><div class="au-email">'+u.email+'</div></div>' +
+          '<div class="au-uni">'+uniText+'</div>' +
+          '<div class="au-sem">'+semText+'</div>' +
+          '<div><span class="au-status '+statusClass+'">'+statusText+'</span></div>' +
+          '<div style="text-align:center;"><button class="au-actions-btn" onclick="event.stopPropagation();toggleAdminExpand(\''+rowId+'\')">Manage</button></div>' +
+        '</div>' +
+        '<div class="au-expand" id="'+rowId+'">' +
+          '<div class="au-expand-grid">' +
+            '<div>' +
+              '<label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px;">University</label>' +
+              '<select class="admin-select" style="margin:0;" id="'+rowId+'_uni" onchange="adminLoadModules(\''+rowId+'\',\''+u.email+'\')">' +
+                '<option value="">— Select —</option>' +
+                buildUniOptions(sub ? sub.university : '') +
+              '</select>' +
+            '</div>' +
+            '<div>' +
+              '<label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px;">Semester</label>' +
+              '<select class="admin-select" style="margin:0;" id="'+rowId+'_sem" onchange="adminLoadModules(\''+rowId+'\',\''+u.email+'\')">' +
+                '<option value="">— Select —</option>' +
+                buildSemOptions(sub ? sub.semester : '') +
+              '</select>' +
+            '</div>' +
+            '<div>' +
+              '<label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px;">Plan</label>' +
+              '<select class="admin-select" style="margin:0;" id="'+rowId+'_plan">' +
+                '<option value="">— Plan —</option>' +
+                '<option value="starter"'+(sub&&sub.plan==='starter'?' selected':'')+'>🎯 Starter</option>' +
+                '<option value="semester"'+(sub&&sub.plan==='semester'?' selected':'')+'>📚 Semester</option>' +
+                '<option value="year"'+(sub&&sub.plan==='year'?' selected':'')+'>🎓 Year</option>' +
+                '<option value="vip"'+(sub&&sub.plan==='vip'?' selected':'')+'>👑 VIP</option>' +
+              '</select>' +
+            '</div>' +
+            '<div>' +
+              '<label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px;">Duration</label>' +
+              '<select class="admin-select" style="margin:0;" id="'+rowId+'_dur">' +
+                '<option value="30">30 days</option><option value="90">90 days</option><option value="180">6 months</option><option value="365">1 year</option><option value="9999">Lifetime</option>' +
+              '</select>' +
+            '</div>' +
           '</div>' +
-          '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
-            statusHtml +
-            (sub && sub.active ? ' <button class="admin-revoke" onclick="adminRevoke(\'' + u.email + '\')">Revoke</button>' : '') +
+          '<label style="font-size:11px;color:var(--text3);display:block;margin-bottom:8px;">Module Access</label>' +
+          '<div class="au-mod-list" id="'+rowId+'_mods">' +
+            '<div style="color:var(--text3);font-size:12px;grid-column:1/-1;text-align:center;padding:8px;">Select university & semester to see modules</div>' +
           '</div>' +
+          '<div style="display:flex;gap:8px;margin-top:14px;">' +
+            '<button class="admin-btn small" onclick="adminSaveUser(\''+u.email+'\',\''+rowId+'\')">💾 Save Changes</button>' +
+            '<button class="admin-btn small danger" onclick="adminRevoke(\''+u.email+'\')">🚫 Revoke Access</button>' +
+          '</div>' +
+          '<div id="'+rowId+'_msg" class="admin-msg" style="margin-top:8px;"></div>' +
         '</div>';
       });
-      listEl.innerHTML = html || '<div style="color:var(--text3);font-size:13px;padding:12px 0;text-align:center;">No users yet.</div>';
+      listEl.innerHTML = html || '<div style="color:var(--text3);font-size:13px;padding:20px 0;text-align:center;">No users yet.</div>';
       el('statTotal').textContent = total;
       el('statActive').textContent = active;
       el('statTrial').textContent = trial;
+      el('statExpired').textContent = expired;
     });
   }).catch(function(err){
     listEl.innerHTML='<div style="color:#e05252;font-size:13px;padding:12px 0;">Error: ' + err.message + '</div>';
+  });
+}
+
+function buildUniOptions(selected){
+  var h='';
+  UNIVERSITIES.forEach(function(u){
+    h+='<option value="'+u.id+'"'+(selected===u.id?' selected':'')+'>'+u.name+'</option>';
+  });
+  return h;
+}
+
+function buildSemOptions(selected){
+  var sems=['sem1','sem2','sem3','sem4','sem5lit','sem5ling','sem6lit','sem6ling'];
+  var labels=['S1','S2','S3','S4','S5 Literature','S5 Linguistics','S6 Literature','S6 Linguistics'];
+  var h='';
+  sems.forEach(function(s,i){
+    h+='<option value="'+s+'"'+(selected===s?' selected':'')+'>'+labels[i]+'</option>';
+  });
+  return h;
+}
+
+function toggleAdminExpand(id){
+  var e = el(id);
+  if(e) e.classList.toggle('open');
+}
+
+function adminLoadModules(rowId, email){
+  var uniId = el(rowId+'_uni').value;
+  var semId = el(rowId+'_sem').value;
+  var modEl = el(rowId+'_mods');
+  if(!uniId || !semId){
+    modEl.innerHTML='<div style="color:var(--text3);font-size:12px;grid-column:1/-1;text-align:center;padding:8px;">Select university & semester to see modules</div>';
+    return;
+  }
+  // Get modules for this uni+sem
+  var semIdx = SEMESTERS.findIndex(function(s){return s.id===semId;});
+  var mods = getMods(semIdx, uniId);
+  if(!mods || mods.length===0){
+    modEl.innerHTML='<div style="color:var(--text3);font-size:12px;grid-column:1/-1;text-align:center;padding:8px;">No modules found</div>';
+    return;
+  }
+  var h='';
+  mods.forEach(function(m, i){
+    var toggleId = rowId+'_mod_'+i;
+    h+='<div class="au-mod-item">' +
+      '<label for="'+toggleId+'">'+m.title+'</label>' +
+      '<div class="toggle"><input type="checkbox" id="'+toggleId+'" checked><span class="slider"></span></div>' +
+    '</div>';
+  });
+  modEl.innerHTML = h;
+}
+
+function adminSaveUser(email, rowId){
+  var uni = el(rowId+'_uni').value;
+  var sem = el(rowId+'_sem').value;
+  var plan = el(rowId+'_plan').value;
+  var days = parseInt(el(rowId+'_dur').value);
+  var msgEl = el(rowId+'_msg');
+
+  if(!plan){
+    msgEl.className='admin-msg error'; msgEl.textContent='Please select a plan.'; return;
+  }
+
+  // Collect module access
+  var modules = [];
+  var modToggles = el(rowId+'_mods').querySelectorAll('input[type=checkbox]');
+  modToggles.forEach(function(cb, i){
+    modules.push({index: i, enabled: cb.checked});
+  });
+
+  var expiresAt = days >= 9999 ? null : new Date(Date.now() + days * 86400000).toISOString();
+
+  var userData = {
+    email: email,
+    plan: plan,
+    university: uni,
+    semester: sem,
+    days: days,
+    expiresAt: expiresAt,
+    modules: modules,
+    grantedBy: S.user.email,
+    grantedAt: new Date().toISOString(),
+    active: true
+  };
+
+  var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
+  db.collection('subscriptions').doc(docId).set(userData, {merge: true}).then(function(){
+    msgEl.className='admin-msg success';
+    msgEl.textContent='✅ Saved! Access updated for ' + email;
+    setTimeout(function(){ loadAdminUsers(); }, 1500);
+  }).catch(function(err){
+    msgEl.className='admin-msg error';
+    msgEl.textContent='❌ Error: ' + err.message;
   });
 }
 
@@ -3036,10 +3208,17 @@ function adminRevoke(email){
 if(el('adminSearch')){
   el('adminSearch').addEventListener('input', function(){
     var q = this.value.toLowerCase();
-    var rows = el('adminUserList').querySelectorAll('.admin-user-row');
+    var rows = el('adminUserList').querySelectorAll('.au-row');
     rows.forEach(function(r){
-      var email = r.querySelector('.admin-user-email').textContent.toLowerCase();
-      r.style.display = email.indexOf(q) !== -1 ? 'flex' : 'none';
+      var text = r.textContent.toLowerCase();
+      var expandId = r.getAttribute('onclick').match(/'([^']+)'/);
+      var expand = expandId ? el(expandId[1]) : null;
+      if(text.indexOf(q) !== -1){
+        r.style.display = 'grid';
+      } else {
+        r.style.display = 'none';
+        if(expand) expand.classList.remove('open');
+      }
     });
   });
 }
