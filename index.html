@@ -907,6 +907,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
       <label>WhatsApp number</label>
       <input type="tel" id="ppWhatsapp" placeholder="+212 6XX-XXXXXX">
     </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="pp-field">
+        <label>Age</label>
+        <select id="ppAge">
+          <option value="">— Age —</option>
+          <option value="17-19">17 – 19</option>
+          <option value="20-22">20 – 22</option>
+          <option value="23-25">23 – 25</option>
+          <option value="26+">26+</option>
+        </select>
+      </div>
+      <div class="pp-field">
+        <label>Gender</label>
+        <select id="ppGender">
+          <option value="">— Gender —</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </div>
+    </div>
     <div class="pp-field">
       <label>University</label>
       <select id="ppUni"><option value="">— Select your university —</option></select>
@@ -1029,6 +1049,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
             <div class="pp-field">
               <label>WhatsApp number</label>
               <input type="tel" id="profWhatsapp" class="admin-input" style="margin:0;" placeholder="+212 6XX-XXXXXX">
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div class="pp-field">
+                <label>Age</label>
+                <select id="profAge" class="admin-select" style="margin:0;">
+                  <option value="">— Age —</option>
+                  <option value="17-19">17 – 19</option>
+                  <option value="20-22">20 – 22</option>
+                  <option value="23-25">23 – 25</option>
+                  <option value="26+">26+</option>
+                </select>
+              </div>
+              <div class="pp-field">
+                <label>Gender</label>
+                <select id="profGender" class="admin-select" style="margin:0;">
+                  <option value="">— Gender —</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+              </div>
             </div>
             <div class="pp-field">
               <label>University</label>
@@ -3266,6 +3306,8 @@ el('ppSaveBtn').onclick = function(){
     name: el('ppName').value.trim(),
     email: email,
     whatsapp: el('ppWhatsapp').value.trim(),
+    age: el('ppAge').value,
+    gender: el('ppGender').value,
     university: el('ppUni').value,
     semester: el('ppSem').value,
     profileComplete: true,
@@ -3300,6 +3342,8 @@ function openProfile(){
       var d = doc.data();
       el('profName').value = d.name || S.user.name || '';
       el('profWhatsapp').value = d.whatsapp || '';
+      el('profAge').value = d.age || '';
+      el('profGender').value = d.gender || '';
       populateProfileDropdowns('profUni','profSem', d.university||'', d.semester||'');
     }
   }).catch(function(){});
@@ -3311,6 +3355,8 @@ el('profSaveBtn').onclick = function(){
   var profileData = {
     name: el('profName').value.trim(),
     whatsapp: el('profWhatsapp').value.trim(),
+    age: el('profAge').value,
+    gender: el('profGender').value,
     university: el('profUni').value,
     semester: el('profSem').value,
     profileComplete: true
