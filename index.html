@@ -1948,6 +1948,15 @@ function getVideoDuration(uniId, semId, modId, vidIdx){
   return '';
 }
 
+function getVideoField(uniId, semId, modId, vidIdx, field){
+  var modIdx = modId.replace('m','');
+  var cacheKey = uniId + '_' + semId + '_m' + (parseInt(modIdx)-1);
+  if(CONTENT_CACHE[cacheKey] && CONTENT_CACHE[cacheKey][vidIdx] && CONTENT_CACHE[cacheKey][vidIdx][field]){
+    return CONTENT_CACHE[cacheKey][vidIdx][field];
+  }
+  return null;
+}
+
 /* ── DATA ── */
 var UNIVERSITIES = [
   {id:'uiz', name:'University Ibn Zohr — FLSH Agadir', country:'Morocco 🇲🇦', emoji:'🏛️', c:'#6c63ff'},
@@ -2807,9 +2816,15 @@ function renderPlayer(){
   el('btnNxt').disabled=!isDone;
   if(isDone){el('btnDone').textContent='✓ Completed';el('btnDone').disabled=true;el('btnNxt').disabled=false;}
 
-  el('sumBody').textContent=vid.summary;
+  /* Use Firestore summary and keys if available */
+  var fsSummary = getVideoField(S.uni.id, S.sem.id, S.mod.id, S.vidIdx, 'summary');
+  var fsKeys = getVideoField(S.uni.id, S.sem.id, S.mod.id, S.vidIdx, 'keys');
+  var displaySummary = fsSummary || vid.summary;
+  var displayKeys = (fsKeys && fsKeys.length > 0) ? fsKeys : vid.keys;
+
+  el('sumBody').textContent=displaySummary;
   var kl=el('kiList'); kl.innerHTML='';
-  vid.keys.forEach(function(k,i){
+  displayKeys.forEach(function(k,i){
     var item=document.createElement('div'); item.className='ki-item';
     item.innerHTML='<div class="ki-dot">'+(i+1)+'</div><div class="ki-text">'+k+'</div>';
     kl.appendChild(item);
@@ -4299,6 +4314,12 @@ function renderVideoSlots(container, docId, savedVideos){
       '<div class="cm-field"><label>Video title</label><input type="text" id="cm_title_'+i+'" value="' + (v && v.title ? v.title : '') + '" placeholder="e.g. Introduction to Past Tense"></div>' +
       '<div class="cm-field"><label>YouTube video ID (the part after v= in the URL)</label><input type="text" id="cm_ytid_'+i+'" value="' + (v && v.ytId ? v.ytId : '') + '" placeholder="e.g. dQw4w9WgXcQ"></div>' +
       '<div class="cm-field"><label>Duration</label><input type="text" id="cm_dur_'+i+'" value="' + (v && v.duration ? v.duration : '') + '" placeholder="e.g. 12:30"></div>' +
+      '<div class="cm-field"><label>Summary</label><textarea id="cm_sum_'+i+'" rows="2" style="width:100%;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text1);font-size:13px;box-sizing:border-box;resize:vertical;font-family:inherit;" placeholder="Brief summary of the video lesson...">' + (v && v.summary ? v.summary : '') + '</textarea></div>' +
+      '<div class="cm-field"><label>Key point 1</label><input type="text" id="cm_k1_'+i+'" value="' + (v && v.keys && v.keys[0] ? v.keys[0] : '') + '" placeholder="First key takeaway"></div>' +
+      '<div class="cm-field"><label>Key point 2</label><input type="text" id="cm_k2_'+i+'" value="' + (v && v.keys && v.keys[1] ? v.keys[1] : '') + '" placeholder="Second key takeaway"></div>' +
+      '<div class="cm-field"><label>Key point 3</label><input type="text" id="cm_k3_'+i+'" value="' + (v && v.keys && v.keys[2] ? v.keys[2] : '') + '" placeholder="Third key takeaway"></div>' +
+      '<div class="cm-field"><label>Key point 4</label><input type="text" id="cm_k4_'+i+'" value="' + (v && v.keys && v.keys[3] ? v.keys[3] : '') + '" placeholder="Fourth key takeaway (optional)"></div>' +
+      '<div class="cm-field"><label>Key point 5</label><input type="text" id="cm_k5_'+i+'" value="' + (v && v.keys && v.keys[4] ? v.keys[4] : '') + '" placeholder="Fifth key takeaway (optional)"></div>' +
     '</div>';
   }
   html += btnHtml;
@@ -4312,7 +4333,13 @@ window.cmSaveVideos = function(docId){
     var title = el('cm_title_'+i).value.trim();
     var ytId = el('cm_ytid_'+i).value.trim();
     var dur = el('cm_dur_'+i).value.trim();
-    videos.push({title: title, ytId: ytId, duration: dur, index: i});
+    var sum = el('cm_sum_'+i).value.trim();
+    var keys = [];
+    for(var k = 1; k <= 5; k++){
+      var kv = el('cm_k'+k+'_'+i).value.trim();
+      if(kv) keys.push(kv);
+    }
+    videos.push({title: title, ytId: ytId, duration: dur, summary: sum, keys: keys, index: i});
   }
   var parts = docId.split('_');
   db.collection('content').doc(docId).set({
