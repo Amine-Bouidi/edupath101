@@ -4258,7 +4258,11 @@ window.cmLoadVideos = function(){
 };
 
 function renderVideoSlots(container, docId, savedVideos){
-  var html = '';
+  var btnHtml = '<div style="display:flex;gap:8px;margin:10px 0;position:sticky;bottom:0;z-index:10;background:var(--bg);padding:10px 0;">' +
+    '<button class="admin-btn" onclick="cmSaveVideos(\''+docId+'\')">💾 Save all videos</button>' +
+    '<button class="admin-btn danger" onclick="cmClearVideos(\''+docId+'\')">🗑 Clear all</button>' +
+  '</div>';
+  var html = btnHtml;
   for(var i = 0; i < 5; i++){
     var v = savedVideos[i] || null;
     var hasData = v && v.ytId;
@@ -4274,10 +4278,7 @@ function renderVideoSlots(container, docId, savedVideos){
       '<div class="cm-field"><label>Duration</label><input type="text" id="cm_dur_'+i+'" value="' + (v && v.duration ? v.duration : '') + '" placeholder="e.g. 12:30"></div>' +
     '</div>';
   }
-  html += '<div style="display:flex;gap:8px;margin-top:10px;">' +
-    '<button class="admin-btn small" onclick="cmSaveVideos(\''+docId+'\')">💾 Save all videos</button>' +
-    '<button class="admin-btn small danger" onclick="cmClearVideos(\''+docId+'\')">🗑 Clear all</button>' +
-  '</div>';
+  html += btnHtml;
   html += '<div id="cmSaveMsg" class="admin-msg" style="margin-top:8px;"></div>';
   container.innerHTML = html;
 }
