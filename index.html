@@ -946,6 +946,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
       <label>Current semester</label>
       <select id="ppSem"><option value="">— Select your semester —</option></select>
     </div>
+    <div style="margin:14px 0;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;">
+      <div style="font-size:11px;color:var(--text3);line-height:1.6;max-height:80px;overflow-y:auto;margin-bottom:10px;">By using EduPath, you agree to our Privacy Policy and Refund Policy. We collect your name, email, and university info to provide our educational services. Refunds are available within 24 hours of purchase. We never sell your data to third parties.</div>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--text2);">
+        <input type="checkbox" id="ppTerms" onchange="validateProfilePopup()" style="accent-color:var(--accent2);width:18px;height:18px;flex-shrink:0;">
+        I agree to the <a href="#" onclick="event.preventDefault();el('profilePopup').classList.remove('open');openPrivacyPage();" style="color:var(--accent2);text-decoration:underline;">Privacy Policy & Refund Policy</a>
+      </label>
+    </div>
     <button class="pp-save-btn" id="ppSaveBtn" disabled>Complete Setup</button>
   </div>
 </div>
@@ -3513,7 +3520,8 @@ function validateProfilePopup(){
   var name = el('ppName').value.trim();
   var uni = el('ppUni').value;
   var sem = el('ppSem').value;
-  el('ppSaveBtn').disabled = !(name && uni && sem);
+  var terms = el('ppTerms').checked;
+  el('ppSaveBtn').disabled = !(name && uni && sem && terms);
 }
 
 el('ppName').addEventListener('input', validateProfilePopup);
@@ -3531,6 +3539,8 @@ el('ppSaveBtn').onclick = function(){
     university: el('ppUni').value,
     semester: el('ppSem').value,
     profileComplete: true,
+    consentAccepted: true,
+    consentDate: new Date().toISOString(),
     lastLogin: new Date().toISOString()
   };
   var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
