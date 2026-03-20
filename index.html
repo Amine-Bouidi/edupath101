@@ -3,7 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EduPath</title>
+<title>EduPath — Online Courses for Moroccan English Studies Students</title>
+<meta name="description" content="Video lessons, quizzes, past exams and study resources for English Studies students at Moroccan universities. 12 universities, 8 semesters, all modules covered.">
+<meta name="keywords" content="English Studies Morocco, Moroccan university courses, FLSH, English department, دراسات انجليزية, الجامعة المغربية">
+<meta name="author" content="Amine Bouidi">
+<meta name="theme-color" content="#0c0c18">
+
+<!-- Open Graph (Facebook, WhatsApp, Messenger link previews) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="EduPath — English Studies Courses for Moroccan Universities">
+<meta property="og:description" content="Video lessons, quizzes, past exams and resources for all semesters. 12 universities covered. Start your 48h free trial.">
+<meta property="og:url" content="https://amine-bouidi.github.io/edupath101/">
+<meta property="og:image" content="https://amine-bouidi.github.io/edupath101/og-image.png">
+<meta property="og:site_name" content="EduPath">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="ar_MA">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="EduPath — English Studies Courses for Moroccan Universities">
+<meta name="twitter:description" content="Video lessons, quizzes, past exams and resources. 12 universities, 8 semesters. Start free.">
+<meta name="twitter:image" content="https://amine-bouidi.github.io/edupath101/og-image.png">
+
+<!-- Preconnect for faster loading -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://www.googleapis.com">
+<link rel="preconnect" href="https://firestore.googleapis.com">
+
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
 :root{
@@ -439,6 +466,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .paywall-box .pw-sub{color:var(--text3);font-size:12px;}
 /* ADMIN PANEL */
 .admin-panel{padding:0 24px 12px;max-width:900px;margin:0 auto;}
+.admin-tab{padding:12px 24px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-size:14px;font-weight:700;cursor:pointer;border-radius:10px 10px 0 0;transition:all .2s;font-family:'Sora',sans-serif;margin-bottom:-1px;}
+.admin-tab:hover{color:var(--text1);background:var(--bg3);}
+.admin-tab.active{color:#fff;background:var(--accent2);border-color:var(--accent2);}
+.cm-slot{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px;}
+.cm-slot-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.cm-slot-num{font-size:12px;font-weight:700;color:var(--accent2);background:rgba(108,99,255,.1);padding:4px 10px;border-radius:6px;}
+.cm-slot-status{font-size:11px;padding:3px 8px;border-radius:6px;font-weight:600;}
+.cm-slot-empty{background:rgba(249,168,37,.1);color:#f9a825;}
+.cm-slot-saved{background:rgba(67,233,123,.1);color:#43e97b;}
+.cm-field{margin-bottom:8px;}
+.cm-field label{font-size:11px;color:var(--text3);display:block;margin-bottom:3px;}
+.cm-field input{width:100%;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text1);font-size:13px;box-sizing:border-box;}
 .admin-section{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;}
 .admin-section h3{font-size:15px;margin-bottom:14px;color:var(--accent2);}
 .admin-input{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text1);font-size:14px;margin-bottom:10px;box-sizing:border-box;}
@@ -1419,6 +1458,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
     <!-- ADMIN PANEL -->
     <div class="view" id="view-admin" style="display:none;">
       <div class="admin-panel">
+
+        <!-- ADMIN TABS -->
+        <div style="display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:0;">
+          <button id="adminTabUsers" class="admin-tab active" onclick="switchAdminTab('users')">👥 Users</button>
+          <button id="adminTabContent" class="admin-tab" onclick="switchAdminTab('content')">🎬 Content Manager</button>
+        </div>
+
+        <!-- USERS TAB -->
+        <div id="adminUsersPane">
         <!-- QUICK STATS -->
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center;margin-bottom:14px;">
           <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;">
@@ -1458,11 +1506,52 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
             <div style="color:var(--text3);font-size:13px;padding:20px 0;text-align:center;">Loading users...</div>
           </div>
         </div>
+        </div><!-- end adminUsersPane -->
+
+        <!-- CONTENT MANAGER TAB -->
+        <div id="adminContentPane" style="display:none;">
+
+          <!-- Coverage tracker -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;">
+              <div style="font-size:22px;font-weight:800;color:var(--accent2);" id="covS2">0%</div>
+              <div style="font-size:11px;color:var(--text3);">S2 coverage</div>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;">
+              <div style="font-size:22px;font-weight:800;color:var(--accent2);" id="covS4">0%</div>
+              <div style="font-size:11px;color:var(--text3);">S4 coverage</div>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;">
+              <div style="font-size:22px;font-weight:800;color:var(--accent2);" id="covS6">0%</div>
+              <div style="font-size:11px;color:var(--text3);">S6 coverage</div>
+            </div>
+          </div>
+
+          <!-- Select university + semester + module -->
+          <div class="admin-section" style="border-left:3px solid var(--accent2);">
+            <h3 style="margin:0 0 12px;">Select module to manage</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+              <select id="cmUni" class="admin-select" style="margin:0;" onchange="cmLoadSemesters()">
+                <option value="">— University —</option>
+              </select>
+              <select id="cmSem" class="admin-select" style="margin:0;" onchange="cmLoadModules()">
+                <option value="">— Semester —</option>
+              </select>
+              <select id="cmMod" class="admin-select" style="margin:0;" onchange="cmLoadVideos()">
+                <option value="">— Module —</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Video slots -->
+          <div id="cmVideoSlots" style="margin-top:14px;">
+            <div style="color:var(--text3);font-size:13px;text-align:center;padding:30px;">Select a university, semester, and module above to manage videos</div>
+          </div>
+
+        </div><!-- end adminContentPane -->
 
       </div>
     </div>
-
-    <!-- PLAYER -->
     <div id="view-player">
       <div class="pl-left">
         <div class="pl-left-inner">
@@ -1806,10 +1895,44 @@ var CREDS = { username: 'admin', password: 'ea101admin!', name: 'Demo Student' }
 */
 var DEFAULT_YT_ID = 'YCYGzAbJZLc';
 var VIDEO_MAP = {};
+var CONTENT_CACHE = {};
+
+function loadContentForModule(uniId, semId, modIdx, callback){
+  var docId = uniId + '_' + semId + '_m' + modIdx;
+  if(CONTENT_CACHE[docId]){
+    callback(CONTENT_CACHE[docId]);
+    return;
+  }
+  db.collection('content').doc(docId).get().then(function(doc){
+    if(doc.exists && doc.data().videos){
+      CONTENT_CACHE[docId] = doc.data().videos;
+      callback(doc.data().videos);
+    } else {
+      CONTENT_CACHE[docId] = [];
+      callback([]);
+    }
+  }).catch(function(){ callback([]); });
+}
+
 function getYouTubeId(uniId, semId, modId, vidIdx){
   var key = uniId + '_' + semId + '_' + modId;
   if(VIDEO_MAP[key] && VIDEO_MAP[key][vidIdx]) return VIDEO_MAP[key][vidIdx];
+  // Check content cache
+  var modIdx = modId.replace('m','');
+  var cacheKey = uniId + '_' + semId + '_m' + modIdx;
+  if(CONTENT_CACHE[cacheKey] && CONTENT_CACHE[cacheKey][vidIdx] && CONTENT_CACHE[cacheKey][vidIdx].ytId){
+    return CONTENT_CACHE[cacheKey][vidIdx].ytId;
+  }
   return DEFAULT_YT_ID;
+}
+
+function getVideoTitle(uniId, semId, modId, vidIdx){
+  var modIdx = modId.replace('m','');
+  var cacheKey = uniId + '_' + semId + '_m' + modIdx;
+  if(CONTENT_CACHE[cacheKey] && CONTENT_CACHE[cacheKey][vidIdx] && CONTENT_CACHE[cacheKey][vidIdx].title){
+    return CONTENT_CACHE[cacheKey][vidIdx].title;
+  }
+  return VIDEOS[vidIdx] ? VIDEOS[vidIdx].title : 'Video ' + (vidIdx + 1);
 }
 
 /* ── DATA ── */
@@ -2618,15 +2741,19 @@ var fakeT=null;
 function openPlayer(mod){
   S.mod=mod; S.vidDone=false; updateCtx();
   initP(S.uni.id,S.sem.id,mod.id);
-  var p=getP(S.uni.id,S.sem.id,mod.id);
-  var first=-1;
-  for(var i=0;i<VIDEOS.length;i++){if(p.videos.indexOf(i)<0){first=i;break;}}
-  S.vidIdx=first>=0?first:0;
-  el('nav-player').style.display='flex';
-  el('nav-contact').style.display='flex';
-  setTopbar([S.uni.emoji+' '+S.uni.name, S.sem.title, mod.title], mod.title, true);
-  renderPlayer();
-  showView('player');
+  // Preload content from Firestore
+  var modIdx = mod.id.replace('m','');
+  loadContentForModule(S.uni.id, S.sem.id, parseInt(modIdx)-1, function(){
+    var p=getP(S.uni.id,S.sem.id,mod.id);
+    var first=-1;
+    for(var i=0;i<VIDEOS.length;i++){if(p.videos.indexOf(i)<0){first=i;break;}}
+    S.vidIdx=first>=0?first:0;
+    el('nav-player').style.display='flex';
+    el('nav-contact').style.display='flex';
+    setTopbar([S.uni.emoji+' '+S.uni.name, S.sem.title, mod.title], mod.title, true);
+    renderPlayer();
+    showView('player');
+  });
 }
 el('nav-player').onclick=function(){closeMobileMenu();if(S.mod)renderPlayer();showView('player');};
 
@@ -4052,6 +4179,164 @@ if(el('adminSearch')){
 }
 
 if(el('btnAdminGrant')) el('btnAdminGrant').onclick = adminGrantAccess;
+/* ── ADMIN TABS ── */
+window.switchAdminTab = function(tab){
+  el('adminUsersPane').style.display = tab === 'users' ? 'block' : 'none';
+  el('adminContentPane').style.display = tab === 'content' ? 'block' : 'none';
+  el('adminTabUsers').className = 'admin-tab' + (tab === 'users' ? ' active' : '');
+  el('adminTabContent').className = 'admin-tab' + (tab === 'content' ? ' active' : '');
+  if(tab === 'content') cmInit();
+};
+
+/* ── CONTENT MANAGER ── */
+function cmInit(){
+  var uniSel = el('cmUni');
+  uniSel.innerHTML = '<option value="">— University —</option>';
+  UNIVERSITIES.forEach(function(u){
+    var opt = document.createElement('option');
+    opt.value = u.id; opt.textContent = u.name;
+    uniSel.appendChild(opt);
+  });
+  el('cmSem').innerHTML = '<option value="">— Semester —</option>';
+  el('cmMod').innerHTML = '<option value="">— Module —</option>';
+  cmUpdateCoverage();
+}
+
+window.cmLoadSemesters = function(){
+  var semSel = el('cmSem');
+  semSel.innerHTML = '<option value="">— Semester —</option>';
+  el('cmMod').innerHTML = '<option value="">— Module —</option>';
+  el('cmVideoSlots').innerHTML = '<div style="color:var(--text3);font-size:13px;text-align:center;padding:30px;">Select semester and module</div>';
+  if(!el('cmUni').value) return;
+  // Only show S2, S4, S6 semesters
+  var targetSems = ['sem2','sem4','sem5lit','sem5ling','sem6lit','sem6ling'];
+  SEMESTERS.forEach(function(s){
+    if(targetSems.indexOf(s.id) !== -1){
+      var opt = document.createElement('option');
+      opt.value = s.id; opt.textContent = s.title;
+      semSel.appendChild(opt);
+    }
+  });
+};
+
+window.cmLoadModules = function(){
+  var modSel = el('cmMod');
+  modSel.innerHTML = '<option value="">— Module —</option>';
+  el('cmVideoSlots').innerHTML = '<div style="color:var(--text3);font-size:13px;text-align:center;padding:30px;">Select a module</div>';
+  var uniId = el('cmUni').value;
+  var semId = el('cmSem').value;
+  if(!uniId || !semId) return;
+  var semIdx = SEMESTERS.findIndex(function(s){return s.id===semId;});
+  var mods = getMods(semIdx, uniId);
+  mods.forEach(function(m, i){
+    var opt = document.createElement('option');
+    opt.value = i; opt.textContent = (m.icon||'') + ' ' + m.title;
+    modSel.appendChild(opt);
+  });
+};
+
+window.cmLoadVideos = function(){
+  var uniId = el('cmUni').value;
+  var semId = el('cmSem').value;
+  var modIdx = el('cmMod').value;
+  var container = el('cmVideoSlots');
+  if(!uniId || !semId || modIdx === ''){
+    container.innerHTML = '<div style="color:var(--text3);font-size:13px;text-align:center;padding:30px;">Select all three to manage videos</div>';
+    return;
+  }
+  container.innerHTML = '<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px;">Loading...</div>';
+  var docId = uniId + '_' + semId + '_m' + modIdx;
+  db.collection('content').doc(docId).get().then(function(doc){
+    var savedVideos = doc.exists ? (doc.data().videos || []) : [];
+    renderVideoSlots(container, docId, savedVideos);
+  }).catch(function(){
+    renderVideoSlots(container, docId, []);
+  });
+};
+
+function renderVideoSlots(container, docId, savedVideos){
+  var html = '';
+  for(var i = 0; i < 5; i++){
+    var v = savedVideos[i] || null;
+    var hasData = v && v.ytId;
+    var statusClass = hasData ? 'cm-slot-saved' : 'cm-slot-empty';
+    var statusText = hasData ? 'Saved' : 'Empty';
+    html += '<div class="cm-slot">' +
+      '<div class="cm-slot-head">' +
+        '<span class="cm-slot-num">Video ' + (i+1) + (i === 0 ? ' (Free preview)' : ' (Paid)') + '</span>' +
+        '<span class="cm-slot-status ' + statusClass + '">' + statusText + '</span>' +
+      '</div>' +
+      '<div class="cm-field"><label>Video title</label><input type="text" id="cm_title_'+i+'" value="' + (v && v.title ? v.title : '') + '" placeholder="e.g. Introduction to Past Tense"></div>' +
+      '<div class="cm-field"><label>YouTube video ID (the part after v= in the URL)</label><input type="text" id="cm_ytid_'+i+'" value="' + (v && v.ytId ? v.ytId : '') + '" placeholder="e.g. dQw4w9WgXcQ"></div>' +
+      '<div class="cm-field"><label>Duration</label><input type="text" id="cm_dur_'+i+'" value="' + (v && v.duration ? v.duration : '') + '" placeholder="e.g. 12:30"></div>' +
+    '</div>';
+  }
+  html += '<div style="display:flex;gap:8px;margin-top:10px;">' +
+    '<button class="admin-btn small" onclick="cmSaveVideos(\''+docId+'\')">💾 Save all videos</button>' +
+    '<button class="admin-btn small danger" onclick="cmClearVideos(\''+docId+'\')">🗑 Clear all</button>' +
+  '</div>';
+  html += '<div id="cmSaveMsg" class="admin-msg" style="margin-top:8px;"></div>';
+  container.innerHTML = html;
+}
+
+window.cmSaveVideos = function(docId){
+  var videos = [];
+  for(var i = 0; i < 5; i++){
+    var title = el('cm_title_'+i).value.trim();
+    var ytId = el('cm_ytid_'+i).value.trim();
+    var dur = el('cm_dur_'+i).value.trim();
+    videos.push({title: title, ytId: ytId, duration: dur, index: i});
+  }
+  var parts = docId.split('_');
+  db.collection('content').doc(docId).set({
+    videos: videos,
+    university: parts[0],
+    semester: parts[1],
+    module: parts[2],
+    updatedAt: new Date().toISOString()
+  }, {merge: true}).then(function(){
+    var msg = el('cmSaveMsg');
+    msg.className = 'admin-msg success';
+    msg.textContent = '✅ Videos saved!';
+    cmLoadVideos();
+    cmUpdateCoverage();
+    setTimeout(function(){ msg.className = 'admin-msg'; }, 3000);
+  }).catch(function(e){
+    var msg = el('cmSaveMsg');
+    msg.className = 'admin-msg error';
+    msg.textContent = '❌ Error: ' + e.message;
+  });
+};
+
+window.cmClearVideos = function(docId){
+  if(!confirm('Clear all videos for this module?')) return;
+  db.collection('content').doc(docId).delete().then(function(){
+    cmLoadVideos();
+    cmUpdateCoverage();
+  }).catch(function(){});
+};
+
+function cmUpdateCoverage(){
+  db.collection('content').get().then(function(snap){
+    var s2 = 0, s4 = 0, s6 = 0;
+    var s2t = 0, s4t = 0, s6t = 0;
+    snap.forEach(function(doc){
+      var d = doc.data();
+      var hasVideo = d.videos && d.videos.some(function(v){ return v.ytId; });
+      if(!hasVideo) return;
+      var sem = d.semester || '';
+      if(sem === 'sem2'){ s2++; }
+      else if(sem === 'sem4'){ s4++; }
+      else if(sem.indexOf('sem5') === 0 || sem.indexOf('sem6') === 0){ s6++; }
+    });
+    // Total possible: 12 unis x ~6 modules each = ~72 per semester group
+    s2t = 72; s4t = 72; s6t = 72;
+    el('covS2').textContent = Math.round((s2/s2t)*100) + '%';
+    el('covS4').textContent = Math.round((s4/s4t)*100) + '%';
+    el('covS6').textContent = Math.round((s6/s6t)*100) + '%';
+  }).catch(function(){});
+}
+
 el('nav-admin').onclick = function(){
   closeMobileMenu();
   setTopbar([],'Admin Panel',false);
