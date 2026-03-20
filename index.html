@@ -1899,27 +1899,31 @@ var CONTENT_CACHE = {};
 
 function loadContentForModule(uniId, semId, modIdx, callback){
   var docId = uniId + '_' + semId + '_m' + modIdx;
+  console.log('[EduPath] Loading content for docId:', docId);
   if(CONTENT_CACHE[docId]){
+    console.log('[EduPath] Found in cache:', CONTENT_CACHE[docId].length, 'videos');
     callback(CONTENT_CACHE[docId]);
     return;
   }
   db.collection('content').doc(docId).get().then(function(doc){
     if(doc.exists && doc.data().videos){
+      console.log('[EduPath] Loaded from Firestore:', doc.data().videos.length, 'videos');
       CONTENT_CACHE[docId] = doc.data().videos;
       callback(doc.data().videos);
     } else {
+      console.log('[EduPath] No content found in Firestore for:', docId);
       CONTENT_CACHE[docId] = [];
       callback([]);
     }
-  }).catch(function(){ callback([]); });
+  }).catch(function(e){ console.log('[EduPath] Error loading content:', e.message); callback([]); });
 }
 
 function getYouTubeId(uniId, semId, modId, vidIdx){
   var key = uniId + '_' + semId + '_' + modId;
   if(VIDEO_MAP[key] && VIDEO_MAP[key][vidIdx]) return VIDEO_MAP[key][vidIdx];
-  // Check content cache
+  // Check content cache (modId is 1-based like m1, cache key is 0-based like m0)
   var modIdx = modId.replace('m','');
-  var cacheKey = uniId + '_' + semId + '_m' + modIdx;
+  var cacheKey = uniId + '_' + semId + '_m' + (parseInt(modIdx)-1);
   if(CONTENT_CACHE[cacheKey] && CONTENT_CACHE[cacheKey][vidIdx] && CONTENT_CACHE[cacheKey][vidIdx].ytId){
     return CONTENT_CACHE[cacheKey][vidIdx].ytId;
   }
@@ -1928,11 +1932,20 @@ function getYouTubeId(uniId, semId, modId, vidIdx){
 
 function getVideoTitle(uniId, semId, modId, vidIdx){
   var modIdx = modId.replace('m','');
-  var cacheKey = uniId + '_' + semId + '_m' + modIdx;
+  var cacheKey = uniId + '_' + semId + '_m' + (parseInt(modIdx)-1);
   if(CONTENT_CACHE[cacheKey] && CONTENT_CACHE[cacheKey][vidIdx] && CONTENT_CACHE[cacheKey][vidIdx].title){
     return CONTENT_CACHE[cacheKey][vidIdx].title;
   }
-  return VIDEOS[vidIdx] ? VIDEOS[vidIdx].title : 'Video ' + (vidIdx + 1);
+  return '';
+}
+
+function getVideoDuration(uniId, semId, modId, vidIdx){
+  var modIdx = modId.replace('m','');
+  var cacheKey = uniId + '_' + semId + '_m' + (parseInt(modIdx)-1);
+  if(CONTENT_CACHE[cacheKey] && CONTENT_CACHE[cacheKey][vidIdx] && CONTENT_CACHE[cacheKey][vidIdx].duration){
+    return CONTENT_CACHE[cacheKey][vidIdx].duration;
+  }
+  return '';
 }
 
 /* ── DATA ── */
@@ -2766,12 +2779,18 @@ function renderPlayer(){
   var done=p.videos.length, pct=Math.round((done/VIDEOS.length)*100);
   var isDone=p.videos.indexOf(S.vidIdx)>=0;
 
+  /* Override with Firestore content if available */
+  var fsTitle = getVideoTitle(S.uni.id, S.sem.id, S.mod.id, S.vidIdx);
+  var fsDur = getVideoDuration(S.uni.id, S.sem.id, S.mod.id, S.vidIdx);
+  var displayTitle = fsTitle || vid.title;
+  var displayDur = fsDur || vid.dur;
+
   el('progFill').style.width=pct+'%';
   el('progPct').textContent=pct+'%';
   el('ptsChip').textContent='⭐ '+done*2+' pts';
 
-  el('vovTitle').textContent=vid.title;
-  el('vovDur').textContent=vid.dur;
+  el('vovTitle').textContent=displayTitle;
+  el('vovDur').textContent=displayDur;
   el('vidOverlay').style.display='flex';
   el('vidPlaying').style.display='none';
   /* Reset YouTube player */
@@ -2781,7 +2800,7 @@ function renderPlayer(){
   S.vidDone=false;
 
   el('viNum').textContent='Video '+(S.vidIdx+1)+' of '+VIDEOS.length;
-  el('viName').textContent=vid.title;
+  el('viName').textContent=displayTitle;
   el('viDesc').textContent=vid.desc;
 
   el('btnDone').disabled=true; el('btnDone').textContent='✓ Mark as complete';
@@ -2975,8 +2994,12 @@ function renderVidList(){
   var list=el('vidList'); list.innerHTML='';
   VIDEOS.forEach(function(v,i){
     var done=p.videos.indexOf(i)>=0, active=i===S.vidIdx;
+    var fsTitle = getVideoTitle(S.uni.id, S.sem.id, S.mod.id, i);
+    var fsDur = getVideoDuration(S.uni.id, S.sem.id, S.mod.id, i);
+    var displayTitle = fsTitle || v.title;
+    var displayDur = fsDur || v.dur;
     var item=document.createElement('div'); item.className='vid-item'+(active?' active':'');
-    item.innerHTML='<div class="vi-dot '+(done?'done':active?'cur':'')+'">'+(done?'✓':i+1)+'</div><div class="vi-item-t">'+v.title+'</div><div class="vi-item-d">'+v.dur+'</div>';
+    item.innerHTML='<div class="vi-dot '+(done?'done':active?'cur':'')+'">'+(done?'✓':i+1)+'</div><div class="vi-item-t">'+displayTitle+'</div><div class="vi-item-d">'+displayDur+'</div>';
     item.onclick=(function(idx){return function(){if(fakeT)clearInterval(fakeT);S.vidIdx=idx;S.vidDone=false;renderPlayer();};})(i);
     list.appendChild(item);
   });
