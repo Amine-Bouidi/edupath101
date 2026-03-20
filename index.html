@@ -1060,99 +1060,137 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
         <div class="privacy-page">
 
           <!-- Language toggle -->
-          <div style="display:flex;gap:8px;margin-bottom:20px;">
-            <button id="privLangEn" style="padding:8px 20px;border-radius:8px;border:1px solid var(--accent2);background:var(--accent2);color:#fff;font-size:13px;font-weight:600;cursor:pointer;" onclick="el('privEn').style.display='block';el('privAr').style.display='none';el('privLangEn').style.background='var(--accent2)';el('privLangEn').style.color='#fff';el('privLangAr').style.background='transparent';el('privLangAr').style.color='var(--text2)';">English</button>
-            <button id="privLangAr" style="padding:8px 20px;border-radius:8px;border:1px solid var(--accent2);background:transparent;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;" onclick="el('privAr').style.display='block';el('privEn').style.display='none';el('privLangAr').style.background='var(--accent2)';el('privLangAr').style.color='#fff';el('privLangEn').style.background='transparent';el('privLangEn').style.color='var(--text2)';">العربية</button>
+          <div style="display:flex;gap:8px;margin-bottom:24px;">
+            <button id="privBtnAr" style="padding:10px 24px;border-radius:10px;border:1px solid var(--accent2);background:var(--accent2);color:#fff;font-size:14px;font-weight:700;cursor:pointer;" onclick="document.getElementById('privAr').style.display='block';document.getElementById('privEn').style.display='none';this.style.background='var(--accent2)';this.style.color='#fff';document.getElementById('privBtnEn').style.background='transparent';document.getElementById('privBtnEn').style.color='var(--text2)';">العربية</button>
+            <button id="privBtnEn" style="padding:10px 24px;border-radius:10px;border:1px solid var(--accent2);background:transparent;color:var(--text2);font-size:14px;font-weight:700;cursor:pointer;" onclick="document.getElementById('privEn').style.display='block';document.getElementById('privAr').style.display='none';this.style.background='var(--accent2)';this.style.color='#fff';document.getElementById('privBtnAr').style.background='transparent';document.getElementById('privBtnAr').style.color='var(--text2)';">English</button>
           </div>
 
-          <!-- ENGLISH VERSION -->
-          <div id="privEn">
-          <h2>🔒 Privacy Policy & Refund Policy</h2>
-          <p style="color:var(--text3);font-size:12px;">Last updated: March 19, 2026</p>
-
-          <h3>1. Who we are</h3>
-          <p>EduPath ("we", "our", "us") is an educational platform operated by Amine Bouidi, based in Morocco. We provide online video courses, quizzes, and study resources for English Studies students at Moroccan universities.</p>
-
-          <h3>2. Information we collect</h3>
-          <p><strong>Account information:</strong> When you sign in with Google, we receive your name, email address, and profile picture. This is handled securely through Google's OAuth system — we never see or store your Google password.</p>
-          <p><strong>Profile information:</strong> You may voluntarily provide your WhatsApp number, age range, gender, university, and current semester to personalize your experience.</p>
-          <p><strong>Learning data:</strong> We track your video progress, quiz scores, and module completion to show your advancement and provide personalized learning paths.</p>
-          <p><strong>Payment information:</strong> When you purchase a plan, we record your chosen plan, selected modules, and payment method. We do not process or store credit card numbers — all payments are made through external services (Cash Plus, Wafa Cash, bank transfer, or CMI).</p>
-
-          <h3>3. How we use your information</h3>
-          <p>We use your data to: provide and improve our educational services, track your learning progress, process your orders and activate module access, communicate with you about your account via WhatsApp, and ensure the security of our platform.</p>
-
-          <h3>4. What we never do</h3>
-          <p><strong>We will never</strong> sell, rent, or share your personal information with third parties for marketing purposes. We will never share your grades, progress, or personal details with other students, your university, or any external organization. We will never use your data for advertising or profiling.</p>
-
-          <h3>5. Data storage and security</h3>
-          <p>Your data is stored on Google Firebase servers located in the European Union (europe-west region). All data transmission is encrypted via HTTPS. Access to the database is protected by Firebase security rules — only you can access your own profile data, and only the platform administrator can manage subscriptions.</p>
-
-          <h3>6. Your rights</h3>
-          <p>In accordance with Moroccan Law 09-08 on the protection of personal data, you have the right to: access your personal data at any time through your profile page, correct or update your information, request the deletion of your account and all associated data, and withdraw your consent at any time.</p>
-          <p>To exercise any of these rights, contact us via WhatsApp at <strong>+212 606-248409</strong>.</p>
-
-          <h3>7. Refund Policy</h3>
-          <p>You may request a <strong>full refund within 24 hours</strong> of your purchase, regardless of the reason. To request a refund, contact us via WhatsApp at +212 606-248409 with your order details.</p>
-          <p>After the 24-hour window, <strong>all purchases are final</strong> and non-refundable. This is because our digital content is immediately accessible upon activation.</p>
-          <p>If you experience technical issues that prevent you from accessing paid content at any time, contact us via WhatsApp and we will resolve the issue promptly.</p>
-
-          <h3>8. Cookies and local storage</h3>
-          <p>We use browser local storage to remember your login state and interface preferences. We do not use third-party tracking cookies. Your trial period is tracked via our secure database, not browser cookies.</p>
-
-          <h3>9. Changes to this policy</h3>
-          <p>We may update this privacy policy from time to time. We will notify users of significant changes via the platform. Continued use of EduPath after changes constitutes acceptance of the updated policy.</p>
-
-          <h3>10. Contact</h3>
-          <p>For any questions about this privacy policy or your personal data:<br>
-          <strong>Name:</strong> Amine Bouidi<br>
-          <strong>WhatsApp:</strong> +212 606-248409<br>
-          <strong>Email:</strong> bouidipro555@gmail.com</p>
-          </div>
-
-          <!-- ARABIC VERSION -->
-          <div id="privAr" style="display:none;direction:rtl;text-align:right;font-family:'Segoe UI',Tahoma,Arial,sans-serif;">
-          <h2>🔒 سياسة الخصوصية وسياسة الاسترجاع</h2>
+          <!-- ARABIC VERSION (shown by default) -->
+          <div id="privAr" style="direction:rtl;text-align:right;font-family:'Segoe UI',Tahoma,Arial,sans-serif;">
+          <h2 style="font-size:24px;margin-bottom:4px;">🔒 سياسة الخصوصية وسياسة الاسترجاع</h2>
           <p style="color:var(--text3);font-size:12px;">آخر تحديث: 19 مارس 2026</p>
 
-          <h3>1. من نحن</h3>
-          <p>EduPath ("نحن") هي منصة تعليمية يديرها أمين بويدي، مقرها المغرب. نقدم دروس فيديو عبر الإنترنت، اختبارات، وموارد دراسية لطلاب الدراسات الإنجليزية في الجامعات المغربية.</p>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin:20px 0;">
+            <h3 style="color:var(--accent2);margin:0 0 8px;">1. من نحن</h3>
+            <p style="margin:0;">EduPath ("نحن") هي منصة تعليمية يديرها أمين بويدي، مقرها المغرب. نقدم دروس فيديو عبر الإنترنت، اختبارات، وموارد دراسية لطلاب الدراسات الإنجليزية في الجامعات المغربية.</p>
+          </div>
 
-          <h3>2. المعلومات التي نجمعها</h3>
-          <p><strong>معلومات الحساب:</strong> عند تسجيل الدخول عبر Google، نتلقى اسمك وعنوان بريدك الإلكتروني وصورة ملفك الشخصي. يتم ذلك بشكل آمن عبر نظام OAuth من Google — لا نرى أو نخزن كلمة مرور Google الخاصة بك أبداً.</p>
-          <p><strong>معلومات الملف الشخصي:</strong> يمكنك تقديم رقم WhatsApp الخاص بك، الفئة العمرية، الجنس، الجامعة، والفصل الدراسي الحالي بشكل اختياري لتخصيص تجربتك.</p>
-          <p><strong>بيانات التعلم:</strong> نتتبع تقدمك في الفيديوهات، نتائج الاختبارات، وإتمام الوحدات لإظهار تقدمك.</p>
-          <p><strong>معلومات الدفع:</strong> عند شراء خطة، نسجل الخطة المختارة، الوحدات المحددة، وطريقة الدفع. لا نعالج أو نخزن أرقام بطاقات الائتمان — جميع المدفوعات تتم عبر خدمات خارجية (Cash Plus، Wafa Cash، تحويل بنكي، أو CMI).</p>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin:20px 0;">
+            <h3 style="color:var(--accent2);margin:0 0 8px;">2. المعلومات التي نجمعها</h3>
+            <p><strong>معلومات الحساب:</strong> عند تسجيل الدخول عبر Google، نتلقى اسمك وعنوان بريدك الإلكتروني وصورة ملفك الشخصي. يتم ذلك بشكل آمن عبر نظام OAuth من Google — لا نرى أو نخزن كلمة مرور Google الخاصة بك أبداً.</p>
+            <p><strong>معلومات الملف الشخصي:</strong> يمكنك تقديم رقم WhatsApp الخاص بك، الفئة العمرية، الجنس، الجامعة، والفصل الدراسي الحالي بشكل اختياري.</p>
+            <p><strong>بيانات التعلم:</strong> نتتبع تقدمك في الفيديوهات، نتائج الاختبارات، وإتمام الوحدات لإظهار تقدمك.</p>
+            <p style="margin:0;"><strong>معلومات الدفع:</strong> عند شراء خطة، نسجل الخطة المختارة، الوحدات المحددة، وطريقة الدفع. لا نعالج أو نخزن أرقام بطاقات الائتمان.</p>
+          </div>
 
-          <h3>3. كيف نستخدم معلوماتك</h3>
-          <p>نستخدم بياناتك لتقديم وتحسين خدماتنا التعليمية، تتبع تقدمك في التعلم، معالجة طلباتك وتفعيل الوصول للوحدات، التواصل معك عبر WhatsApp بشأن حسابك، وضمان أمان منصتنا.</p>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin:20px 0;">
+            <h3 style="color:var(--accent2);margin:0 0 8px;">3. كيف نستخدم معلوماتك</h3>
+            <p style="margin:0;">نستخدم بياناتك لتقديم وتحسين خدماتنا التعليمية، تتبع تقدمك في التعلم، معالجة طلباتك وتفعيل الوصول للوحدات، التواصل معك عبر WhatsApp بشأن حسابك، وضمان أمان منصتنا.</p>
+          </div>
 
-          <h3>4. ما لا نفعله أبداً</h3>
-          <p><strong>لن نقوم أبداً</strong> ببيع أو تأجير أو مشاركة معلوماتك الشخصية مع أطراف ثالثة لأغراض تسويقية. لن نشارك درجاتك أو تقدمك أو بياناتك الشخصية مع طلاب آخرين أو جامعتك أو أي مؤسسة خارجية. لن نستخدم بياناتك للإعلانات.</p>
+          <div style="background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);border-radius:12px;padding:16px;margin:20px 0;">
+            <h3 style="color:#e74c3c;margin:0 0 8px;">4. ما لا نفعله أبداً ❌</h3>
+            <p style="margin:0;"><strong>لن نقوم أبداً</strong> ببيع أو تأجير أو مشاركة معلوماتك الشخصية مع أطراف ثالثة لأغراض تسويقية. لن نشارك درجاتك أو تقدمك أو بياناتك الشخصية مع طلاب آخرين أو جامعتك أو أي مؤسسة خارجية. لن نستخدم بياناتك للإعلانات.</p>
+          </div>
 
-          <h3>5. تخزين البيانات والأمان</h3>
-          <p>يتم تخزين بياناتك على خوادم Google Firebase الموجودة في الاتحاد الأوروبي. جميع عمليات نقل البيانات مشفرة عبر HTTPS. الوصول إلى قاعدة البيانات محمي بقواعد أمان Firebase.</p>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin:20px 0;">
+            <h3 style="color:var(--accent2);margin:0 0 8px;">5. تخزين البيانات والأمان 🔐</h3>
+            <p style="margin:0;">يتم تخزين بياناتك على خوادم Google Firebase الموجودة في الاتحاد الأوروبي. جميع عمليات نقل البيانات مشفرة عبر HTTPS. الوصول إلى قاعدة البيانات محمي بقواعد أمان Firebase.</p>
+          </div>
 
-          <h3>6. حقوقك</h3>
-          <p>وفقاً للقانون المغربي 09-08 المتعلق بحماية البيانات الشخصية، لديك الحق في: الوصول إلى بياناتك الشخصية في أي وقت عبر صفحة ملفك الشخصي، تصحيح أو تحديث معلوماتك، طلب حذف حسابك وجميع البيانات المرتبطة به، وسحب موافقتك في أي وقت.</p>
-          <p>لممارسة أي من هذه الحقوق، اتصل بنا عبر WhatsApp على <strong dir="ltr">+212 606-248409</strong>.</p>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin:20px 0;">
+            <h3 style="color:var(--accent2);margin:0 0 8px;">6. حقوقك ⚖️</h3>
+            <p>وفقاً للقانون المغربي 09-08 المتعلق بحماية البيانات الشخصية، لديك الحق في: الوصول إلى بياناتك الشخصية في أي وقت، تصحيح أو تحديث معلوماتك، طلب حذف حسابك وجميع البيانات المرتبطة به، وسحب موافقتك في أي وقت.</p>
+            <p style="margin:0;">لممارسة أي من هذه الحقوق، اتصل بنا عبر WhatsApp على <strong dir="ltr">+212 606-248409</strong>.</p>
+          </div>
 
-          <h3>7. سياسة الاسترجاع</h3>
-          <p>يمكنك طلب <strong>استرجاع كامل خلال 24 ساعة</strong> من عملية الشراء، بغض النظر عن السبب. لطلب الاسترجاع، اتصل بنا عبر WhatsApp على +212 606-248409 مع تفاصيل طلبك.</p>
-          <p>بعد فترة الـ 24 ساعة، <strong>جميع المشتريات نهائية</strong> وغير قابلة للاسترجاع. وذلك لأن المحتوى الرقمي يصبح متاحاً فور التفعيل.</p>
-          <p>إذا واجهت مشاكل تقنية تمنعك من الوصول إلى المحتوى المدفوع في أي وقت، اتصل بنا عبر WhatsApp وسنحل المشكلة فوراً.</p>
+          <div style="background:rgba(108,99,255,.08);border:1px solid rgba(108,99,255,.2);border-radius:12px;padding:16px;margin:20px 0;">
+            <h3 style="color:var(--accent2);margin:0 0 8px;">7. سياسة الاسترجاع 💰</h3>
+            <p>يمكنك طلب <strong>استرجاع كامل خلال 24 ساعة</strong> من عملية الشراء، بغض النظر عن السبب. لطلب الاسترجاع، اتصل بنا عبر WhatsApp مع تفاصيل طلبك.</p>
+            <p>بعد فترة الـ 24 ساعة، <strong>جميع المشتريات نهائية</strong> وغير قابلة للاسترجاع. وذلك لأن المحتوى الرقمي يصبح متاحاً فور التفعيل.</p>
+            <p style="margin:0;">إذا واجهت مشاكل تقنية تمنعك من الوصول إلى المحتوى المدفوع، اتصل بنا عبر WhatsApp وسنحل المشكلة فوراً.</p>
+          </div>
 
-          <h3>8. ملفات تعريف الارتباط</h3>
-          <p>نستخدم التخزين المحلي للمتصفح لتذكر حالة تسجيل الدخول وتفضيلات الواجهة. لا نستخدم ملفات تعريف الارتباط من أطراف ثالثة. يتم تتبع فترتك التجريبية عبر قاعدة بياناتنا الآمنة.</p>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin:20px 0;">
+            <h3 style="color:var(--accent2);margin:0 0 8px;">8. ملفات تعريف الارتباط 🍪</h3>
+            <p style="margin:0;">نستخدم التخزين المحلي للمتصفح لتذكر حالة تسجيل الدخول وتفضيلات الواجهة. لا نستخدم ملفات تعريف الارتباط من أطراف ثالثة. يتم تتبع فترتك التجريبية عبر قاعدة بياناتنا الآمنة.</p>
+          </div>
 
-          <h3>9. تغييرات على هذه السياسة</h3>
-          <p>قد نقوم بتحديث سياسة الخصوصية هذه من وقت لآخر. سنقوم بإعلام المستخدمين بالتغييرات المهمة عبر المنصة.</p>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin:20px 0;">
+            <h3 style="color:var(--accent2);margin:0 0 8px;">9. تغييرات على هذه السياسة</h3>
+            <p style="margin:0;">قد نقوم بتحديث سياسة الخصوصية هذه من وقت لآخر. سنقوم بإعلام المستخدمين بالتغييرات المهمة عبر المنصة.</p>
+          </div>
 
-          <h3>10. اتصل بنا</h3>
-          <p>لأي أسئلة حول سياسة الخصوصية هذه أو بياناتك الشخصية:<br>
-          <strong>الاسم:</strong> أمين بويدي<br>
-          <strong>WhatsApp:</strong> <span dir="ltr">+212 606-248409</span><br>
-          <strong>البريد الإلكتروني:</strong> bouidipro555@gmail.com</p>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin:20px 0;">
+            <h3 style="color:var(--accent2);margin:0 0 8px;">10. اتصل بنا 📞</h3>
+            <p style="margin:0;"><strong>الاسم:</strong> أمين بويدي<br>
+            <strong>WhatsApp:</strong> <span dir="ltr">+212 606-248409</span><br>
+            <strong>البريد الإلكتروني:</strong> bouidipro555@gmail.com</p>
+          </div>
+          </div>
+
+          <!-- ENGLISH VERSION (hidden by default) -->
+          <div id="privEn" style="display:none;">
+          <h2 style="font-size:24px;margin-bottom:4px;">🔒 Privacy Policy & Refund Policy</h2>
+          <p style="color:var(--text3);font-size:12px;">Last updated: March 19, 2026</p>
+
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin:20px 0;">
+            <h3 style="color:var(--accent2);margin:0 0 8px;">1. Who we are</h3>
+            <p style="margin:0;">EduPath ("we", "our", "us") is an educational platform operated by Amine Bouidi, based in Morocco. We provide online video courses, quizzes, and study resources for English Studies students at Moroccan universities.</p>
+          </div>
+
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin:20px 0;">
+            <h3 style="color:var(--accent2);margin:0 0 8px;">2. Information we collect</h3>
+            <p><strong>Account information:</strong> When you sign in with Google, we receive your name, email address, and profile picture. This is handled securely through Google OAuth — we never see or store your Google password.</p>
+            <p><strong>Profile information:</strong> You may voluntarily provide your WhatsApp number, age range, gender, university, and current semester to personalize your experience.</p>
+            <p><strong>Learning data:</strong> We track your video progress, quiz scores, and module completion to show your advancement.</p>
+            <p style="margin:0;"><strong>Payment information:</strong> When you purchase a plan, we record your chosen plan, selected modules, and payment method. We do not process or store credit card numbers.</p>
+          </div>
+
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin:20px 0;">
+            <h3 style="color:var(--accent2);margin:0 0 8px;">3. How we use your information</h3>
+            <p style="margin:0;">We use your data to provide and improve our educational services, track your learning progress, process your orders and activate module access, communicate with you via WhatsApp, and ensure the security of our platform.</p>
+          </div>
+
+          <div style="background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);border-radius:12px;padding:16px;margin:20px 0;">
+            <h3 style="color:#e74c3c;margin:0 0 8px;">4. What we never do ❌</h3>
+            <p style="margin:0;"><strong>We will never</strong> sell, rent, or share your personal information with third parties for marketing. We will never share your grades, progress, or personal details with other students, your university, or any external organization. We will never use your data for advertising.</p>
+          </div>
+
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin:20px 0;">
+            <h3 style="color:var(--accent2);margin:0 0 8px;">5. Data storage and security 🔐</h3>
+            <p style="margin:0;">Your data is stored on Google Firebase servers in the European Union. All data transmission is encrypted via HTTPS. Database access is protected by Firebase security rules.</p>
+          </div>
+
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin:20px 0;">
+            <h3 style="color:var(--accent2);margin:0 0 8px;">6. Your rights ⚖️</h3>
+            <p>In accordance with Moroccan Law 09-08, you have the right to: access your personal data at any time, correct or update your information, request deletion of your account and all associated data, and withdraw your consent at any time.</p>
+            <p style="margin:0;">To exercise these rights, contact us via WhatsApp at <strong>+212 606-248409</strong>.</p>
+          </div>
+
+          <div style="background:rgba(108,99,255,.08);border:1px solid rgba(108,99,255,.2);border-radius:12px;padding:16px;margin:20px 0;">
+            <h3 style="color:var(--accent2);margin:0 0 8px;">7. Refund Policy 💰</h3>
+            <p>You may request a <strong>full refund within 24 hours</strong> of your purchase, regardless of the reason. Contact us via WhatsApp with your order details.</p>
+            <p>After the 24-hour window, <strong>all purchases are final</strong> and non-refundable, as digital content is immediately accessible upon activation.</p>
+            <p style="margin:0;">If you experience technical issues preventing access to paid content at any time, contact us and we will resolve it promptly.</p>
+          </div>
+
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin:20px 0;">
+            <h3 style="color:var(--accent2);margin:0 0 8px;">8. Cookies 🍪</h3>
+            <p style="margin:0;">We use browser local storage for login state and preferences. We do not use third-party tracking cookies. Your trial period is tracked via our secure database.</p>
+          </div>
+
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin:20px 0;">
+            <h3 style="color:var(--accent2);margin:0 0 8px;">9. Changes to this policy</h3>
+            <p style="margin:0;">We may update this policy from time to time. We will notify users of significant changes via the platform.</p>
+          </div>
+
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin:20px 0;">
+            <h3 style="color:var(--accent2);margin:0 0 8px;">10. Contact 📞</h3>
+            <p style="margin:0;"><strong>Name:</strong> Amine Bouidi<br>
+            <strong>WhatsApp:</strong> +212 606-248409<br>
+            <strong>Email:</strong> bouidipro555@gmail.com</p>
+          </div>
           </div>
 
         </div>
