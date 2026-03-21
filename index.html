@@ -331,6 +331,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .vi-dot.cur{background:var(--accent);color:#fff;}
 .vi-item-t{font-size:12px;color:var(--text2);flex:1;}
 .vi-item-d{font-size:11px;color:var(--text3);}
+.vid-item.locked{opacity:.5;cursor:not-allowed;}
+.vid-item.locked:hover{background:transparent;}
+.vi-lock{font-size:11px;color:var(--text3);margin-left:auto;flex-shrink:0;}
+.vid-lock-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(10,10,30,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;border-radius:var(--r);gap:16px;}
+.vid-lock-overlay .vlo-icon{font-size:48px;}
+.vid-lock-overlay .vlo-title{font-size:18px;font-weight:700;color:#fff;}
+.vid-lock-overlay .vlo-sub{font-size:13px;color:var(--text3);text-align:center;max-width:340px;line-height:1.5;}
+.vid-lock-overlay .vlo-btn{padding:10px 28px;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;font-size:14px;border:none;cursor:pointer;transition:opacity .15s;}
+.vid-lock-overlay .vlo-btn:hover{opacity:.85;}
 
 /* RIGHT */
 .pl-right{display:flex;flex-direction:column;background:var(--bg);overflow-y:auto;min-width:0;}
@@ -1161,7 +1170,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
             <h3 style="color:var(--accent2);margin:0 0 8px;">10. اتصل بنا 📞</h3>
             <p style="margin:0;"><strong>الاسم:</strong> أمين بويدي<br>
             <strong>WhatsApp:</strong> <span dir="ltr">+212 606-248409</span><br>
-            <strong>البريد الإلكتروني:</strong> bouidipro555@gmail.com</p>
+            <strong>البريد الإلكتروني:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="84e6ebf1ede0edf4f6ebb1b1b1c4e3e9e5ede8aae7ebe9">[email&#160;protected]</a></p>
           </div>
           </div>
 
@@ -1225,7 +1234,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
             <h3 style="color:var(--accent2);margin:0 0 8px;">10. Contact 📞</h3>
             <p style="margin:0;"><strong>Name:</strong> Amine Bouidi<br>
             <strong>WhatsApp:</strong> +212 606-248409<br>
-            <strong>Email:</strong> bouidipro555@gmail.com</p>
+            <strong>Email:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="eb89849e828f829b9984dededeab8c868a8287c5888486">[email&#160;protected]</a></p>
           </div>
           </div>
 
@@ -1556,6 +1565,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
       <div class="pl-left">
         <div class="pl-left-inner">
           <div class="video-box" id="videoBox">
+            <div class="vid-lock-overlay" id="vidLockOverlay" style="display:none;">
+              <div class="vlo-icon">🔒</div>
+              <div class="vlo-title">This video is locked</div>
+              <div class="vlo-sub">Only the first video in each module is free during your trial. Upgrade to unlock all videos, resources and quizzes.</div>
+              <button class="vlo-btn" onclick="showView('pricing');setTopbar([],'Plans & Pricing',false);">Upgrade Now</button>
+            </div>
             <iframe id="ytPlayer" width="100%" height="100%" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:var(--r);display:none;"></iframe>
             <div class="vid-overlay" id="vidOverlay">
               <button class="play-btn" id="btnPlay">
@@ -1862,7 +1877,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 (function(){
 
 /* ── SIDEBAR TOGGLE ── */
@@ -2695,14 +2710,18 @@ function openModules(sem,idx){
         var subData = doc.data();
         var isExpired = subData.expiresAt && new Date(subData.expiresAt) < new Date();
         if(!isExpired){
+          window._eduSubData = subData;
           renderModuleGrid(grid, mods, sem, idx, subData);
         } else {
+          window._eduSubData = null;
           renderModuleGrid(grid, mods, sem, idx, null);
         }
       } else {
+        window._eduSubData = null;
         renderModuleGrid(grid, mods, sem, idx, null);
       }
     }).catch(function(){
+      window._eduSubData = null;
       renderModuleGrid(grid, mods, sem, idx, null);
     });
   } else {
@@ -2782,6 +2801,20 @@ function openPlayer(mod){
 }
 el('nav-player').onclick=function(){closeMobileMenu();if(S.mod)renderPlayer();showView('player');};
 
+/* ── VIDEO LOCK CHECK (free trial = only video 1 free) ── */
+function isVideoLocked(vidIdx){
+  if(vidIdx === 0) return false; // first video always free
+  if(!S.user || !S.user.email) return true;
+  var email = S.user.email.toLowerCase();
+  // Admin and demo: never locked
+  if(ADMIN_EMAILS.indexOf(email) !== -1) return false;
+  if(S.user.name === 'Demo Student') return false;
+  // Check if user has active subscription via cached data
+  if(window._eduSubData && window._eduSubData.active) return false;
+  // On trial or no subscription: locked
+  return true;
+}
+
 function renderPlayer(){
   var vid=VIDEOS[S.vidIdx];
   var p=getP(S.uni.id,S.sem.id,S.mod.id);
@@ -2800,7 +2833,11 @@ function renderPlayer(){
 
   el('vovTitle').textContent=displayTitle;
   el('vovDur').textContent=displayDur;
-  el('vidOverlay').style.display='flex';
+
+  /* Check if this video is locked for trial users */
+  var locked = isVideoLocked(S.vidIdx);
+  el('vidLockOverlay').style.display = locked ? 'flex' : 'none';
+  el('vidOverlay').style.display = locked ? 'none' : 'flex';
   el('vidPlaying').style.display='none';
   /* Reset YouTube player */
   var iframe = el('ytPlayer');
@@ -2814,7 +2851,8 @@ function renderPlayer(){
 
   el('btnDone').disabled=true; el('btnDone').textContent='✓ Mark as complete';
   el('btnNxt').disabled=!isDone;
-  if(isDone){el('btnDone').textContent='✓ Completed';el('btnDone').disabled=true;el('btnNxt').disabled=false;}
+  if(locked){el('btnDone').disabled=true;el('btnNxt').disabled=true;el('btnDone').textContent='🔒 Upgrade to unlock';}
+  else if(isDone){el('btnDone').textContent='✓ Completed';el('btnDone').disabled=true;el('btnNxt').disabled=false;}
 
   /* Use Firestore summary and keys if available */
   var fsSummary = getVideoField(S.uni.id, S.sem.id, S.mod.id, S.vidIdx, 'summary');
@@ -2838,6 +2876,7 @@ function renderPlayer(){
 }
 
 el('btnPlay').onclick=function(){
+  if(isVideoLocked(S.vidIdx)){showView('pricing');setTopbar([],'Plans & Pricing',false);return;}
   var vid=VIDEOS[S.vidIdx];
   var ytId = getYouTubeId(S.uni.id, S.sem.id, S.mod.id, S.vidIdx);
   var iframe = el('ytPlayer');
@@ -2873,7 +2912,10 @@ el('btnDone').onclick=function(){
 };
 
 el('btnNxt').onclick=function(){
-  if(S.vidIdx<VIDEOS.length-1){S.vidIdx++;if(fakeT)clearInterval(fakeT);renderPlayer();}
+  if(S.vidIdx<VIDEOS.length-1){
+    if(isVideoLocked(S.vidIdx+1)){showView('pricing');setTopbar([],'Plans & Pricing',false);return;}
+    S.vidIdx++;if(fakeT)clearInterval(fakeT);renderPlayer();
+  }
 };
 
 /* ── QUIZ STATE ── */
@@ -3009,13 +3051,18 @@ function renderVidList(){
   var list=el('vidList'); list.innerHTML='';
   VIDEOS.forEach(function(v,i){
     var done=p.videos.indexOf(i)>=0, active=i===S.vidIdx;
+    var locked = isVideoLocked(i);
     var fsTitle = getVideoTitle(S.uni.id, S.sem.id, S.mod.id, i);
     var fsDur = getVideoDuration(S.uni.id, S.sem.id, S.mod.id, i);
     var displayTitle = fsTitle || v.title;
     var displayDur = fsDur || v.dur;
-    var item=document.createElement('div'); item.className='vid-item'+(active?' active':'');
-    item.innerHTML='<div class="vi-dot '+(done?'done':active?'cur':'')+'">'+(done?'✓':i+1)+'</div><div class="vi-item-t">'+displayTitle+'</div><div class="vi-item-d">'+displayDur+'</div>';
-    item.onclick=(function(idx){return function(){if(fakeT)clearInterval(fakeT);S.vidIdx=idx;S.vidDone=false;renderPlayer();};})(i);
+    var item=document.createElement('div'); item.className='vid-item'+(active?' active':'')+(locked?' locked':'');
+    item.innerHTML='<div class="vi-dot '+(done?'done':active?'cur':'')+'">'+(locked?'🔒':done?'✓':i+1)+'</div><div class="vi-item-t">'+displayTitle+'</div><div class="vi-item-d">'+(locked?'<span class="vi-lock">🔒 Upgrade</span>':displayDur)+'</div>';
+    if(locked){
+      item.onclick=function(){showView('pricing');setTopbar([],'Plans & Pricing',false);};
+    } else {
+      item.onclick=(function(idx){return function(){if(fakeT)clearInterval(fakeT);S.vidIdx=idx;S.vidDone=false;renderPlayer();};})(i);
+    }
     list.appendChild(item);
   });
 }
@@ -4505,22 +4552,4 @@ checkTrialStatus = function(){
   checkUserSubscription(S.user.email, function(hasAccess){
     if(hasAccess){
       el('trialBanner').style.display='none';
-      el('paywallOverlay').style.display='none';
-      if(trialInterval){ clearInterval(trialInterval); trialInterval=null; }
-    } else {
-      origCheckTrialStatus();
-    }
-  });
-};
-
-/* ── AUTO LOGIN CHECK ── */
-firebase.auth().onAuthStateChanged(function(user){
-  if(user && !S.user){
-    enterApp(user.displayName || 'User', user.email || '');
-  }
-});
-
-})();
-</script>
-</body>
-</html>
+      el('paywallOverlay').style.displa
