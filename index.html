@@ -4355,15 +4355,15 @@ function renderVideoSlots(container, docId, savedVideos){
     '</div>';
   }
 
-  /* Resources section */
+  /* Resources section — always visible, distinct style */
   var res = savedVideos.length > 0 && savedVideos[0] && savedVideos[0]._resources ? savedVideos[0]._resources : null;
-  html += '<div class="cm-slot">' +
-    '<div class="cm-slot-head" style="cursor:pointer;" onclick="var b=this.nextElementSibling;b.style.display=b.style.display===\'none\'?\'block\':\'none\';this.querySelector(\'.cm-arrow\').textContent=b.style.display===\'none\'?\'▶\':\'▼\';">' +
-      '<span class="cm-slot-num"><span class="cm-arrow">▶</span> Module Resources (Lessons & Past Exams)</span>' +
+  html += '<div class="cm-slot" style="border:2px solid var(--accent3);margin-top:16px;">' +
+    '<div class="cm-slot-head" style="background:rgba(255,101,132,.08);">' +
+      '<span class="cm-slot-num" style="background:rgba(255,101,132,.15);color:#ff6584;">📁 Module Resources (Lessons & Past Exams)</span>' +
       '<span class="cm-slot-status ' + (res ? 'cm-slot-saved' : 'cm-slot-empty') + '">' + (res ? 'Saved' : 'Empty') + '</span>' +
     '</div>' +
-    '<div style="display:none;">' +
-    '<div style="padding:6px 0 4px;font-size:12px;font-weight:700;color:var(--accent2);">Lesson Documents (Google Drive links)</div>' +
+    '<div>' +
+    '<div style="padding:10px 0 6px;font-size:13px;font-weight:700;color:var(--accent2);">📄 Lesson Documents — paste Google Drive link for each</div>' +
     '<div class="cm-field"><label>Lesson 1 — Title</label><input type="text" id="cm_res_lt1" value="' + (res && res.lessons && res.lessons[0] ? res.lessons[0].title : '') + '" placeholder="e.g. Week 1 — Introduction to Media Studies"></div>' +
     '<div class="cm-field"><label>Lesson 1 — Google Drive URL</label><input type="text" id="cm_res_lu1" value="' + (res && res.lessons && res.lessons[0] ? res.lessons[0].url : '') + '" placeholder="https://drive.google.com/file/d/..."></div>' +
     '<div class="cm-field"><label>Lesson 2 — Title</label><input type="text" id="cm_res_lt2" value="' + (res && res.lessons && res.lessons[1] ? res.lessons[1].title : '') + '" placeholder="e.g. Week 2 — Communication Models"></div>' +
@@ -4374,7 +4374,7 @@ function renderVideoSlots(container, docId, savedVideos){
     '<div class="cm-field"><label>Lesson 4 — Google Drive URL</label><input type="text" id="cm_res_lu4" value="' + (res && res.lessons && res.lessons[3] ? res.lessons[3].url : '') + '" placeholder="https://drive.google.com/file/d/..."></div>' +
     '<div class="cm-field"><label>Lesson 5 — Title</label><input type="text" id="cm_res_lt5" value="' + (res && res.lessons && res.lessons[4] ? res.lessons[4].title : '') + '" placeholder="e.g. Week 5 — Image Analysis"></div>' +
     '<div class="cm-field"><label>Lesson 5 — Google Drive URL</label><input type="text" id="cm_res_lu5" value="' + (res && res.lessons && res.lessons[4] ? res.lessons[4].url : '') + '" placeholder="https://drive.google.com/file/d/..."></div>' +
-    '<div style="padding:10px 0 4px;font-size:12px;font-weight:700;color:var(--accent3);">Past Exams (Google Drive links)</div>' +
+    '<div style="padding:14px 0 6px;font-size:13px;font-weight:700;color:#ff6584;">📝 Past Exams — paste Google Drive link for each</div>' +
     '<div class="cm-field"><label>Exam 1 — Title</label><input type="text" id="cm_res_et1" value="' + (res && res.exams && res.exams[0] ? res.exams[0].title : '') + '" placeholder="e.g. Media Studies Final Exam 2023-2024"></div>' +
     '<div class="cm-field"><label>Exam 1 — Google Drive URL</label><input type="text" id="cm_res_eu1" value="' + (res && res.exams && res.exams[0] ? res.exams[0].url : '') + '" placeholder="https://drive.google.com/file/d/..."></div>' +
     '<div class="cm-field"><label>Exam 2 — Title</label><input type="text" id="cm_res_et2" value="' + (res && res.exams && res.exams[1] ? res.exams[1].title : '') + '" placeholder="e.g. Media Studies Final Exam 2022-2023"></div>' +
