@@ -1544,7 +1544,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
           </div>
 
           <!-- Video slots -->
-          <div id="cmVideoSlots" style="margin-top:14px;">
+          <div id="cmVideoSlots" style="margin-top:14px;max-height:70vh;overflow-y:auto;padding-right:4px;">
             <div style="color:var(--text3);font-size:13px;text-align:center;padding:30px;">Select a university, semester, and module above to manage videos</div>
           </div>
 
@@ -4296,7 +4296,7 @@ window.cmLoadVideos = function(){
 };
 
 function renderVideoSlots(container, docId, savedVideos){
-  var btnHtml = '<div style="display:flex;gap:8px;margin:10px 0;position:sticky;bottom:0;z-index:10;background:var(--bg);padding:10px 0;">' +
+  var btnHtml = '<div style="display:flex;gap:8px;margin:10px 0;position:sticky;top:0;z-index:10;background:var(--bg);padding:10px 0;">' +
     '<button class="admin-btn" onclick="cmSaveVideos(\''+docId+'\')">💾 Save all videos</button>' +
     '<button class="admin-btn danger" onclick="cmClearVideos(\''+docId+'\')">🗑 Clear all</button>' +
   '</div>';
@@ -4306,11 +4306,13 @@ function renderVideoSlots(container, docId, savedVideos){
     var hasData = v && v.ytId;
     var statusClass = hasData ? 'cm-slot-saved' : 'cm-slot-empty';
     var statusText = hasData ? 'Saved' : 'Empty';
+    var titlePreview = (v && v.title) ? ' — ' + v.title : '';
     html += '<div class="cm-slot">' +
-      '<div class="cm-slot-head">' +
-        '<span class="cm-slot-num">Video ' + (i+1) + (i === 0 ? ' (Free preview)' : ' (Paid)') + '</span>' +
+      '<div class="cm-slot-head" style="cursor:pointer;" onclick="var b=this.nextElementSibling;b.style.display=b.style.display===\'none\'?\'block\':\'none\';this.querySelector(\'.cm-arrow\').textContent=b.style.display===\'none\'?\'▶\':\'▼\';">' +
+        '<span class="cm-slot-num"><span class="cm-arrow">▶</span> Video ' + (i+1) + (i === 0 ? ' (Free preview)' : ' (Paid)') + titlePreview + '</span>' +
         '<span class="cm-slot-status ' + statusClass + '">' + statusText + '</span>' +
       '</div>' +
+      '<div style="display:none;">' +
       '<div class="cm-field"><label>Video title</label><input type="text" id="cm_title_'+i+'" value="' + (v && v.title ? v.title : '') + '" placeholder="e.g. Introduction to Past Tense"></div>' +
       '<div class="cm-field"><label>YouTube video ID (the part after v= in the URL)</label><input type="text" id="cm_ytid_'+i+'" value="' + (v && v.ytId ? v.ytId : '') + '" placeholder="e.g. dQw4w9WgXcQ"></div>' +
       '<div class="cm-field"><label>Duration</label><input type="text" id="cm_dur_'+i+'" value="' + (v && v.duration ? v.duration : '') + '" placeholder="e.g. 12:30"></div>' +
@@ -4320,6 +4322,7 @@ function renderVideoSlots(container, docId, savedVideos){
       '<div class="cm-field"><label>Key point 3</label><input type="text" id="cm_k3_'+i+'" value="' + (v && v.keys && v.keys[2] ? v.keys[2] : '') + '" placeholder="Third key takeaway"></div>' +
       '<div class="cm-field"><label>Key point 4</label><input type="text" id="cm_k4_'+i+'" value="' + (v && v.keys && v.keys[3] ? v.keys[3] : '') + '" placeholder="Fourth key takeaway (optional)"></div>' +
       '<div class="cm-field"><label>Key point 5</label><input type="text" id="cm_k5_'+i+'" value="' + (v && v.keys && v.keys[4] ? v.keys[4] : '') + '" placeholder="Fifth key takeaway (optional)"></div>' +
+      '</div>' +
     '</div>';
   }
   html += btnHtml;
