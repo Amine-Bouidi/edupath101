@@ -3256,8 +3256,37 @@ function switchResTab(tab){
 window.switchResTab = switchResTab;
 
 function renderResources(){
-  buildFileList('lessonFileList', LESSON_FILES, false);
-  buildFileList('examFileList',   EXAM_FILES,   true);
+  /* Check for Firestore resources first */
+  var modIdx = S.mod.id.replace('m','');
+  var cacheKey = S.uni.id + '_' + S.sem.id + '_m' + (parseInt(modIdx)-1);
+  var fsRes = null;
+  if(CONTENT_CACHE[cacheKey] && CONTENT_CACHE[cacheKey][0] && CONTENT_CACHE[cacheKey][0]._resources){
+    fsRes = CONTENT_CACHE[cacheKey][0]._resources;
+  }
+
+  if(fsRes && (fsRes.lessons.length > 0 || fsRes.exams.length > 0)){
+    /* Render Firestore resources */
+    var lc = el('lessonFileList'); if(lc){ lc.innerHTML='';
+      fsRes.lessons.forEach(function(f){
+        var item = document.createElement('a');
+        item.className='res-file'; item.href=f.url; item.target='_blank'; item.rel='noopener';
+        item.innerHTML='<span class="res-file-ext pdf">PDF</span><div class="res-file-info"><span class="res-file-name">'+f.title+'</span><span class="res-file-size">Google Drive</span></div><div class="res-file-dl"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>';
+        lc.appendChild(item);
+      });
+    }
+    var ec = el('examFileList'); if(ec){ ec.innerHTML='';
+      fsRes.exams.forEach(function(f){
+        var item = document.createElement('a');
+        item.className='res-file'; item.href=f.url; item.target='_blank'; item.rel='noopener';
+        item.innerHTML='<span class="res-file-ext pdf" style="background:rgba(255,101,132,.15);color:#ff6584;">EXAM</span><div class="res-file-info"><span class="res-file-name">'+f.title+'</span><span class="res-file-size">Google Drive</span></div><div class="res-file-dl"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>';
+        ec.appendChild(item);
+      });
+    }
+  } else {
+    /* Fallback to hardcoded data */
+    buildFileList('lessonFileList', LESSON_FILES, false);
+    buildFileList('examFileList',   EXAM_FILES,   true);
+  }
 }
 function buildFileList(cid, files, isExam){
   var c = el(cid); if(!c) return; c.innerHTML='';
@@ -4325,6 +4354,36 @@ function renderVideoSlots(container, docId, savedVideos){
       '</div>' +
     '</div>';
   }
+
+  /* Resources section */
+  var res = savedVideos.length > 0 && savedVideos[0] && savedVideos[0]._resources ? savedVideos[0]._resources : null;
+  html += '<div class="cm-slot">' +
+    '<div class="cm-slot-head" style="cursor:pointer;" onclick="var b=this.nextElementSibling;b.style.display=b.style.display===\'none\'?\'block\':\'none\';this.querySelector(\'.cm-arrow\').textContent=b.style.display===\'none\'?\'▶\':\'▼\';">' +
+      '<span class="cm-slot-num"><span class="cm-arrow">▶</span> Module Resources (Lessons & Past Exams)</span>' +
+      '<span class="cm-slot-status ' + (res ? 'cm-slot-saved' : 'cm-slot-empty') + '">' + (res ? 'Saved' : 'Empty') + '</span>' +
+    '</div>' +
+    '<div style="display:none;">' +
+    '<div style="padding:6px 0 4px;font-size:12px;font-weight:700;color:var(--accent2);">Lesson Documents (Google Drive links)</div>' +
+    '<div class="cm-field"><label>Lesson 1 — Title</label><input type="text" id="cm_res_lt1" value="' + (res && res.lessons && res.lessons[0] ? res.lessons[0].title : '') + '" placeholder="e.g. Week 1 — Introduction to Media Studies"></div>' +
+    '<div class="cm-field"><label>Lesson 1 — Google Drive URL</label><input type="text" id="cm_res_lu1" value="' + (res && res.lessons && res.lessons[0] ? res.lessons[0].url : '') + '" placeholder="https://drive.google.com/file/d/..."></div>' +
+    '<div class="cm-field"><label>Lesson 2 — Title</label><input type="text" id="cm_res_lt2" value="' + (res && res.lessons && res.lessons[1] ? res.lessons[1].title : '') + '" placeholder="e.g. Week 2 — Communication Models"></div>' +
+    '<div class="cm-field"><label>Lesson 2 — Google Drive URL</label><input type="text" id="cm_res_lu2" value="' + (res && res.lessons && res.lessons[1] ? res.lessons[1].url : '') + '" placeholder="https://drive.google.com/file/d/..."></div>' +
+    '<div class="cm-field"><label>Lesson 3 — Title</label><input type="text" id="cm_res_lt3" value="' + (res && res.lessons && res.lessons[2] ? res.lessons[2].title : '') + '" placeholder="e.g. Week 3 — History of Mass Media"></div>' +
+    '<div class="cm-field"><label>Lesson 3 — Google Drive URL</label><input type="text" id="cm_res_lu3" value="' + (res && res.lessons && res.lessons[2] ? res.lessons[2].url : '') + '" placeholder="https://drive.google.com/file/d/..."></div>' +
+    '<div class="cm-field"><label>Lesson 4 — Title</label><input type="text" id="cm_res_lt4" value="' + (res && res.lessons && res.lessons[3] ? res.lessons[3].title : '') + '" placeholder="e.g. Week 4 — Media Effects"></div>' +
+    '<div class="cm-field"><label>Lesson 4 — Google Drive URL</label><input type="text" id="cm_res_lu4" value="' + (res && res.lessons && res.lessons[3] ? res.lessons[3].url : '') + '" placeholder="https://drive.google.com/file/d/..."></div>' +
+    '<div class="cm-field"><label>Lesson 5 — Title</label><input type="text" id="cm_res_lt5" value="' + (res && res.lessons && res.lessons[4] ? res.lessons[4].title : '') + '" placeholder="e.g. Week 5 — Image Analysis"></div>' +
+    '<div class="cm-field"><label>Lesson 5 — Google Drive URL</label><input type="text" id="cm_res_lu5" value="' + (res && res.lessons && res.lessons[4] ? res.lessons[4].url : '') + '" placeholder="https://drive.google.com/file/d/..."></div>' +
+    '<div style="padding:10px 0 4px;font-size:12px;font-weight:700;color:var(--accent3);">Past Exams (Google Drive links)</div>' +
+    '<div class="cm-field"><label>Exam 1 — Title</label><input type="text" id="cm_res_et1" value="' + (res && res.exams && res.exams[0] ? res.exams[0].title : '') + '" placeholder="e.g. Media Studies Final Exam 2023-2024"></div>' +
+    '<div class="cm-field"><label>Exam 1 — Google Drive URL</label><input type="text" id="cm_res_eu1" value="' + (res && res.exams && res.exams[0] ? res.exams[0].url : '') + '" placeholder="https://drive.google.com/file/d/..."></div>' +
+    '<div class="cm-field"><label>Exam 2 — Title</label><input type="text" id="cm_res_et2" value="' + (res && res.exams && res.exams[1] ? res.exams[1].title : '') + '" placeholder="e.g. Media Studies Final Exam 2022-2023"></div>' +
+    '<div class="cm-field"><label>Exam 2 — Google Drive URL</label><input type="text" id="cm_res_eu2" value="' + (res && res.exams && res.exams[1] ? res.exams[1].url : '') + '" placeholder="https://drive.google.com/file/d/..."></div>' +
+    '<div class="cm-field"><label>Exam 3 — Title</label><input type="text" id="cm_res_et3" value="' + (res && res.exams && res.exams[2] ? res.exams[2].title : '') + '" placeholder="e.g. Media Studies Final Exam 2021-2022"></div>' +
+    '<div class="cm-field"><label>Exam 3 — Google Drive URL</label><input type="text" id="cm_res_eu3" value="' + (res && res.exams && res.exams[2] ? res.exams[2].url : '') + '" placeholder="https://drive.google.com/file/d/..."></div>' +
+    '</div>' +
+  '</div>';
+
   html += btnHtml;
   html += '<div id="cmSaveMsg" class="admin-msg" style="margin-top:8px;"></div>';
   container.innerHTML = html;
@@ -4344,6 +4403,21 @@ window.cmSaveVideos = function(docId){
     }
     videos.push({title: title, ytId: ytId, duration: dur, summary: sum, keys: keys, index: i});
   }
+  /* Collect resources */
+  var lessons = [];
+  for(var l = 1; l <= 5; l++){
+    var lt = el('cm_res_lt'+l).value.trim();
+    var lu = el('cm_res_lu'+l).value.trim();
+    if(lt && lu) lessons.push({title: lt, url: lu});
+  }
+  var exams = [];
+  for(var e = 1; e <= 3; e++){
+    var et = el('cm_res_et'+e).value.trim();
+    var eu = el('cm_res_eu'+e).value.trim();
+    if(et && eu) exams.push({title: et, url: eu});
+  }
+  var resources = {lessons: lessons, exams: exams};
+  if(videos.length > 0) videos[0]._resources = resources;
   var parts = docId.split('_');
   db.collection('content').doc(docId).set({
     videos: videos,
