@@ -2496,11 +2496,13 @@ function loadTrialFromFirestore(email, callback){
   db.collection('users').doc(docId).get().then(function(doc){
     if(doc.exists){
       var d = doc.data();
-      var created = d.trialStartedAt || d.lastLogin || new Date().toISOString();
-      cachedTrialData = { email: email, created: new Date(created).getTime(), upgraded: false };
-      // Save trialStartedAt if not set yet
-      if(!d.trialStartedAt){
-        db.collection('users').doc(docId).set({ trialStartedAt: created }, {merge: true}).catch(function(){});
+      if(d.trialStartedAt){
+        cachedTrialData = { email: email, created: new Date(d.trialStartedAt).getTime(), upgraded: false };
+      } else {
+        // No trialStartedAt yet — set it now
+        var now = new Date().toISOString();
+        db.collection('users').doc(docId).set({ trialStartedAt: now }, {merge: true}).catch(function(){});
+        cachedTrialData = { email: email, created: Date.now(), upgraded: false };
       }
       callback(cachedTrialData);
     } else {
@@ -2571,12 +2573,21 @@ function enterApp(name, email){
   // Track user in Firestore
   if(email && email !== ''){
     var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
-    db.collection('users').doc(docId).set({
-      email: email,
-      name: name,
-      lastLogin: new Date().toISOString(),
-      firstSeen: firebase.firestore.FieldValue.serverTimestamp()
-    }, {merge: true}).catch(function(e){ console.log('User track error:', e); });
+    db.collection('users').doc(docId).get().then(function(doc){
+      var updateData = {
+        email: email,
+        name: name,
+        lastLogin: new Date().toISOString()
+      };
+      // Only set trialStartedAt if it doesn't already exist
+      if(!doc.exists || !doc.data().trialStartedAt){
+        updateData.trialStartedAt = new Date().toISOString();
+      }
+      if(!doc.exists){
+        updateData.firstSeen = firebase.firestore.FieldValue.serverTimestamp();
+      }
+      db.collection('users').doc(docId).set(updateData, {merge: true}).catch(function(e){ console.log('User track error:', e); });
+    }).catch(function(e){ console.log('User track error:', e); });
   }
   startTrialTimer();
   showAdminIfNeeded();
