@@ -4326,7 +4326,7 @@ window.cmLoadSemesters = function(){
   el('cmVideoSlots').innerHTML = '<div style="color:var(--text3);font-size:13px;text-align:center;padding:30px;">Select semester and module</div>';
   if(!el('cmUni').value) return;
   // Only show S2, S4, S6 semesters
-  var targetSems = ['sem2','sem4','sem5lit','sem5ling','sem6lit','sem6ling'];
+  var targetSems = ['sem2','sem3','sem4','sem5lit','sem5ling','sem6lit','sem6ling'];
   SEMESTERS.forEach(function(s){
     if(targetSems.indexOf(s.id) !== -1){
       var opt = document.createElement('option');
