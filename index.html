@@ -1471,6 +1471,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
         <div style="display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:0;">
           <button id="adminTabUsers" class="admin-tab active" onclick="switchAdminTab('users')">👥 Users</button>
           <button id="adminTabContent" class="admin-tab" onclick="switchAdminTab('content')">🎬 Content Manager</button>
+          <button id="adminTabContrib" class="admin-tab" onclick="switchAdminTab('contrib')">📤 Contributions</button>
         </div>
 
         <!-- USERS TAB -->
@@ -1558,8 +1559,111 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 
         </div><!-- end adminContentPane -->
 
+        <!-- CONTRIBUTIONS TAB -->
+        <div id="adminContribPane" style="display:none;">
+          <div class="admin-section" style="border-left:3px solid var(--accent3);">
+            <h3 style="margin:0 0 8px;">📤 Student Contributions</h3>
+            <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">Students upload their lesson handouts here. Review, download, and use them to create video summaries.</div>
+            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+              <select id="contribFilterUni" class="admin-select" style="margin:0;min-width:150px;" onchange="loadContributions()">
+                <option value="">All universities</option>
+              </select>
+              <select id="contribFilterStatus" class="admin-select" style="margin:0;" onchange="loadContributions()">
+                <option value="">All status</option>
+                <option value="pending">Pending</option>
+                <option value="reviewed">Reviewed</option>
+                <option value="used">Used</option>
+              </select>
+              <button class="admin-btn small" onclick="loadContributions()">🔄 Refresh</button>
+            </div>
+            <div id="contribStats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;">
+              <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;">
+                <div style="font-size:20px;font-weight:800;color:var(--accent2);" id="contribTotal">0</div>
+                <div style="font-size:11px;color:var(--text3);">Total</div>
+              </div>
+              <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;">
+                <div style="font-size:20px;font-weight:800;color:#f9a825;" id="contribPending">0</div>
+                <div style="font-size:11px;color:var(--text3);">Pending</div>
+              </div>
+              <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;">
+                <div style="font-size:20px;font-weight:800;color:#43e97b;" id="contribUsed">0</div>
+                <div style="font-size:11px;color:var(--text3);">Used</div>
+              </div>
+            </div>
+          </div>
+          <div id="contribList" style="max-height:70vh;overflow-y:auto;"></div>
+        </div><!-- end adminContribPane -->
+
       </div>
     </div>
+
+    <!-- CONTRIBUTE PAGE (non-admin users) -->
+    <div class="view" id="view-contribute" style="display:none;">
+      <div style="max-width:560px;margin:0 auto;padding:24px 16px;">
+        <div style="text-align:center;margin-bottom:24px;">
+          <div style="font-size:40px;margin-bottom:8px;">📤</div>
+          <div style="font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:var(--text1);" id="contribPageTitle">Upload your lesson</div>
+          <div style="font-size:13px;color:var(--text2);margin-top:6px;line-height:1.6;" id="contribPageSub">Help us build video summaries for your module. Upload your professor's handout and get <strong style="color:var(--accent2);">free access</strong> when the video is ready!</div>
+        </div>
+
+        <!-- How it works -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px;">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center;">
+            <div style="font-size:20px;margin-bottom:4px;">📸</div>
+            <div style="font-size:12px;font-weight:700;color:var(--text1);">1. Upload</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">Photo or PDF of your lesson</div>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center;">
+            <div style="font-size:20px;margin-bottom:4px;">🎬</div>
+            <div style="font-size:12px;font-weight:700;color:var(--text1);">2. We record</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">Video summary of your lesson</div>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center;">
+            <div style="font-size:20px;margin-bottom:4px;">🎓</div>
+            <div style="font-size:12px;font-weight:700;color:var(--text1);">3. You learn</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">Free access to your module</div>
+          </div>
+        </div>
+
+        <!-- Upload form card -->
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;">
+          <div class="field" style="margin-bottom:12px;">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);">Module</label>
+            <input type="text" id="cpModule" readonly style="opacity:.7;font-size:13px;">
+          </div>
+          <div class="field" style="margin-bottom:12px;">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);">File type</label>
+            <select id="cpType" class="admin-select" style="margin:0;width:100%;">
+              <option value="lesson">Lesson / Handout</option>
+              <option value="exam">Past Exam</option>
+              <option value="notes">My Notes</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:12px;">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);">Upload image (photo of handout)</label>
+            <input type="file" id="cpFile" accept="image/*,.pdf" style="font-size:13px;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;width:100%;box-sizing:border-box;">
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">Take a photo of the pages or select a PDF. Max 5MB.</div>
+          </div>
+          <div class="field" style="margin-bottom:12px;">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);">Google Drive link (optional)</label>
+            <input type="text" id="cpDriveLink" placeholder="https://drive.google.com/file/d/...">
+          </div>
+          <div class="field" style="margin-bottom:14px;">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);">Notes (optional)</label>
+            <input type="text" id="cpNotes" placeholder="e.g. Prof. El Ajraoui, Week 3 lesson">
+          </div>
+          <button class="admin-btn" style="width:100%;padding:12px;font-size:14px;" onclick="submitContributePage()">📤 Submit my lesson</button>
+          <div id="cpMsg" class="admin-msg" style="margin-top:10px;"></div>
+        </div>
+
+        <!-- Previous contributions -->
+        <div style="margin-top:20px;">
+          <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:8px;">Your contributions to this module</div>
+          <div id="cpMyContribs" style="font-size:12px;color:var(--text3);">Loading...</div>
+        </div>
+      </div>
+    </div>
+
     <div id="view-player">
       <div class="pl-left">
         <div class="pl-left-inner">
@@ -1710,6 +1814,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
             <!-- EXAMS PANEL -->
             <div class="res-panel" id="resPanelExams">
               <div class="res-file-list" id="examFileList"></div>
+            </div>
+          </div>
+
+          <!-- CONTRIBUTE BANNER -->
+          <div class="res-card" id="contributeBanner" style="background:linear-gradient(135deg,rgba(108,99,255,.08),rgba(255,101,132,.08));border:1px dashed var(--accent2);">
+            <div style="padding:16px;text-align:center;">
+              <div style="font-size:20px;margin-bottom:6px;">📤</div>
+              <div style="font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--text1);margin-bottom:4px;">Share your lesson handout</div>
+              <div style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.5;">Upload your professor's lesson/handout for this module.<br>Contributors get <strong style="color:var(--accent2);">free access</strong> when video summaries are ready!</div>
+              <button class="admin-btn" style="font-size:13px;padding:8px 20px;" onclick="openContributeModal()">📤 Upload lesson</button>
             </div>
           </div>
         </div>
@@ -1867,6 +1981,51 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
       <button class="btn-ghost" id="btnModalStay">Stay here</button>
       <button class="btn-accent" id="btnModalBook">Book session →</button>
     </div>
+  </div>
+</div>
+
+<!-- CONTRIBUTE MODAL -->
+<div class="modal-ov" id="contributeModal">
+  <div class="modal-box" style="max-width:440px;text-align:left;">
+    <div style="text-align:center;margin-bottom:16px;">
+      <div style="font-size:28px;">📤</div>
+      <div style="font-family:'Sora',sans-serif;font-size:18px;font-weight:800;margin-top:6px;" id="contribTitle">Upload lesson handout</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:4px;" id="contribSub">Share your professor's materials for this module</div>
+    </div>
+    <div class="field" style="margin-bottom:10px;">
+      <label style="font-size:12px;font-weight:600;">Your name</label>
+      <input type="text" id="contribName" placeholder="Your name" readonly style="opacity:.7;">
+    </div>
+    <div class="field" style="margin-bottom:10px;">
+      <label style="font-size:12px;font-weight:600;">Module</label>
+      <input type="text" id="contribModule" readonly style="opacity:.7;">
+    </div>
+    <div class="field" style="margin-bottom:10px;">
+      <label style="font-size:12px;font-weight:600;">File type</label>
+      <select id="contribType" class="admin-select" style="margin:0;width:100%;">
+        <option value="lesson">Lesson / Handout</option>
+        <option value="exam">Past Exam</option>
+        <option value="notes">My Notes</option>
+      </select>
+    </div>
+    <div class="field" style="margin-bottom:10px;">
+      <label style="font-size:12px;font-weight:600;">Upload image (photo of handout)</label>
+      <input type="file" id="contribFile" accept="image/*,.pdf" style="font-size:13px;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;width:100%;box-sizing:border-box;">
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;">Take a photo of the lesson pages or select a PDF. Max 5MB.</div>
+    </div>
+    <div class="field" style="margin-bottom:10px;">
+      <label style="font-size:12px;font-weight:600;">Google Drive link (optional — if you have a PDF)</label>
+      <input type="text" id="contribDriveLink" placeholder="https://drive.google.com/file/d/...">
+    </div>
+    <div class="field" style="margin-bottom:14px;">
+      <label style="font-size:12px;font-weight:600;">Notes (optional)</label>
+      <input type="text" id="contribNotes" placeholder="e.g. Prof. El Ajraoui, Week 3 lesson">
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="admin-btn" style="flex:1;" onclick="submitContribution()">📤 Submit</button>
+      <button class="admin-btn danger" style="flex:0;" onclick="el('contributeModal').classList.remove('open');">Cancel</button>
+    </div>
+    <div id="contribMsg" class="admin-msg" style="margin-top:8px;"></div>
   </div>
 </div>
 
@@ -2454,7 +2613,7 @@ function getP(u,s,m){var k=u+'_'+s+'_'+m;return S.progress[k]||{videos:[],quizze
 /* ── HELPERS ── */
 function el(id){return document.getElementById(id);}
 function showView(id){
-  ['dashboard','semesters','modules','contact','pricing','admin','profile','privacy'].forEach(function(v){
+  ['dashboard','semesters','modules','contact','pricing','admin','profile','privacy','contribute'].forEach(function(v){
     var e=el('view-'+v); if(e){e.style.display='none';e.classList.remove('active');}
   });
   var pl=el('view-player');
@@ -2472,7 +2631,7 @@ function showView(id){
     var t=el('view-'+id);
     if(t){t.style.display='block';t.classList.add('active');}
   }
-  ['dashboard','semesters','modules','player','contact','pricing','admin','profile','privacy'].forEach(function(n){
+  ['dashboard','semesters','modules','player','contact','pricing','admin','profile','privacy','contribute'].forEach(function(n){
     var e=el('nav-'+n); if(e) e.classList.toggle('active',n===id);
   });
 }
@@ -2771,17 +2930,19 @@ function renderModuleGrid(grid, mods, sem, idx, subData){
     var isUnlocked = allUnlocked || enabledIndices.indexOf(modIdx) !== -1;
 
     var card=document.createElement('div');
-    card.className = 'mod-card' + (isUnlocked ? '' : ' locked');
-    card.innerHTML='<div class="mc-head"><div class="mc-icon">'+mod.icon+'</div><div><div class="mc-title">'+mod.title+'</div><div class="mc-desc">'+mod.desc+'</div></div></div><div class="pbar"><div class="pfill" style="width:'+pct+'%"></div></div><div class="mc-footer"><span class="mc-vids">5 videos'+(dv>0?' · '+dv+' done':'')+'</span>'+badge+'</div>';
-
-    if(isUnlocked){
-      card.onclick=(function(m){return function(){openPlayer(m);};})(mod);
+    if(isAdminUser){
+      card.className = 'mod-card' + (isUnlocked ? '' : ' locked');
+      card.innerHTML='<div class="mc-head"><div class="mc-icon">'+mod.icon+'</div><div><div class="mc-title">'+mod.title+'</div><div class="mc-desc">'+mod.desc+'</div></div></div><div class="pbar"><div class="pfill" style="width:'+pct+'%"></div></div><div class="mc-footer"><span class="mc-vids">5 videos'+(dv>0?' · '+dv+' done':'')+'</span>'+badge+'</div>';
+      if(isUnlocked){
+        card.onclick=(function(m){return function(){openPlayer(m);};})(mod);
+      } else {
+        card.innerHTML += '<div class="mod-lock-overlay"><div class="mod-lock-badge">🔒 Upgrade to access</div></div>';
+        card.onclick=function(){ showView('pricing'); setTopbar([],'Plans & Pricing',false); };
+      }
     } else {
-      card.innerHTML += '<div class="mod-lock-overlay"><div class="mod-lock-badge">🔒 Upgrade to access</div></div>';
-      card.onclick=function(){
-        showView('pricing');
-        setTopbar([],'Plans & Pricing',false);
-      };
+      card.className = 'mod-card';
+      card.innerHTML='<div class="mc-head"><div class="mc-icon">'+mod.icon+'</div><div><div class="mc-title">'+mod.title+'</div><div class="mc-desc">'+mod.desc+'</div></div></div><div class="mc-footer" style="justify-content:center;"><span style="background:rgba(108,99,255,.12);color:var(--accent2);padding:4px 14px;border-radius:16px;font-size:12px;font-weight:700;">📤 Upload your lesson</span></div>';
+      card.onclick=(function(m){return function(){openContributePage(m);};})(mod);
     }
     grid.appendChild(card);
   });
@@ -4313,9 +4474,12 @@ if(el('btnAdminGrant')) el('btnAdminGrant').onclick = adminGrantAccess;
 window.switchAdminTab = function(tab){
   el('adminUsersPane').style.display = tab === 'users' ? 'block' : 'none';
   el('adminContentPane').style.display = tab === 'content' ? 'block' : 'none';
+  el('adminContribPane').style.display = tab === 'contrib' ? 'block' : 'none';
   el('adminTabUsers').className = 'admin-tab' + (tab === 'users' ? ' active' : '');
   el('adminTabContent').className = 'admin-tab' + (tab === 'content' ? ' active' : '');
+  el('adminTabContrib').className = 'admin-tab' + (tab === 'contrib' ? ' active' : '');
   if(tab === 'content') cmInit();
+  if(tab === 'contrib') initContribTab();
 };
 
 /* ── CONTENT MANAGER ── */
@@ -4579,6 +4743,270 @@ firebase.auth().onAuthStateChanged(function(user){
     enterApp(user.displayName || 'User', user.email || '');
   }
 });
+
+/* ── CONTRIBUTE PAGE (non-admin) ── */
+window.openContributePage = function(mod){
+  S.mod = mod;
+  el('cpModule').value = (S.uni ? S.uni.emoji + ' ' + S.uni.name : '') + ' → ' + (S.sem ? S.sem.title : '') + ' → ' + (mod ? mod.icon + ' ' + mod.title : '');
+  el('cpFile').value = '';
+  el('cpDriveLink').value = '';
+  el('cpNotes').value = '';
+  el('cpMsg').className = 'admin-msg';
+  el('cpMsg').textContent = '';
+  setTopbar([S.uni.emoji + ' ' + S.uni.name, S.sem.title, mod.title], '📤 ' + mod.title, false);
+  showView('contribute');
+  loadMyContributions();
+};
+
+window.submitContributePage = function(){
+  var msg = el('cpMsg');
+  var fileInput = el('cpFile');
+  var driveLink = el('cpDriveLink').value.trim();
+  var notes = el('cpNotes').value.trim();
+  var fileType = el('cpType').value;
+
+  if(!fileInput.files.length && !driveLink){
+    msg.className = 'admin-msg error';
+    msg.textContent = 'Please upload a photo or paste a Google Drive link.';
+    return;
+  }
+
+  msg.className = 'admin-msg';
+  msg.textContent = '📤 Uploading...';
+
+  function saveContrib(imageData){
+    var docId = S.user.email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + Date.now();
+    db.collection('contributions').doc(docId).set({
+      email: S.user.email,
+      name: S.user.name || '',
+      university: S.uni.id,
+      universityName: S.uni.name,
+      semester: S.sem.id,
+      semesterTitle: S.sem.title,
+      module: S.mod.title,
+      moduleIcon: S.mod.icon,
+      fileType: fileType,
+      driveLink: driveLink,
+      notes: notes,
+      imageData: imageData || '',
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    }).then(function(){
+      msg.className = 'admin-msg success';
+      msg.textContent = '✅ Thank you! Your lesson has been submitted. You will get free access when the video summary is ready!';
+      el('cpFile').value = '';
+      el('cpDriveLink').value = '';
+      el('cpNotes').value = '';
+      loadMyContributions();
+    }).catch(function(e){
+      msg.className = 'admin-msg error';
+      msg.textContent = 'Error: ' + e.message;
+    });
+  }
+
+  if(fileInput.files.length > 0){
+    var file = fileInput.files[0];
+    if(file.size > 5 * 1024 * 1024){
+      msg.className = 'admin-msg error';
+      msg.textContent = 'File too large. Max 5MB.';
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function(e){ saveContrib(e.target.result); };
+    reader.readAsDataURL(file);
+  } else {
+    saveContrib('');
+  }
+};
+
+function loadMyContributions(){
+  var container = el('cpMyContribs');
+  if(!container || !S.user || !S.user.email){ return; }
+  container.innerHTML = '<div style="color:var(--text3);font-size:12px;">Loading...</div>';
+  db.collection('contributions')
+    .where('email','==',S.user.email)
+    .where('university','==',S.uni.id)
+    .where('semester','==',S.sem.id)
+    .where('module','==',S.mod.title)
+    .orderBy('createdAt','desc').limit(10)
+    .get().then(function(snap){
+      if(snap.empty){
+        container.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:10px;text-align:center;">No contributions yet for this module. Be the first!</div>';
+        return;
+      }
+      var html = '';
+      snap.forEach(function(doc){
+        var d = doc.data();
+        var date = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : '';
+        var statusColor = d.status === 'pending' ? '#f9a825' : d.status === 'used' ? '#43e97b' : '#56ccf2';
+        html += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">' +
+          '<div>' +
+            '<div style="font-size:12px;font-weight:600;color:var(--text1);">' + (d.fileType||'lesson') + '</div>' +
+            '<div style="font-size:11px;color:var(--text3);">' + date + (d.notes ? ' · ' + d.notes : '') + '</div>' +
+          '</div>' +
+          '<span style="font-size:11px;padding:3px 10px;border-radius:12px;background:' + statusColor + '22;color:' + statusColor + ';font-weight:600;">' + (d.status||'pending') + '</span>' +
+        '</div>';
+      });
+      container.innerHTML = html;
+    }).catch(function(){
+      container.innerHTML = '<div style="color:var(--text3);font-size:12px;">Could not load contributions.</div>';
+    });
+}
+
+/* ── CONTRIBUTIONS ADMIN ── */
+function initContribTab(){
+  var uniSel = el('contribFilterUni');
+  if(uniSel.options.length <= 1){
+    UNIVERSITIES.forEach(function(u){
+      var opt = document.createElement('option');
+      opt.value = u.id; opt.textContent = u.emoji + ' ' + u.name;
+      uniSel.appendChild(opt);
+    });
+  }
+  loadContributions();
+}
+
+window.loadContributions = function(){
+  var list = el('contribList');
+  list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px;">Loading...</div>';
+  var uniFilter = el('contribFilterUni').value;
+  var statusFilter = el('contribFilterStatus').value;
+
+  var query = db.collection('contributions').orderBy('createdAt','desc').limit(100);
+  if(uniFilter) query = db.collection('contributions').where('university','==',uniFilter).orderBy('createdAt','desc').limit(100);
+
+  query.get().then(function(snap){
+    var items = [];
+    var total = 0, pending = 0, used = 0;
+    snap.forEach(function(doc){
+      var d = doc.data(); d._id = doc.id;
+      total++;
+      if(d.status === 'pending') pending++;
+      if(d.status === 'used') used++;
+      if(statusFilter && d.status !== statusFilter) return;
+      items.push(d);
+    });
+    el('contribTotal').textContent = total;
+    el('contribPending').textContent = pending;
+    el('contribUsed').textContent = used;
+
+    if(!items.length){
+      list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3);font-size:13px;">No contributions yet</div>';
+      return;
+    }
+
+    var html = '';
+    items.forEach(function(d){
+      var statusColor = d.status === 'pending' ? '#f9a825' : d.status === 'used' ? '#43e97b' : '#56ccf2';
+      var hasImage = d.imageData && d.imageData.length > 50;
+      var hasDrive = d.driveLink && d.driveLink.length > 5;
+      var date = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : '';
+      html += '<div class="admin-section" style="border-left:3px solid ' + statusColor + ';margin-bottom:10px;">' +
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">' +
+          '<div>' +
+            '<div style="font-size:14px;font-weight:700;color:var(--text1);">' + (d.moduleIcon||'') + ' ' + (d.module||'') + '</div>' +
+            '<div style="font-size:12px;color:var(--text2);margin-top:2px;">' + (d.universityName||d.university||'') + ' → ' + (d.semesterTitle||d.semester||'') + '</div>' +
+            '<div style="font-size:11px;color:var(--text3);margin-top:4px;">By: ' + (d.name||'') + ' (' + (d.email||'') + ') · ' + date + '</div>' +
+            '<div style="font-size:11px;color:var(--text3);">Type: <strong>' + (d.fileType||'lesson') + '</strong>' + (d.notes ? ' · Notes: ' + d.notes : '') + '</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:4px;flex-wrap:wrap;">' +
+            '<span style="font-size:11px;padding:3px 10px;border-radius:12px;background:' + statusColor + '22;color:' + statusColor + ';font-weight:600;">' + (d.status||'pending') + '</span>' +
+          '</div>' +
+        '</div>' +
+        (hasImage ? '<div style="margin-top:8px;"><img src="' + d.imageData + '" style="max-width:100%;max-height:300px;border-radius:8px;border:1px solid var(--border);cursor:pointer;" onclick="window.open(this.src)"></div>' : '') +
+        (hasDrive ? '<div style="margin-top:6px;"><a href="' + d.driveLink + '" target="_blank" style="font-size:12px;color:var(--accent2);">📎 Open Google Drive link</a></div>' : '') +
+        '<div style="display:flex;gap:6px;margin-top:8px;">' +
+          '<button class="admin-btn small" onclick="updateContribStatus(\'' + d._id + '\',\'reviewed\')">✅ Reviewed</button>' +
+          '<button class="admin-btn small" onclick="updateContribStatus(\'' + d._id + '\',\'used\')" style="background:#43e97b;color:#000;">📺 Used</button>' +
+          '<button class="admin-btn small danger" onclick="updateContribStatus(\'' + d._id + '\',\'rejected\')">❌ Reject</button>' +
+        '</div>' +
+      '</div>';
+    });
+    list.innerHTML = html;
+  }).catch(function(e){
+    list.innerHTML = '<div style="text-align:center;padding:20px;color:#e05252;font-size:13px;">Error: ' + e.message + '</div>';
+  });
+};
+
+window.updateContribStatus = function(docId, status){
+  db.collection('contributions').doc(docId).update({status: status, reviewedAt: new Date().toISOString()}).then(function(){
+    loadContributions();
+  }).catch(function(e){ alert('Error: ' + e.message); });
+};
+
+/* ── CONTRIBUTE SYSTEM ── */
+window.openContributeModal = function(){
+  if(!S.user || !S.user.email){ alert('Please sign in first.'); return; }
+  if(!S.mod){ alert('Please open a module first.'); return; }
+  el('contribName').value = S.user.name || '';
+  el('contribModule').value = (S.uni ? S.uni.name : '') + ' → ' + (S.sem ? S.sem.title : '') + ' → ' + (S.mod ? S.mod.title : '');
+  el('contribDriveLink').value = '';
+  el('contribNotes').value = '';
+  el('contribFile').value = '';
+  el('contribMsg').className = 'admin-msg';
+  el('contribMsg').textContent = '';
+  el('contributeModal').classList.add('open');
+};
+
+window.submitContribution = function(){
+  var msg = el('contribMsg');
+  var fileInput = el('contribFile');
+  var driveLink = el('contribDriveLink').value.trim();
+  var notes = el('contribNotes').value.trim();
+  var fileType = el('contribType').value;
+
+  if(!fileInput.files.length && !driveLink){
+    msg.className = 'admin-msg error';
+    msg.textContent = 'Please upload a photo or paste a Google Drive link.';
+    return;
+  }
+
+  msg.className = 'admin-msg';
+  msg.textContent = 'Uploading...';
+
+  function saveToFirestore(imageData){
+    var docId = S.user.email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + Date.now();
+    db.collection('contributions').doc(docId).set({
+      email: S.user.email,
+      name: S.user.name || '',
+      university: S.uni.id,
+      universityName: S.uni.name,
+      semester: S.sem.id,
+      semesterTitle: S.sem.title,
+      module: S.mod.title,
+      moduleIcon: S.mod.icon,
+      fileType: fileType,
+      driveLink: driveLink,
+      notes: notes,
+      imageData: imageData || '',
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    }).then(function(){
+      msg.className = 'admin-msg success';
+      msg.textContent = '✅ Thank you! Your contribution has been submitted. You will get free access when the video summary is ready.';
+      setTimeout(function(){ el('contributeModal').classList.remove('open'); }, 3000);
+    }).catch(function(e){
+      msg.className = 'admin-msg error';
+      msg.textContent = 'Error: ' + e.message;
+    });
+  }
+
+  if(fileInput.files.length > 0){
+    var file = fileInput.files[0];
+    if(file.size > 5 * 1024 * 1024){
+      msg.className = 'admin-msg error';
+      msg.textContent = 'File too large. Max 5MB.';
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function(e){
+      saveToFirestore(e.target.result);
+    };
+    reader.readAsDataURL(file);
+  } else {
+    saveToFirestore('');
+  }
+};
 
 /* Typewriter animation for login page */
 (function(){
