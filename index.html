@@ -2866,7 +2866,7 @@ el('btnPlay').onclick=function(){
   var vid=VIDEOS[S.vidIdx];
   var ytId = getYouTubeId(S.uni.id, S.sem.id, S.mod.id, S.vidIdx);
   var iframe = el('ytPlayer');
-  iframe.src = 'https://www.youtube-nocookie.com/embed/' + ytId + '?autoplay=1&rel=0&modestbranding=1&origin=' + encodeURIComponent(window.location.origin || 'https://amine-bouidi.github.io');
+  iframe.src = 'https://www.youtube.com/embed/' + ytId + '?autoplay=1&rel=0&modestbranding=1&cc_load_policy=0&origin=' + encodeURIComponent(window.location.origin || 'https://amine-bouidi.github.io');
   iframe.style.display = 'block';
   el('vidOverlay').style.display='none';
   el('vidPlaying').style.display='none';
