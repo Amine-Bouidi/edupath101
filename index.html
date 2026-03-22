@@ -1599,44 +1599,68 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 
     <!-- CONTRIBUTE PAGE (non-admin users) -->
     <div class="view" id="view-contribute" style="display:none;overflow-y:auto;-webkit-overflow-scrolling:touch;">
-      <div style="max-width:560px;margin:0 auto;padding:24px 16px;">
-        <div style="text-align:center;margin-bottom:24px;">
-          <div style="font-size:40px;margin-bottom:8px;">📤</div>
-          <div style="font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:var(--text1);" id="contribPageTitle">Upload your lesson</div>
-          <div style="font-size:13px;color:var(--text2);margin-top:6px;line-height:1.6;" id="contribPageSub">Help us build video summaries for your module. Upload your professor's handout and get <strong style="color:var(--accent2);">free access</strong> when the video is ready!</div>
+      <div style="max-width:560px;margin:0 auto;padding:24px 16px;padding-bottom:80px;">
+
+        <!-- Reward banner -->
+        <div style="background:linear-gradient(135deg,rgba(108,99,255,.1),rgba(255,101,132,.1));border:1px solid var(--accent2);border-radius:16px;padding:20px;text-align:center;margin-bottom:20px;">
+          <div style="font-size:32px;margin-bottom:6px;">🎁</div>
+          <div style="font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--text1);">Earn Rewards by Contributing!</div>
+          <div style="font-size:13px;color:var(--text2);margin-top:8px;line-height:1.6;">
+            📚 <strong style="color:var(--accent2);">Upload your module's lessons</strong> → get free tutoring for that module<br>
+            💰 <strong style="color:#43e97b;">Complete ALL modules in a semester</strong> → win <strong style="color:#f9a825;">500 DH</strong> cash reward!
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:8px;font-style:italic;">First student to complete a full semester wins. 500 DH split between all contributors if multiple students help.</div>
         </div>
 
-        <!-- How it works -->
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px;">
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center;">
-            <div style="font-size:20px;margin-bottom:4px;">📸</div>
-            <div style="font-size:12px;font-weight:700;color:var(--text1);">1. Upload</div>
-            <div style="font-size:11px;color:var(--text3);margin-top:2px;">Photo or PDF of your lesson</div>
+        <!-- Semester progress -->
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:20px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <div style="font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--text1);" id="cpSemTitle">Semester progress</div>
+            <div style="font-size:12px;font-weight:700;color:var(--accent2);" id="cpSemPct">0%</div>
           </div>
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center;">
-            <div style="font-size:20px;margin-bottom:4px;">🎬</div>
-            <div style="font-size:12px;font-weight:700;color:var(--text1);">2. We record</div>
-            <div style="font-size:11px;color:var(--text3);margin-top:2px;">Video summary of your lesson</div>
+          <div style="height:8px;background:var(--bg5);border-radius:4px;overflow:hidden;margin-bottom:14px;">
+            <div id="cpSemBar" style="height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent3));border-radius:4px;width:0%;transition:width .5s;"></div>
           </div>
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center;">
-            <div style="font-size:20px;margin-bottom:4px;">🎓</div>
-            <div style="font-size:12px;font-weight:700;color:var(--text1);">3. You learn</div>
-            <div style="font-size:11px;color:var(--text3);margin-top:2px;">Free access to your module</div>
+          <div id="cpModuleGrid" style="display:grid;grid-template-columns:1fr;gap:6px;"></div>
+        </div>
+
+        <!-- Current module header -->
+        <div style="text-align:center;margin-bottom:16px;">
+          <div style="font-size:28px;margin-bottom:4px;" id="cpModIcon">📤</div>
+          <div style="font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:var(--text1);" id="cpModTitle">Upload your lesson</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:4px;" id="cpModSub">Module info</div>
+        </div>
+
+        <!-- Module upload stats -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;">
+            <div style="font-size:18px;font-weight:800;color:var(--accent2);" id="cpStatLessons">0</div>
+            <div style="font-size:10px;color:var(--text3);">📄 Lessons</div>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;">
+            <div style="font-size:18px;font-weight:800;color:#56ccf2;" id="cpStatNotes">0</div>
+            <div style="font-size:10px;color:var(--text3);">📝 Notes</div>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;">
+            <div style="font-size:18px;font-weight:800;color:#ff6584;" id="cpStatExams">0</div>
+            <div style="font-size:10px;color:var(--text3);">📋 Exams</div>
           </div>
         </div>
 
-        <!-- Upload form card -->
+        <!-- Reward status for this module -->
+        <div id="cpRewardStatus" style="background:rgba(67,233,123,.1);border:1px solid rgba(67,233,123,.3);border-radius:12px;padding:12px;text-align:center;margin-bottom:16px;display:none;">
+          <div style="font-size:13px;font-weight:700;color:#43e97b;">🎓 You contributed to this module — free tutoring unlocked!</div>
+        </div>
+
+        <!-- Upload form -->
         <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;">
-          <div class="field" style="margin-bottom:12px;">
-            <label style="font-size:12px;font-weight:600;color:var(--text2);">Module</label>
-            <input type="text" id="cpModule" readonly style="opacity:.7;font-size:13px;">
-          </div>
+          <div style="font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--text1);margin-bottom:12px;">📤 Upload a lesson, note, or exam</div>
           <div class="field" style="margin-bottom:12px;">
             <label style="font-size:12px;font-weight:600;color:var(--text2);">File type</label>
             <select id="cpType" class="admin-select" style="margin:0;width:100%;">
-              <option value="lesson">Lesson / Handout</option>
-              <option value="exam">Past Exam</option>
-              <option value="notes">My Notes</option>
+              <option value="lesson">📄 Lesson / Handout</option>
+              <option value="exam">📋 Past Exam</option>
+              <option value="notes">📝 My Notes</option>
             </select>
           </div>
           <div class="field" style="margin-bottom:12px;">
@@ -1652,11 +1676,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
             <label style="font-size:12px;font-weight:600;color:var(--text2);">Notes (optional)</label>
             <input type="text" id="cpNotes" placeholder="e.g. Prof. El Ajraoui, Week 3 lesson">
           </div>
-          <button class="admin-btn" style="width:100%;padding:12px;font-size:14px;" onclick="submitContributePage()">📤 Submit my lesson</button>
+          <button class="admin-btn" style="width:100%;padding:12px;font-size:14px;" onclick="submitContributePage()">📤 Submit</button>
           <div id="cpMsg" class="admin-msg" style="margin-top:10px;"></div>
         </div>
 
-        <!-- Previous contributions -->
+        <!-- My contributions -->
         <div style="margin-top:20px;">
           <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:8px;">Your contributions to this module</div>
           <div id="cpMyContribs" style="font-size:12px;color:var(--text3);">Loading...</div>
@@ -4747,16 +4771,98 @@ firebase.auth().onAuthStateChanged(function(user){
 /* ── CONTRIBUTE PAGE (non-admin) ── */
 window.openContributePage = function(mod){
   S.mod = mod;
-  el('cpModule').value = (S.uni ? S.uni.emoji + ' ' + S.uni.name : '') + ' → ' + (S.sem ? S.sem.title : '') + ' → ' + (mod ? mod.icon + ' ' + mod.title : '');
+  el('cpModIcon').textContent = mod.icon || '📤';
+  el('cpModTitle').textContent = mod.title;
+  el('cpModSub').textContent = S.uni.name + ' → ' + S.sem.title;
+  el('cpSemTitle').textContent = '💰 ' + S.sem.title + ' — 500 DH reward progress';
   el('cpFile').value = '';
   el('cpDriveLink').value = '';
   el('cpNotes').value = '';
   el('cpMsg').className = 'admin-msg';
   el('cpMsg').textContent = '';
+  el('cpRewardStatus').style.display = 'none';
   setTopbar([S.uni.emoji + ' ' + S.uni.name, S.sem.title, mod.title], '📤 ' + mod.title, false);
   showView('contribute');
+  loadModuleStats();
+  loadSemesterProgress();
   loadMyContributions();
 };
+
+function loadModuleStats(){
+  el('cpStatLessons').textContent = '...';
+  el('cpStatNotes').textContent = '...';
+  el('cpStatExams').textContent = '...';
+  db.collection('contributions')
+    .where('university','==',S.uni.id)
+    .where('semester','==',S.sem.id)
+    .where('module','==',S.mod.title)
+    .get().then(function(snap){
+      var lessons=0, notes=0, exams=0, userContributed=false;
+      snap.forEach(function(doc){
+        var d = doc.data();
+        if(d.fileType==='lesson') lessons++;
+        else if(d.fileType==='notes') notes++;
+        else if(d.fileType==='exam') exams++;
+        if(d.email === S.user.email) userContributed = true;
+      });
+      el('cpStatLessons').textContent = lessons;
+      el('cpStatNotes').textContent = notes;
+      el('cpStatExams').textContent = exams;
+      if(userContributed){
+        el('cpRewardStatus').style.display = 'block';
+      }
+    }).catch(function(){});
+}
+
+function loadSemesterProgress(){
+  var grid = el('cpModuleGrid');
+  grid.innerHTML = '';
+  var semIdx = SEMESTERS.findIndex(function(s){return s.id===S.sem.id;});
+  var mods = getMods(semIdx, S.uni.id);
+
+  db.collection('contributions')
+    .where('university','==',S.uni.id)
+    .where('semester','==',S.sem.id)
+    .get().then(function(snap){
+      var moduleCounts = {};
+      snap.forEach(function(doc){
+        var d = doc.data();
+        if(!moduleCounts[d.module]) moduleCounts[d.module] = 0;
+        moduleCounts[d.module]++;
+      });
+
+      var filledModules = 0;
+      var html = '';
+      mods.forEach(function(m){
+        var count = moduleCounts[m.title] || 0;
+        var isFilled = count > 0;
+        if(isFilled) filledModules++;
+        var isCurrentMod = m.title === S.mod.title;
+        var bgColor = isFilled ? 'rgba(67,233,123,.1)' : 'var(--bg)';
+        var borderColor = isCurrentMod ? 'var(--accent2)' : (isFilled ? 'rgba(67,233,123,.3)' : 'var(--border)');
+        var icon = isFilled ? '✅' : '⬜';
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;background:'+bgColor+';border:1px solid '+borderColor+';border-radius:8px;padding:8px 12px;">' +
+          '<div style="display:flex;align-items:center;gap:8px;">' +
+            '<span style="font-size:13px;">'+icon+'</span>' +
+            '<span style="font-size:12px;font-weight:'+(isCurrentMod?'700':'500')+';color:var(--text1);">'+m.icon+' '+m.title+'</span>' +
+          '</div>' +
+          '<span style="font-size:11px;color:'+(count>0?'#43e97b':'var(--text3)')+';font-weight:600;">'+count+' upload'+(count!==1?'s':'')+'</span>' +
+        '</div>';
+      });
+      grid.innerHTML = html;
+
+      var pct = mods.length > 0 ? Math.round((filledModules / mods.length) * 100) : 0;
+      el('cpSemPct').textContent = pct + '% (' + filledModules + '/' + mods.length + ' modules)';
+      el('cpSemBar').style.width = pct + '%';
+
+      if(pct === 100){
+        el('cpSemPct').textContent = '🎉 100% COMPLETE — 500 DH reward!';
+        el('cpSemPct').style.color = '#43e97b';
+      }
+    }).catch(function(){
+      grid.innerHTML = '<div style="font-size:12px;color:var(--text3);">Could not load progress</div>';
+    });
+}
 
 window.submitContributePage = function(){
   var msg = el('cpMsg');
@@ -4798,6 +4904,8 @@ window.submitContributePage = function(){
       el('cpDriveLink').value = '';
       el('cpNotes').value = '';
       loadMyContributions();
+      loadModuleStats();
+      loadSemesterProgress();
     }).catch(function(e){
       msg.className = 'admin-msg error';
       msg.textContent = 'Error: ' + e.message;
