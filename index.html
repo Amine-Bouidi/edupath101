@@ -5005,28 +5005,24 @@ window.loadContributions = function(){
 
     var html = '';
     items.forEach(function(d){
-      var statusColor = d.status === 'pending' ? '#f9a825' : d.status === 'used' ? '#43e97b' : '#56ccf2';
+      var statusColor = d.status === 'pending' ? '#f9a825' : d.status === 'used' ? '#43e97b' : d.status === 'reviewed' ? '#56ccf2' : '#e05252';
       var hasImage = d.imageData && d.imageData.length > 50;
       var hasDrive = d.driveLink && d.driveLink.length > 5;
       var date = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : '';
-      html += '<div class="admin-section" style="border-left:3px solid ' + statusColor + ';margin-bottom:10px;">' +
-        '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">' +
-          '<div>' +
-            '<div style="font-size:14px;font-weight:700;color:var(--text1);">' + (d.moduleIcon||'') + ' ' + (d.module||'') + '</div>' +
-            '<div style="font-size:12px;color:var(--text2);margin-top:2px;">' + (d.universityName||d.university||'') + ' → ' + (d.semesterTitle||d.semester||'') + '</div>' +
-            '<div style="font-size:11px;color:var(--text3);margin-top:4px;">By: ' + (d.name||'') + ' (' + (d.email||'') + ') · ' + date + '</div>' +
-            '<div style="font-size:11px;color:var(--text3);">Type: <strong>' + (d.fileType||'lesson') + '</strong>' + (d.notes ? ' · Notes: ' + d.notes : '') + '</div>' +
+      html += '<div style="display:flex;align-items:center;gap:10px;border-left:3px solid ' + statusColor + ';background:var(--card);border-radius:0 8px 8px 0;padding:8px 10px;margin-bottom:6px;">' +
+        (hasImage ? '<img src="' + d.imageData + '" style="width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;flex-shrink:0;" onclick="window.open(this.src)">' : '<div style="width:44px;height:44px;background:var(--bg5);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">' + (d.moduleIcon||'📄') + '</div>') +
+        '<div style="flex:1;min-width:0;overflow:hidden;">' +
+          '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
+            '<span style="font-size:12px;font-weight:700;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (d.module||'') + '</span>' +
+            '<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:' + statusColor + '22;color:' + statusColor + ';font-weight:600;flex-shrink:0;">' + (d.status||'pending') + '</span>' +
           '</div>' +
-          '<div style="display:flex;gap:4px;flex-wrap:wrap;">' +
-            '<span style="font-size:11px;padding:3px 10px;border-radius:12px;background:' + statusColor + '22;color:' + statusColor + ';font-weight:600;">' + (d.status||'pending') + '</span>' +
-          '</div>' +
+          '<div style="font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (d.name||'') + ' · ' + (d.universityName||d.university||'').split('—')[0].trim() + ' · ' + (d.semesterTitle||'') + ' · ' + (d.fileType||'') + ' · ' + date + '</div>' +
         '</div>' +
-        (hasImage ? '<div style="margin-top:8px;"><img src="' + d.imageData + '" style="max-width:100%;max-height:300px;border-radius:8px;border:1px solid var(--border);cursor:pointer;" onclick="window.open(this.src)"></div>' : '') +
-        (hasDrive ? '<div style="margin-top:6px;"><a href="' + d.driveLink + '" target="_blank" style="font-size:12px;color:var(--accent2);">📎 Open Google Drive link</a></div>' : '') +
-        '<div style="display:flex;gap:6px;margin-top:8px;">' +
-          '<button class="admin-btn small" onclick="updateContribStatus(\'' + d._id + '\',\'reviewed\')">✅ Reviewed</button>' +
-          '<button class="admin-btn small" onclick="updateContribStatus(\'' + d._id + '\',\'used\')" style="background:#43e97b;color:#000;">📺 Used</button>' +
-          '<button class="admin-btn small danger" onclick="updateContribStatus(\'' + d._id + '\',\'rejected\')">❌ Reject</button>' +
+        '<div style="display:flex;gap:4px;flex-shrink:0;">' +
+          (hasDrive ? '<a href="' + d.driveLink + '" target="_blank" style="font-size:14px;text-decoration:none;" title="Open Drive link">📎</a>' : '') +
+          '<button style="border:none;background:none;cursor:pointer;font-size:14px;padding:2px;" onclick="updateContribStatus(\'' + d._id + '\',\'reviewed\')" title="Reviewed">✅</button>' +
+          '<button style="border:none;background:none;cursor:pointer;font-size:14px;padding:2px;" onclick="updateContribStatus(\'' + d._id + '\',\'used\')" title="Used">📺</button>' +
+          '<button style="border:none;background:none;cursor:pointer;font-size:14px;padding:2px;" onclick="updateContribStatus(\'' + d._id + '\',\'rejected\')" title="Reject">❌</button>' +
         '</div>' +
       '</div>';
     });
