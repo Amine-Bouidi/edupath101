@@ -1664,17 +1664,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
             </select>
           </div>
           <div class="field" style="margin-bottom:12px;">
-            <label style="font-size:12px;font-weight:600;color:var(--text2);">Upload file (photo, PDF, Word, PPT)</label>
-            <input type="file" id="cpFile" accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt" style="font-size:13px;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;width:100%;box-sizing:border-box;">
-            <div style="font-size:11px;color:var(--text3);margin-top:4px;">Photo, PDF, Word, or PowerPoint. Images are auto-compressed. Large files? Use Google Drive link.</div>
+            <label style="font-size:12px;font-weight:600;color:var(--text2);">Upload screenshot (photo of your lesson)</label>
+            <input type="file" id="cpFile" accept="image/*" style="font-size:13px;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;width:100%;box-sizing:border-box;">
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">Take a screenshot or photo of each page. Auto-compressed for fast upload.</div>
           </div>
           <div class="field" style="margin-bottom:12px;">
             <label style="font-size:12px;font-weight:600;color:var(--text2);">Google Drive link (optional)</label>
             <input type="text" id="cpDriveLink" placeholder="https://drive.google.com/file/d/...">
           </div>
-          <div class="field" style="margin-bottom:14px;">
+          <div class="field" style="margin-bottom:12px;">
             <label style="font-size:12px;font-weight:600;color:var(--text2);">Notes (optional)</label>
             <input type="text" id="cpNotes" placeholder="e.g. Prof. El Ajraoui, Week 3 lesson">
+          </div>
+          <div class="field" style="margin-bottom:14px;">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);">Book reference (if the lesson is from a book)</label>
+            <input type="text" id="cpBookRef" placeholder="e.g. An Introduction to Language — V. Fromkin, Chapter 4">
+          </div>
+          <div style="background:rgba(249,168,37,.1);border:1px solid rgba(249,168,37,.25);border-radius:10px;padding:10px 12px;margin-bottom:14px;">
+            <div style="font-size:12px;color:var(--text2);line-height:1.6;">
+              📖 <strong>If your lesson is from a book with many pages:</strong> just upload a photo of the cover or type the book title and author above. No need to screenshot every page!
+            </div>
           </div>
           <button class="admin-btn" style="width:100%;padding:12px;font-size:14px;" onclick="submitContributePage()">📤 Submit</button>
           <div id="cpMsg" class="admin-msg" style="margin-top:10px;"></div>
@@ -2033,8 +2042,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
       </select>
     </div>
     <div class="field" style="margin-bottom:10px;">
-      <label style="font-size:12px;font-weight:600;">Upload file (photo, PDF, Word, PPT)</label>
-      <input type="file" id="contribFile" accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt" style="font-size:13px;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;width:100%;box-sizing:border-box;">
+      <label style="font-size:12px;font-weight:600;">Upload screenshot (photo of your lesson)</label>
+      <input type="file" id="contribFile" accept="image/*" style="font-size:13px;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;width:100%;box-sizing:border-box;">
       <div style="font-size:11px;color:var(--text3);margin-top:4px;">Take a photo of the lesson pages or select a PDF. Max 5MB.</div>
     </div>
     <div class="field" style="margin-bottom:10px;">
@@ -4827,6 +4836,7 @@ window.openContributePage = function(mod){
   el('cpFile').value = '';
   el('cpDriveLink').value = '';
   el('cpNotes').value = '';
+  el('cpBookRef').value = '';
   el('cpMsg').className = 'admin-msg';
   el('cpMsg').textContent = '';
   el('cpRewardStatus').style.display = 'none';
@@ -4918,11 +4928,12 @@ window.submitContributePage = function(){
   var fileInput = el('cpFile');
   var driveLink = el('cpDriveLink').value.trim();
   var notes = el('cpNotes').value.trim();
+  var bookRef = el('cpBookRef').value.trim();
   var fileType = el('cpType').value;
 
-  if(!fileInput.files.length && !driveLink){
+  if(!fileInput.files.length && !driveLink && !bookRef){
     msg.className = 'admin-msg error';
-    msg.textContent = 'Please upload a photo or paste a Google Drive link.';
+    msg.textContent = 'Please upload a screenshot, paste a Drive link, or enter a book reference.';
     return;
   }
 
@@ -4943,6 +4954,7 @@ window.submitContributePage = function(){
       fileType: fileType,
       driveLink: driveLink,
       notes: notes,
+      bookRef: bookRef,
       imageData: imageData || '',
       status: 'pending',
       createdAt: new Date().toISOString()
@@ -4953,6 +4965,7 @@ window.submitContributePage = function(){
       el('cpDriveLink').value = '';
       el('cpNotes').value = '';
       loadMyContributions();
+      el('cpBookRef').value = '';
       loadModuleStats();
       loadSemesterProgress();
     }).catch(function(e){
@@ -5071,7 +5084,7 @@ window.loadContributions = function(){
             '<span style="font-size:12px;font-weight:700;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (d.module||'') + '</span>' +
             '<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:' + statusColor + '22;color:' + statusColor + ';font-weight:600;flex-shrink:0;">' + (d.status||'pending') + '</span>' +
           '</div>' +
-          '<div style="font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (d.name||'') + ' · ' + (d.universityName||d.university||'').split('—')[0].trim() + ' · ' + (d.semesterTitle||'') + ' · ' + (d.fileType||'') + ' · ' + date + '</div>' +
+          '<div style="font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (d.name||'') + ' · ' + (d.universityName||d.university||'').split('—')[0].trim() + ' · ' + (d.semesterTitle||'') + ' · ' + (d.fileType||'') + ' · ' + date + (d.bookRef ? ' · 📖 ' + d.bookRef : '') + '</div>' +
         '</div>' +
         '<div style="display:flex;gap:4px;flex-shrink:0;">' +
           (hasDrive ? '<a href="' + d.driveLink + '" target="_blank" style="font-size:14px;text-decoration:none;" title="Open Drive link">📎</a>' : '') +
