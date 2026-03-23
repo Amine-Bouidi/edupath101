@@ -1664,9 +1664,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
             </select>
           </div>
           <div class="field" style="margin-bottom:12px;">
-            <label style="font-size:12px;font-weight:600;color:var(--text2);">Upload image (photo of handout)</label>
-            <input type="file" id="cpFile" accept="image/*,.pdf" style="font-size:13px;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;width:100%;box-sizing:border-box;">
-            <div style="font-size:11px;color:var(--text3);margin-top:4px;">Take a photo of the pages or select a PDF. Max 5MB.</div>
+            <label style="font-size:12px;font-weight:600;color:var(--text2);">Upload file (photo, PDF, Word, PPT)</label>
+            <input type="file" id="cpFile" accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt" style="font-size:13px;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;width:100%;box-sizing:border-box;">
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">Photo, PDF, Word, or PowerPoint. Images are auto-compressed. Large files? Use Google Drive link.</div>
           </div>
           <div class="field" style="margin-bottom:12px;">
             <label style="font-size:12px;font-weight:600;color:var(--text2);">Google Drive link (optional)</label>
@@ -2033,8 +2033,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
       </select>
     </div>
     <div class="field" style="margin-bottom:10px;">
-      <label style="font-size:12px;font-weight:600;">Upload image (photo of handout)</label>
-      <input type="file" id="contribFile" accept="image/*,.pdf" style="font-size:13px;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;width:100%;box-sizing:border-box;">
+      <label style="font-size:12px;font-weight:600;">Upload file (photo, PDF, Word, PPT)</label>
+      <input type="file" id="contribFile" accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt" style="font-size:13px;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;width:100%;box-sizing:border-box;">
       <div style="font-size:11px;color:var(--text3);margin-top:4px;">Take a photo of the lesson pages or select a PDF. Max 5MB.</div>
     </div>
     <div class="field" style="margin-bottom:10px;">
@@ -4768,6 +4768,55 @@ firebase.auth().onAuthStateChanged(function(user){
   }
 });
 
+/* ── IMAGE COMPRESSION & FILE HANDLING ── */
+function compressAndReadFile(file, maxWidth, quality, callback){
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var isImage = file.type && file.type.indexOf('image') === 0;
+
+    if(!isImage){
+      // Non-image file (PDF, Word, PPT, etc.) — check size directly
+      if(e.target.result.length > 900000){
+        callback(null, 'This file is too large to store directly (' + Math.round(file.size/1024/1024*10)/10 + 'MB). Please upload it to Google Drive and paste the link instead.');
+      } else {
+        callback(e.target.result, null);
+      }
+      return;
+    }
+
+    // Image — compress via canvas
+    var img = new Image();
+    img.onload = function(){
+      var canvas = document.createElement('canvas');
+      var w = img.width, h = img.height;
+      if(w > maxWidth){ h = Math.round(h * maxWidth / w); w = maxWidth; }
+      canvas.width = w; canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      var compressed = canvas.toDataURL('image/jpeg', quality);
+      if(compressed.length > 900000){
+        compressed = canvas.toDataURL('image/jpeg', 0.3);
+      }
+      if(compressed.length > 900000){
+        // Still too big — try smaller dimensions
+        var w2 = Math.round(w * 0.5), h2 = Math.round(h * 0.5);
+        canvas.width = w2; canvas.height = h2;
+        ctx.drawImage(img, 0, 0, w2, h2);
+        compressed = canvas.toDataURL('image/jpeg', 0.4);
+      }
+      if(compressed.length > 900000){
+        callback(null, 'Image still too large after compression. Please upload to Google Drive and paste the link instead.');
+      } else {
+        callback(compressed, null);
+      }
+    };
+    img.onerror = function(){ callback(null, 'Could not read this image. Try a different format or use Google Drive.'); };
+    img.src = e.target.result;
+  };
+  reader.onerror = function(){ callback(null, 'Could not read file. Please try again.'); };
+  reader.readAsDataURL(file);
+}
+
 /* ── CONTRIBUTE PAGE (non-admin) ── */
 window.openContributePage = function(mod){
   S.mod = mod;
@@ -4914,14 +4963,20 @@ window.submitContributePage = function(){
 
   if(fileInput.files.length > 0){
     var file = fileInput.files[0];
-    if(file.size > 5 * 1024 * 1024){
+    if(file.size > 10 * 1024 * 1024){
       msg.className = 'admin-msg error';
-      msg.textContent = 'File too large. Max 5MB.';
+      msg.textContent = 'File too large. Max 10MB.';
       return;
     }
-    var reader = new FileReader();
-    reader.onload = function(e){ saveContrib(e.target.result); };
-    reader.readAsDataURL(file);
+    msg.textContent = '📤 Compressing & uploading...';
+    compressAndReadFile(file, 800, 0.6, function(compressed, err){
+      if(err){
+        msg.className = 'admin-msg error';
+        msg.textContent = err;
+        return;
+      }
+      saveContrib(compressed);
+    });
   } else {
     saveContrib('');
   }
@@ -5097,16 +5152,20 @@ window.submitContribution = function(){
 
   if(fileInput.files.length > 0){
     var file = fileInput.files[0];
-    if(file.size > 5 * 1024 * 1024){
+    if(file.size > 10 * 1024 * 1024){
       msg.className = 'admin-msg error';
-      msg.textContent = 'File too large. Max 5MB.';
+      msg.textContent = 'File too large. Max 10MB.';
       return;
     }
-    var reader = new FileReader();
-    reader.onload = function(e){
-      saveToFirestore(e.target.result);
-    };
-    reader.readAsDataURL(file);
+    msg.textContent = 'Compressing & uploading...';
+    compressAndReadFile(file, 800, 0.6, function(compressed, err){
+      if(err){
+        msg.className = 'admin-msg error';
+        msg.textContent = err;
+        return;
+      }
+      saveToFirestore(compressed);
+    });
   } else {
     saveToFirestore('');
   }
