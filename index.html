@@ -2989,11 +2989,49 @@ function renderModuleGrid(grid, mods, sem, idx, subData){
       }
     } else {
       card.className = 'mod-card';
-      card.innerHTML='<div class="mc-head"><div class="mc-icon">'+mod.icon+'</div><div><div class="mc-title">'+mod.title+'</div><div class="mc-desc">'+mod.desc+'</div></div></div><div class="mc-footer" style="justify-content:center;"><span style="background:rgba(108,99,255,.12);color:var(--accent2);padding:4px 14px;border-radius:16px;font-size:12px;font-weight:700;">📤 Upload your lesson</span></div>';
+      card.setAttribute('data-mod-title', mod.title);
+      card.innerHTML='<div class="mc-head"><div class="mc-icon">'+mod.icon+'</div><div><div class="mc-title">'+mod.title+'</div><div class="mc-desc">'+mod.desc+'</div></div></div><div class="pbar"><div class="pfill" style="width:0%;background:var(--accent2);transition:width .5s;" id="cpbar_'+modIdx+'"></div></div><div class="mc-footer"><span class="mc-vids" id="cpstat_'+modIdx+'" style="font-size:11px;color:var(--text3);">Loading...</span><span style="background:rgba(108,99,255,.12);color:var(--accent2);padding:4px 10px;border-radius:16px;font-size:11px;font-weight:700;">📤 Upload</span></div>';
       card.onclick=(function(m){return function(){openContributePage(m);};})(mod);
     }
     grid.appendChild(card);
   });
+
+  // Load contribution counts for non-admin
+  if(!isAdminUser){
+    db.collection('contributions')
+      .where('university','==',S.uni.id)
+      .where('semester','==',sem.id)
+      .get().then(function(snap){
+        var counts = {};
+        snap.forEach(function(doc){
+          var d = doc.data();
+          if(!counts[d.module]) counts[d.module] = {lessons:0, notes:0, exams:0, total:0};
+          counts[d.module].total++;
+          if(d.fileType==='lesson') counts[d.module].lessons++;
+          else if(d.fileType==='notes') counts[d.module].notes++;
+          else if(d.fileType==='exam') counts[d.module].exams++;
+        });
+        mods.forEach(function(mod, i){
+          var c = counts[mod.title] || {lessons:0, notes:0, exams:0, total:0};
+          var stat = el('cpstat_'+i);
+          var bar = el('cpbar_'+i);
+          if(stat){
+            if(c.total > 0){
+              stat.innerHTML = '📄'+c.lessons+' 📝'+c.notes+' 📋'+c.exams;
+              stat.style.color = 'var(--text2)';
+            } else {
+              stat.innerHTML = 'No uploads yet — be first!';
+              stat.style.color = 'var(--text3)';
+            }
+          }
+          if(bar){
+            var pct = Math.min(100, c.total * 20);
+            bar.style.width = pct + '%';
+            if(c.total >= 5) bar.style.background = '#43e97b';
+          }
+        });
+      }).catch(function(){});
+  }
 }
 el('nav-modules').onclick=function(){closeMobileMenu();if(S.sem)openModules(S.sem,S.semIdx);};
 
