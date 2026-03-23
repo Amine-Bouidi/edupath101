@@ -1015,8 +1015,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
     <div style="font-size:48px;margin-bottom:12px;">⏰</div>
     <h2>Your free trial has ended</h2>
     <p>You've explored EduPath for 48 hours! To keep accessing all videos, quizzes, resources, and community features — choose a plan that fits you.</p>
-    <button class="pw-btn" onclick="el('paywallOverlay').style.display='none';showView('pricing');">🔓 View Plans & Pricing</button>
+    <button class="pw-btn" id="pwBtnPricing">🔓 View Plans & Pricing</button>
     <div class="pw-sub">Starting from just 100 DH/month · Cancel anytime</div>
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+      <button id="pwBtnSignOut" style="background:none;border:none;color:var(--text3);font-size:13px;cursor:pointer;padding:8px 16px;">Sign out →</button>
+    </div>
   </div>
 </div>
 <div id="app" class="screen" style="flex-direction:row;">
@@ -4154,6 +4157,21 @@ el('profSaveBtn').onclick = function(){
 el('nav-profile').onclick = function(){ closeMobileMenu(); openProfile(); };
 el('nav-privacy').onclick = function(){ closeMobileMenu(); openPrivacyPage(); };
 el('nav-notifs').onclick = function(){ closeMobileMenu(); setTopbar([],'Notifications',false); showView('notifs'); };
+
+/* Paywall overlay buttons */
+el('pwBtnPricing').onclick = function(){
+  el('paywallOverlay').style.display = 'none';
+  setTimeout(function(){ openPricing(); }, 100);
+};
+el('pwBtnSignOut').onclick = function(){
+  el('paywallOverlay').style.display = 'none';
+  firebase.auth().signOut().then(function(){
+    S.user = null;
+    window.location.reload();
+  }).catch(function(){
+    window.location.reload();
+  });
+};
 
 /* ── ADMIN PANEL ── */
 var ADMIN_EMAILS = ['bouidipro555@gmail.com']; // <-- Add your Google email(s) here
