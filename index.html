@@ -1042,6 +1042,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
       <div class="sb-item" id="nav-semesters" style="display:none;"><span class="sb-icon">📅</span><span class="sb-item-label"> Semesters</span></div>
       <div class="sb-item" id="nav-modules"   style="display:none;"><span class="sb-icon">📚</span><span class="sb-item-label"> Modules</span></div>
       <div class="sb-item" id="nav-player"    style="display:none;"><span class="sb-icon">▶</span><span class="sb-item-label"> Now watching</span></div>
+      <div class="sb-item" id="nav-notifs"><span class="sb-icon">🔔</span><span class="sb-item-label"> Notifications <span id="notifBadge" style="display:none;background:#ff6584;color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;margin-left:4px;">0</span></span></div>
       <div class="sb-sec" style="margin-top:12px;">Account</div>
       <div class="sb-item" id="nav-pricing"><span class="sb-icon">💎</span><span class="sb-item-label"> Plans & Pricing</span></div>
       <div class="sb-item" id="nav-admin" style="display:none;"><span class="sb-icon">⚙️</span><span class="sb-item-label"> Admin Panel</span></div>
@@ -1594,6 +1595,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
           <div id="contribList" style="max-height:70vh;overflow-y:auto;"></div>
         </div><!-- end adminContribPane -->
 
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS PAGE -->
+    <div class="view" id="view-notifs" style="display:none;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+      <div style="max-width:560px;margin:0 auto;padding:24px 16px;">
+        <div style="text-align:center;margin-bottom:20px;">
+          <div style="font-size:28px;margin-bottom:4px;">🔔</div>
+          <div style="font-family:'Sora',sans-serif;font-size:20px;font-weight:800;color:var(--text1);">Notifications</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:4px;">Track the status of your contributions</div>
+        </div>
+        <div id="notifList" style="font-size:13px;color:var(--text3);">Loading...</div>
       </div>
     </div>
 
@@ -2646,7 +2659,7 @@ function getP(u,s,m){var k=u+'_'+s+'_'+m;return S.progress[k]||{videos:[],quizze
 /* ── HELPERS ── */
 function el(id){return document.getElementById(id);}
 function showView(id){
-  ['dashboard','semesters','modules','contact','pricing','admin','profile','privacy','contribute'].forEach(function(v){
+  ['dashboard','semesters','modules','contact','pricing','admin','profile','privacy','contribute','notifs'].forEach(function(v){
     var e=el('view-'+v); if(e){e.style.display='none';e.classList.remove('active');}
   });
   var pl=el('view-player');
@@ -2664,9 +2677,10 @@ function showView(id){
     var t=el('view-'+id);
     if(t){t.style.display='block';t.classList.add('active');}
   }
-  ['dashboard','semesters','modules','player','contact','pricing','admin','profile','privacy','contribute'].forEach(function(n){
+  ['dashboard','semesters','modules','player','contact','pricing','admin','profile','privacy','contribute','notifs'].forEach(function(n){
     var e=el('nav-'+n); if(e) e.classList.toggle('active',n===id);
   });
+  if(id === 'notifs') loadNotifications();
 }
 function setTopbar(crumbs,title,showProg){
   var crumbEl=el('topCrumb'); crumbEl.innerHTML='';
@@ -2797,6 +2811,7 @@ function enterApp(name, email){
   startTrialTimer();
   showAdminIfNeeded();
   cacheUserSubscription();
+  setTimeout(updateNotifBadge, 2000);
   // Check if profile setup needed (first login)
   if(email && email !== ''){
     setTimeout(function(){ checkProfileSetup(email, name); }, 500);
@@ -4100,6 +4115,7 @@ el('profSaveBtn').onclick = function(){
 
 el('nav-profile').onclick = function(){ closeMobileMenu(); openProfile(); };
 el('nav-privacy').onclick = function(){ closeMobileMenu(); openPrivacyPage(); };
+el('nav-notifs').onclick = function(){ closeMobileMenu(); setTopbar([],'Notifications',false); showView('notifs'); };
 
 /* ── ADMIN PANEL ── */
 var ADMIN_EMAILS = ['bouidipro555@gmail.com']; // <-- Add your Google email(s) here
@@ -4777,6 +4793,96 @@ firebase.auth().onAuthStateChanged(function(user){
   }
 });
 
+/* ── NOTIFICATION SYSTEM ── */
+function loadNotifications(){
+  var list = el('notifList');
+  if(!list || !S.user || !S.user.email){ return; }
+  list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);">Loading...</div>';
+
+  db.collection('contributions')
+    .where('email','==',S.user.email)
+    .orderBy('createdAt','desc').limit(50)
+    .get().then(function(snap){
+      if(snap.empty){
+        list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3);font-size:13px;">No notifications yet. Upload a lesson to get started!</div>';
+        return;
+      }
+      var html = '';
+      snap.forEach(function(doc){
+        var d = doc.data();
+        var date = d.createdAt ? new Date(d.createdAt).toLocaleDateString() + ' ' + new Date(d.createdAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '';
+        var reviewDate = d.reviewedAt ? new Date(d.reviewedAt).toLocaleDateString() : '';
+
+        // Upload received notification
+        html += '<div style="display:flex;gap:10px;padding:12px;border-radius:10px;background:var(--card);border:1px solid var(--border);margin-bottom:8px;">' +
+          '<div style="font-size:20px;flex-shrink:0;">📤</div>' +
+          '<div style="flex:1;">' +
+            '<div style="font-size:13px;font-weight:600;color:var(--text1);">Upload received!</div>' +
+            '<div style="font-size:12px;color:var(--text2);margin-top:2px;">' + (d.moduleIcon||'') + ' ' + (d.module||'') + ' — ' + (d.fileType||'lesson') + '</div>' +
+            '<div style="font-size:11px;color:var(--text3);margin-top:2px;">' + date + '</div>' +
+            '<div style="font-size:11px;color:var(--accent2);margin-top:4px;">Your upload will be reviewed within 24 hours.</div>' +
+          '</div>' +
+        '</div>';
+
+        // Status update notification (if reviewed/used/rejected)
+        if(d.status && d.status !== 'pending'){
+          var statusIcon = d.status === 'reviewed' ? '✅' : d.status === 'used' ? '🎬' : '❌';
+          var statusMsg = d.status === 'reviewed' ? 'Your lesson has been reviewed and accepted! We will use it to create a video summary.' :
+                          d.status === 'used' ? 'Your lesson was used to create a video summary! You now qualify for free tutoring on this module.' :
+                          'Your upload was not accepted. Please try uploading a clearer screenshot.';
+          var statusColor = d.status === 'reviewed' ? '#56ccf2' : d.status === 'used' ? '#43e97b' : '#e05252';
+
+          html += '<div style="display:flex;gap:10px;padding:12px;border-radius:10px;background:var(--card);border:1px solid ' + statusColor + '44;margin-bottom:8px;">' +
+            '<div style="font-size:20px;flex-shrink:0;">' + statusIcon + '</div>' +
+            '<div style="flex:1;">' +
+              '<div style="font-size:13px;font-weight:600;color:' + statusColor + ';">' + (d.status === 'used' ? 'Video summary created!' : d.status === 'reviewed' ? 'Lesson accepted!' : 'Upload declined') + '</div>' +
+              '<div style="font-size:12px;color:var(--text2);margin-top:2px;">' + (d.moduleIcon||'') + ' ' + (d.module||'') + '</div>' +
+              '<div style="font-size:12px;color:var(--text2);margin-top:4px;">' + statusMsg + '</div>' +
+              (reviewDate ? '<div style="font-size:11px;color:var(--text3);margin-top:2px;">' + reviewDate + '</div>' : '') +
+            '</div>' +
+          '</div>';
+        }
+      });
+      list.innerHTML = html;
+
+      // Mark as seen
+      if(S.user && S.user.email){
+        var uid = S.user.email.replace(/[^a-zA-Z0-9]/g,'_');
+        db.collection('users').doc(uid).set({lastNotifCheck: new Date().toISOString()}, {merge:true}).catch(function(){});
+      }
+      updateNotifBadge();
+    }).catch(function(){
+      list.innerHTML = '<div style="text-align:center;padding:20px;color:#e05252;font-size:13px;">Could not load notifications.</div>';
+    });
+}
+
+function updateNotifBadge(){
+  if(!S.user || !S.user.email) return;
+  var uid = S.user.email.replace(/[^a-zA-Z0-9]/g,'_');
+  db.collection('users').doc(uid).get().then(function(userDoc){
+    var lastCheck = userDoc.exists && userDoc.data().lastNotifCheck ? new Date(userDoc.data().lastNotifCheck) : new Date(0);
+
+    db.collection('contributions')
+      .where('email','==',S.user.email)
+      .orderBy('createdAt','desc').limit(50)
+      .get().then(function(snap){
+        var unread = 0;
+        snap.forEach(function(doc){
+          var d = doc.data();
+          // Count status changes after last check
+          if(d.reviewedAt && new Date(d.reviewedAt) > lastCheck) unread++;
+        });
+        var badge = el('notifBadge');
+        if(unread > 0){
+          badge.textContent = unread;
+          badge.style.display = 'inline';
+        } else {
+          badge.style.display = 'none';
+        }
+      }).catch(function(){});
+  }).catch(function(){});
+}
+
 /* ── IMAGE VIEWER ── */
 window.viewFullImage = function(src){
   var ov = document.createElement('div');
@@ -4969,7 +5075,7 @@ window.submitContributePage = function(){
       createdAt: new Date().toISOString()
     }).then(function(){
       msg.className = 'admin-msg success';
-      msg.textContent = '✅ Thank you! Your lesson has been submitted. You will get free access when the video summary is ready!';
+      msg.textContent = '✅ Thank you! Your lesson has been submitted. Your upload will be reviewed within 24 hours. Check 🔔 Notifications for updates!';
       el('cpFile').value = '';
       el('cpDriveLink').value = '';
       el('cpNotes').value = '';
@@ -5164,7 +5270,7 @@ window.submitContribution = function(){
       createdAt: new Date().toISOString()
     }).then(function(){
       msg.className = 'admin-msg success';
-      msg.textContent = '✅ Thank you! Your contribution has been submitted. You will get free access when the video summary is ready.';
+      msg.textContent = '✅ Thank you! Your contribution has been submitted. Your upload will be reviewed within 24 hours. Check 🔔 Notifications for updates!';
       setTimeout(function(){ el('contributeModal').classList.remove('open'); }, 3000);
     }).catch(function(e){
       msg.className = 'admin-msg error';
