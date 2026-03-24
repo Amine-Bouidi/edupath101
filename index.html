@@ -6388,13 +6388,37 @@ window.uploadLoadSemesters = function(){
 
 window.uploadLoadModules = function(){
   var sel = el('uploadMod');
-  sel.innerHTML = '<option value="">— Select module —</option>';
+  sel.innerHTML = '<option value="">— Loading modules... —</option>';
   var si = el('uploadSem').value;
   var uniId = el('uploadUni').value;
-  if(si === '') return;
+  if(si === '' || !uniId){ sel.innerHTML = '<option value="">— Select module —</option>'; return; }
   var mods = getMods(parseInt(si), uniId);
-  mods.forEach(function(m){
-    sel.innerHTML += '<option value="' + m.title + '">' + m.icon + ' ' + m.title + '</option>';
+  var semId = SEMESTERS[parseInt(si)].id;
+  var namePrefix = uniId + '_' + semId + '_';
+
+  var p1 = db.collection('moduleNames').where('__name__', '>=', namePrefix).where('__name__', '<=', namePrefix + '\uf8ff').get();
+  var p2 = db.collection('customModules').where('university', '==', uniId).where('semester', '==', semId).get();
+
+  Promise.all([p1, p2]).then(function(results){
+    var customNames = {};
+    results[0].forEach(function(doc){ customNames[doc.id] = doc.data().name; });
+    mods.forEach(function(mod, i){
+      var key = namePrefix + i;
+      if(customNames[key]) mod.title = customNames[key];
+    });
+    results[1].forEach(function(doc){
+      var d = doc.data();
+      mods.push({icon:'📘', title: d.name || 'Custom Module'});
+    });
+    sel.innerHTML = '<option value="">— Select module —</option>';
+    mods.forEach(function(m){
+      sel.innerHTML += '<option value="' + m.title + '">' + m.icon + ' ' + m.title + '</option>';
+    });
+  }).catch(function(){
+    sel.innerHTML = '<option value="">— Select module —</option>';
+    mods.forEach(function(m){
+      sel.innerHTML += '<option value="' + m.title + '">' + m.icon + ' ' + m.title + '</option>';
+    });
   });
 };
 
