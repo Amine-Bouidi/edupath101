@@ -1860,6 +1860,8 @@ function openLoginFromLanding(){
     <div class="main-scroll">
       <!-- DASHBOARD — PHASE 1 -->
       <div class="view active" id="view-dashboard">
+        <!-- PHASE 1 USER DASHBOARD (hidden for admin) -->
+        <div id="phase1Dashboard">
         <!-- Welcome -->
         <div class="welcome-banner" style="text-align:center;flex-direction:column;gap:8px;">
           <div class="wb-text"><h2 id="wbGreet" style="margin-bottom:4px;">Welcome back!</h2><p style="color:var(--text2);font-size:13px;">Phase 1 — Help us build video lessons by sharing your handouts</p></div>
@@ -1904,6 +1906,21 @@ function openLoginFromLanding(){
           <div id="uploadHistory" style="display:flex;flex-direction:column;gap:8px;">
             <div style="text-align:center;padding:24px;color:var(--text3);font-size:13px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;">No uploads yet — your first one unlocks free video access! 🎁</div>
           </div>
+        </div>
+        </div>
+
+        <!-- ADMIN DASHBOARD (hidden for regular users) -->
+        <div id="adminDashboard" style="display:none;">
+          <div class="welcome-banner">
+            <div class="wb-text"><h2 id="wbGreetAdmin">Welcome back!</h2><p>Full admin view — select a university to manage content.</p></div>
+            <div class="wb-stats">
+              <div class="wb-stat"><div class="wb-stat-n" id="statVids">0</div><div class="wb-stat-l">Videos done</div></div>
+              <div class="wb-stat"><div class="wb-stat-n" id="statMods">0</div><div class="wb-stat-l">Modules done</div></div>
+              <div class="wb-stat"><div class="wb-stat-n" id="statPts">0</div><div class="wb-stat-l">Points earned</div></div>
+            </div>
+          </div>
+          <div class="sec-hdr">Select your university</div>
+          <div class="uni-grid" id="uniGrid"></div>
         </div>
       </div>
 
@@ -3700,7 +3717,6 @@ function enterApp(name, email){
   if(email && email !== ''){
     setTimeout(function(){ checkProfileSetup(email, name); }, 500);
   }
-  renderPhase1Dashboard();
 }
 function googleSignIn(){
   var provider = new firebase.auth.GoogleAuthProvider();
@@ -3728,7 +3744,10 @@ el('btnSignOut').onclick=function(){
 
 /* ── DASHBOARD ── */
 window.renderDashboard = function renderDashboard(){
-  el('wbGreet').textContent='Welcome back, '+S.user.name.split(' ')[0]+'!';
+  // Show admin dashboard, hide phase 1
+  el('phase1Dashboard').style.display='none';
+  el('adminDashboard').style.display='block';
+  el('wbGreetAdmin').textContent='Welcome back, '+S.user.name.split(' ')[0]+'!';
   var totalVids=0,totalMods=0,totalPts=0;
   UNIVERSITIES.forEach(function(uni){
     SEMESTERS.forEach(function(sem,si){getMods(si,uni.id).forEach(function(mod){
@@ -4223,7 +4242,7 @@ el('nav-contact').onclick=function(){closeMobileMenu();openContact();};
 el('nav-pricing').onclick=function(){closeMobileMenu();openPricing();};
 el('btnSubmitContact').onclick=function(){el('cFormCard').style.display='none';el('cSuccess').style.display='block';};
 el('btnBackDash').onclick=function(){showView('dashboard');renderPhase1Dashboard();};
-el('nav-dashboard').onclick=function(){closeMobileMenu();showView('dashboard');renderPhase1Dashboard();};
+el('nav-dashboard').onclick=function(){closeMobileMenu();showView('dashboard');if(isAdmin()){renderDashboard();}else{renderPhase1Dashboard();}};
 
 /* ═══════════════════════════════════════════
    COMMUNITY — classmates + public discussion
@@ -5051,10 +5070,16 @@ function isAdmin(){
 function showAdminIfNeeded(){
   if(isAdmin()){
     el('nav-admin').style.display='flex';
+    el('nav-notifs').style.display='flex';
+    el('nav-pricing').style.display='flex';
     el('trialBanner').style.display='none';
     el('paywallOverlay').style.display='none';
+    // Render full dashboard for admin
+    renderDashboard();
   } else {
     el('nav-admin').style.display='none';
+    // Render Phase 1 dashboard for regular users
+    renderPhase1Dashboard();
   }
 }
 
@@ -6383,6 +6408,9 @@ window.submitUpload = function(){
 /* ── PHASE 1 DASHBOARD RENDER ── */
 window.renderPhase1Dashboard = function(){
   if(!S.user || !S.user.email) return;
+  // Show phase 1 dashboard, hide admin
+  el('phase1Dashboard').style.display='block';
+  el('adminDashboard').style.display='none';
   el('wbGreet').textContent = 'Welcome, ' + S.user.name.split(' ')[0] + '!';
 
   // Load user uploads from Firestore
