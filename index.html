@@ -2076,7 +2076,7 @@ function openLoginFromLanding(){
             <h3 style="color:var(--accent2);margin:0 0 8px;">10. اتصل بنا 📞</h3>
             <p style="margin:0;"><strong>الاسم:</strong> أمين بويدي<br>
             <strong>WhatsApp:</strong> <span dir="ltr">+212 606-248409</span><br>
-            <strong>البريد الإلكتروني:</strong> <a href="/cdn-cgi/l/email-protection#83e2eeeaede6e1ecf6eae7eab3b3b3c3e4eee2eaefade0ecee" style="color:var(--accent2);"><span class="__cf_email__" data-cfemail="d7b6babeb9b2b5b8a2beb3bee7e7e797b0bab6bebbf9b4b8ba">[email&#160;protected]</span></a></p>
+            <strong>البريد الإلكتروني:</strong> <a href="/cdn-cgi/l/email-protection#52333f3b3c37303d273b363b62626212353f333b3e7c313d3f" style="color:var(--accent2);"><span class="__cf_email__" data-cfemail="31505c585f54535e4458555801010171565c50585d1f525e5c">[email&#160;protected]</span></a></p>
           </div>
           </div>
 
@@ -2140,7 +2140,7 @@ function openLoginFromLanding(){
             <h3 style="color:var(--accent2);margin:0 0 8px;">10. Contact 📞</h3>
             <p style="margin:0;"><strong>Name:</strong> Amine Bouidi<br>
             <strong>WhatsApp:</strong> +212 606-248409<br>
-            <strong>Email:</strong> <a href="/cdn-cgi/l/email-protection#81e0ece8efe4e3eef4e8e5e8b1b1b1c1e6ece0e8edafe2eeec" style="color:var(--accent2);"><span class="__cf_email__" data-cfemail="7f1e1216111a1d100a161b164f4f4f3f18121e1613511c1012">[email&#160;protected]</span></a></p>
+            <strong>Email:</strong> <a href="/cdn-cgi/l/email-protection#c0a1ada9aea5a2afb5a9a4a9f0f0f080a7ada1a9aceea3afad" style="color:var(--accent2);"><span class="__cf_email__" data-cfemail="c5a4a8acaba0a7aab0aca1acf5f5f585a2a8a4aca9eba6aaa8">[email&#160;protected]</span></a></p>
           </div>
           </div>
 
@@ -3814,89 +3814,33 @@ function openModules(sem,idx){
   var isAdminUser = email && ADMIN_EMAILS.indexOf(email.toLowerCase()) !== -1;
   var isDemoUser = S.user && S.user.name === 'Demo Student';
 
-  // Fetch custom module names from Firestore, then render
-  _fetchCustomModNames(S.uni.id, sem.id, mods.length, function(custom){
-    for(var i=0;i<mods.length;i++){ if(custom[i]) mods[i].title = custom[i]; }
-
-    if(isAdminUser || isDemoUser){
-      renderModuleGrid(grid, mods, sem, idx, null);
-    } else if(email){
-      var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
-      db.collection('subscriptions').doc(docId).get().then(function(doc){
-        if(doc.exists && doc.data().active){
-          var subData = doc.data();
-          var isExpired = subData.expiresAt && new Date(subData.expiresAt) < new Date();
-          if(!isExpired){
-            renderModuleGrid(grid, mods, sem, idx, subData);
-          } else {
-            renderModuleGrid(grid, mods, sem, idx, null);
-          }
+  if(isAdminUser || isDemoUser){
+    renderModuleGrid(grid, mods, sem, idx, null);
+  } else if(email){
+    var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
+    db.collection('subscriptions').doc(docId).get().then(function(doc){
+      if(doc.exists && doc.data().active){
+        var subData = doc.data();
+        var isExpired = subData.expiresAt && new Date(subData.expiresAt) < new Date();
+        if(!isExpired){
+          renderModuleGrid(grid, mods, sem, idx, subData);
         } else {
           renderModuleGrid(grid, mods, sem, idx, null);
         }
-      }).catch(function(){
+      } else {
         renderModuleGrid(grid, mods, sem, idx, null);
-      });
-    } else {
+      }
+    }).catch(function(){
       renderModuleGrid(grid, mods, sem, idx, null);
-    }
-  });
+    });
+  } else {
+    renderModuleGrid(grid, mods, sem, idx, null);
+  }
 
   setTopbar([S.uni.emoji+' '+S.uni.name, sem.title], sem.title+' — '+sem.sub, false);
   el('nav-modules').style.display='flex';
   showView('modules');
 }
-
-/* Fetch custom module names from Firestore moduleNames collection */
-function _fetchCustomModNames(uniId, semId, count, cb){
-  var names={}, done=0;
-  if(!count){ return cb(names); }
-  for(var i=0;i<count;i++){
-    (function(idx){
-      db.collection('moduleNames').doc(uniId+'_'+semId+'_'+idx).get().then(function(doc){
-        if(doc.exists && doc.data().name) names[idx]=doc.data().name;
-      }).catch(function(){}).finally(function(){ done++; if(done===count) cb(names); });
-    })(i);
-  }
-}
-
-/* Admin inline module-name editing */
-window.adminEditModName=function(modIdx,btn){
-  var titleEl=document.getElementById('mcTitle_'+modIdx);
-  if(!titleEl) return;
-  var cur=titleEl.textContent, wrap=titleEl.parentElement;
-  titleEl.style.display='none'; btn.style.display='none';
-  var ew=document.createElement('div'); ew.id='mcEW_'+modIdx;
-  ew.style.cssText='display:flex;flex-direction:column;gap:4px;flex:1;min-width:0;';
-  var inp=document.createElement('input'); inp.type='text'; inp.value=cur;
-  inp.className='mc-edit-input'; inp.id='mcEI_'+modIdx;
-  var acts=document.createElement('div'); acts.className='mc-edit-actions';
-  acts.innerHTML='<button class="mc-edit-save" onclick="event.stopPropagation();adminSaveModName('+modIdx+')" title="Save">✅</button><button class="mc-edit-cancel" onclick="event.stopPropagation();adminCancelModEdit('+modIdx+')" title="Cancel">❌</button>';
-  ew.appendChild(inp); ew.appendChild(acts); wrap.appendChild(ew);
-  inp.focus(); inp.select();
-  inp.onkeydown=function(e){
-    if(e.key==='Enter'){e.preventDefault();adminSaveModName(modIdx);}
-    if(e.key==='Escape'){e.preventDefault();adminCancelModEdit(modIdx);}
-  };
-};
-window.adminSaveModName=function(modIdx){
-  var inp=document.getElementById('mcEI_'+modIdx);
-  if(!inp) return;
-  var v=inp.value.trim();
-  if(!v) return adminCancelModEdit(modIdx);
-  var docId=S.uni.id+'_'+S.sem.id+'_'+modIdx;
-  db.collection('moduleNames').doc(docId).set({
-    name:v, university:S.uni.id, semester:S.sem.id, moduleIndex:modIdx, updatedAt:new Date().toISOString()
-  }).then(function(){
-    var t=document.getElementById('mcTitle_'+modIdx); if(t) t.textContent=v;
-    adminCancelModEdit(modIdx);
-  }).catch(function(err){ console.error('Save module name failed:',err); alert('Save failed — see console.'); });
-};
-window.adminCancelModEdit=function(modIdx){
-  var ew=document.getElementById('mcEW_'+modIdx); if(ew) ew.remove();
-  var t=document.getElementById('mcTitle_'+modIdx); if(t) t.style.display='';
-  var b=document.querySelector('.mc-edit-btn[data-mod-idx="'+modIdx+'"]'); if(b) b.style.display='';
-};
 
 function renderModuleGrid(grid, mods, sem, idx, subData){
   grid.innerHTML='';
@@ -6535,6 +6479,97 @@ window.renderPhase1Dashboard = function(){
       console.error('Upload history error:', e);
     });
 };
+
+/* ── ADMIN MODULE NAME EDITING ── */
+window.adminEditModName=function(modIdx,btn){
+  var titleEl=document.getElementById('mcTitle_'+modIdx);
+  if(!titleEl)return;
+  var cur=titleEl.textContent;
+  var wrap=titleEl.parentElement;
+  titleEl.style.display='none';
+  btn.style.display='none';
+  var ew=document.createElement('div');
+  ew.id='mcEW_'+modIdx;
+  ew.style.cssText='display:flex;flex-direction:column;gap:4px;flex:1;min-width:0;';
+  var inp=document.createElement('input');
+  inp.type='text';
+  inp.value=cur;
+  inp.className='mc-edit-input';
+  inp.id='mcEI_'+modIdx;
+  var acts=document.createElement('div');
+  acts.className='mc-edit-actions';
+  acts.innerHTML='<button class="mc-edit-save" onclick="event.stopPropagation();adminSaveModName('+modIdx+')" title="Save">✅</button><button class="mc-edit-cancel" onclick="event.stopPropagation();adminCancelModEdit('+modIdx+')" title="Cancel">❌</button>';
+  ew.appendChild(inp);
+  ew.appendChild(acts);
+  wrap.appendChild(ew);
+  inp.focus();
+  inp.select();
+  inp.onkeydown=function(e){
+    if(e.key==='Enter'){e.preventDefault();adminSaveModName(modIdx);}
+    if(e.key==='Escape'){e.preventDefault();adminCancelModEdit(modIdx);}
+  };
+};
+window.adminSaveModName=function(modIdx){
+  var inp=document.getElementById('mcEI_'+modIdx);
+  if(!inp)return;
+  var v=inp.value.trim();
+  if(!v)return adminCancelModEdit(modIdx);
+  var docId=S.uni.id+'_'+S.sem.id+'_'+modIdx;
+  db.collection('moduleNames').doc(docId).set({
+    name:v,university:S.uni.id,semester:S.sem.id,moduleIndex:modIdx,updatedAt:new Date().toISOString()
+  }).then(function(){
+    var t=document.getElementById('mcTitle_'+modIdx);
+    if(t)t.textContent=v;
+    adminCancelModEdit(modIdx);
+  }).catch(function(err){
+    console.error('Save module name failed:',err);
+    alert('Save failed. Check browser console (F12) for details.');
+  });
+};
+window.adminCancelModEdit=function(modIdx){
+  var ew=document.getElementById('mcEW_'+modIdx);
+  if(ew)ew.remove();
+  var t=document.getElementById('mcTitle_'+modIdx);
+  if(t)t.style.display='';
+  var b=document.querySelector('.mc-edit-btn[data-mod-idx="'+modIdx+'"]');
+  if(b)b.style.display='';
+};
+
+/* ── Load custom module names when modules page opens ── */
+(function(){
+  var _origOpenModules=openModules;
+  openModules=function(sem,idx){
+    var uniId=S.uni?S.uni.id:'';
+    var semId=sem?sem.id:'';
+    var mods=getMods(idx,uniId);
+    var count=mods.length;
+    if(!count||!uniId||!semId){_origOpenModules(sem,idx);return;}
+    var done=0,names={};
+    for(var i=0;i<count;i++){
+      (function(j){
+        db.collection('moduleNames').doc(uniId+'_'+semId+'_'+j).get().then(function(doc){
+          if(doc.exists&&doc.data().name)names[j]=doc.data().name;
+        }).catch(function(){}).finally(function(){
+          done++;
+          if(done===count){
+            // Patch MOD_DATA/UNI_MOD_DATA temporarily so getMods returns custom names
+            var data=(uniId&&UNI_MOD_DATA[uniId])?UNI_MOD_DATA[uniId]:MOD_DATA;
+            var arr=data[idx]||data[0];
+            var origTitles={};
+            for(var k in names){
+              if(arr[k]){origTitles[k]=arr[k].title;arr[k].title=names[k];}
+            }
+            _origOpenModules(sem,idx);
+            // Restore original titles so hardcoded data isn't permanently changed
+            for(var k in origTitles){
+              if(arr[k])arr[k].title=origTitles[k];
+            }
+          }
+        });
+      })(i);
+    }
+  };
+})();
 
 /* Typewriter animation for login page */
 (function(){
