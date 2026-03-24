@@ -3073,7 +3073,8 @@ var UNIVERSITIES = [
   {id:'uiz', name:'University Ibn Zohr — FLSH Agadir', country:'Morocco 🇲🇦', emoji:'🏛️', c:'#6c63ff'},
   {id:'uh2c', name:'University Hassan II — Casablanca (Ain Chock & Ben M\'sik)', country:'Morocco 🇲🇦', emoji:'🎓', c:'#ff6584'},
   {id:'uca', name:'University Cadi Ayyad — FLSH Marrakech', country:'Morocco 🇲🇦', emoji:'📚', c:'#43e97b'},
-  {id:'usmba', name:'University USMBA — FLDM Fez', country:'Morocco 🇲🇦', emoji:'🕌', c:'#f9a825'},
+  {id:'usmba', name:'USMBA — FLSH Sais, Fez', country:'Morocco 🇲🇦', emoji:'🕌', c:'#f9a825'},
+  {id:'usmba_dhar', name:'USMBA — FLDM Dhar El Mahraz, Fez', country:'Morocco 🇲🇦', emoji:'🏛️', c:'#e67e22'},
   {id:'ump', name:'University Mohammed I — FLSH Oujda', country:'Morocco 🇲🇦', emoji:'🏰', c:'#56ccf2'},
   {id:'uit', name:'University Ibn Tofail — FLSH Kenitra', country:'Morocco 🇲🇦', emoji:'📖', c:'#a18cd1'},
   {id:'umi', name:'University Moulay Ismail — FLSH Meknes', country:'Morocco 🇲🇦', emoji:'⚙️', c:'#38f9d7'},
@@ -3094,9 +3095,20 @@ var SEMESTERS = [
   {id:'sem5lit',num:5,title:'Semester 5 — Literature',sub:'Major: Literature & Culture',c1:'#56ccf2',c2:'#2f80ed'},
   {id:'sem5ling',num:5,title:'Semester 5 — Linguistics',sub:'Major: Linguistics & Applied',c1:'#a18cd1',c2:'#fbc2eb'},
   {id:'sem6lit',num:6,title:'Semester 6 — Literature',sub:'Major: Literature & Culture',c1:'#ff6584',c2:'#6c63ff'},
-  {id:'sem6ling',num:6,title:'Semester 6 — Linguistics',sub:'Major: Linguistics & Applied',c1:'#43e97b',c2:'#f9a825'}
+  {id:'sem6ling',num:6,title:'Semester 6 — Linguistics',sub:'Major: Linguistics & Applied',c1:'#43e97b',c2:'#f9a825'},
+  {id:'sem5langcom',num:5,title:'Semester 5 — Language & Communication',sub:'Parcours: Language & Communication Studies',c1:'#e67e22',c2:'#f39c12'},
+  {id:'sem6langcom',num:6,title:'Semester 6 — Language & Communication',sub:'Parcours: Language & Communication Studies',c1:'#d35400',c2:'#e67e22'},
+  {id:'sem5culture',num:5,title:'Semester 5 — Cultural Studies & Diplomacy',sub:'Parcours: Moroccan Cultural Studies & Diplomacy',c1:'#8e44ad',c2:'#9b59b6'},
+  {id:'sem6culture',num:6,title:'Semester 6 — Cultural Studies & Diplomacy',sub:'Parcours: Moroccan Cultural Studies & Diplomacy',c1:'#7d3c98',c2:'#8e44ad'},
+  {id:'sem5translit',num:5,title:'Semester 5 — Translation & Literature',sub:'Parcours: Translation & Literary Studies',c1:'#27ae60',c2:'#2ecc71'},
+  {id:'sem6translit',num:6,title:'Semester 6 — Translation & Literature',sub:'Parcours: Translation & Literary Studies',c1:'#1e8449',c2:'#27ae60'}
 ];
 
+
+/* University-specific semester display config */
+var UNI_SEM_CONFIG = {
+  'usmba_dhar': [0,1,2,3,8,9,10,11,12,13]
+};
 /* Module data per semester index */
 var MOD_DATA = [
   /* S1 */ [
@@ -3449,6 +3461,119 @@ var MOD_DATA_NATIONAL = [
 ];
 
 /* University-specific module lookup */
+
+/* Dhar El Mahraz - Fez modules */
+var MOD_DATA_DHAR = [
+  /* S1 */ [
+    {icon:'📝',title:'Grammar 1',desc:'Foundations of English grammar and sentence structure.'},
+    {icon:'✍️',title:'Paragraph Writing',desc:'Learn paragraph structure, topic sentences, and coherence.'},
+    {icon:'📖',title:'Reading Comp. & Précis 1',desc:'Basic reading comprehension and summary writing skills.'},
+    {icon:'🗣️',title:'Spoken English',desc:'Practice listening and oral communication skills.'},
+    {icon:'📚',title:'Guided Reading 1',desc:'Develop reading skills through guided literary texts.'},
+    {icon:'🌐',title:'French',desc:'French language skills for academic purposes.'},
+    {icon:'🎯',title:'Power Skills',desc:'Study skills, critical thinking, and university adaptation.'}
+  ],
+  /* S2 */ [
+    {icon:'📝',title:'Grammar 2',desc:'Intermediate grammar: complex sentences, conditionals, passive voice.'},
+    {icon:'✍️',title:'Composition',desc:'Essay writing fundamentals: thesis statements and argumentation.'},
+    {icon:'📖',title:'Reading Comp. & Précis 2',desc:'Advanced reading strategies and summary writing techniques.'},
+    {icon:'🗣️',title:'Oral Communication',desc:'Develop fluency, pronunciation, and conversational confidence.'},
+    {icon:'📚',title:'Guided Reading 2',desc:'Continue developing reading skills through literary analysis.'},
+    {icon:'🌐',title:'French',desc:'Continue developing French language competence.'},
+    {icon:'🎯',title:'Power Skills',desc:'Time management, research skills, and academic writing.'}
+  ],
+  /* S3 */ [
+    {icon:'📝',title:'Advanced Grammar',desc:'Complex grammatical structures and advanced sentence patterns.'},
+    {icon:'✍️',title:'Advanced Composition',desc:'Refine academic writing: research papers and critical analysis.'},
+    {icon:'📖',title:'Extensive Reading',desc:'Broad reading across genres to build fluency and vocabulary.'},
+    {icon:'🗣️',title:'Public Speaking',desc:'Develop presentation and public speaking skills.'},
+    {icon:'🌍',title:'Readings in Global Cultures',desc:'Explore texts from diverse cultural and literary traditions.'},
+    {icon:'🌐',title:'French',desc:'French language for professional and academic contexts.'},
+    {icon:'🎯',title:'Power Skills',desc:'Advanced study skills and professional development.'}
+  ],
+  /* S4 */ [
+    {icon:'🧠',title:'Introduction to Linguistics',desc:'General linguistics: phonology, morphology, syntax, semantics.'},
+    {icon:'🔬',title:'Introduction to Research',desc:'Research methodology, academic writing, and citation.'},
+    {icon:'💬',title:'Introduction to Discourse Analysis',desc:'Analyse spoken and written discourse structures and strategies.'},
+    {icon:'🔄',title:'Introduction to Translation',desc:'Translation skills from Arabic to English and vice versa.'},
+    {icon:'🌍',title:'Introduction to Cultural Studies',desc:'Theory and practice of cultural studies and critical theory.'},
+    {icon:'🌐',title:'French',desc:'French for academic and professional purposes.'},
+    {icon:'🎯',title:'Power Skills',desc:'Career readiness and professional skills.'}
+  ],
+  /* S5 Lit (placeholder - uses Parcours 3 Translation & Literary Studies) */ [
+    {icon:'🔄',title:'Translation Studies',desc:'Theories and methods of translation studies.'},
+    {icon:'📖',title:'Literary Translation',desc:'Translating literary texts across languages and cultures.'},
+    {icon:'🌍',title:'Postcolonial Literature',desc:'Study postcolonial literary texts and critical theory.'},
+    {icon:'🎭',title:'Drama',desc:'Analysis of dramatic works and theatrical traditions.'},
+    {icon:'📗',title:'African Literature',desc:'Explore African literary traditions and contemporary works.'},
+    {icon:'🌐',title:'French',desc:'Advanced French language skills.'},
+    {icon:'🎯',title:'Power Skills',desc:'Professional skills and career development.'}
+  ],
+  /* S5 Ling (placeholder - uses Parcours 1 Language & Communication) */ [
+    {icon:'🧩',title:'Morphosyntax',desc:'Study of word formation and syntactic structures.'},
+    {icon:'🔊',title:'Phonology',desc:'Sound systems, phonemes, and phonological rules.'},
+    {icon:'🎓',title:'Applied Linguistics',desc:'Practical applications of linguistic theory.'},
+    {icon:'💼',title:'Advanced Business Communication',desc:'Professional English for business contexts.'},
+    {icon:'🌱',title:'English for Sustainable Development',desc:'English in the context of sustainability and development.'},
+    {icon:'🌐',title:'French',desc:'Advanced French language skills.'},
+    {icon:'🎯',title:'Power Skills',desc:'Professional skills and career development.'}
+  ],
+  /* S6 Lit (placeholder - uses Parcours 3 Translation & Literary Studies) */ [
+    {icon:'🔄',title:'Translation in Practice',desc:'Practical translation exercises and professional translation.'},
+    {icon:'📖',title:'Cultural Translation',desc:'Translation across cultures and intercultural communication.'},
+    {icon:'📺',title:'Literature and Media',desc:'Literature in relation to film, media, and digital culture.'},
+    {icon:'🌍',title:'World Literature',desc:'Survey of major works from world literary traditions.'},
+    {icon:'📗',title:'Novel',desc:'Study of the novel form: narrative technique and themes.'},
+    {icon:'🌐',title:'French',desc:'Advanced French language skills.'},
+    {icon:'🎯',title:'Power Skills',desc:'Professional skills and career development.'}
+  ],
+  /* S6 Ling (placeholder - uses Parcours 1 Language & Communication) */ [
+    {icon:'🧠',title:'Anthropological Linguistics',desc:'Study of language in its cultural and social context.'},
+    {icon:'👥',title:'Sociolinguistics',desc:'Explore the relationship between language and society.'},
+    {icon:'🔄',title:'Linguistics and Translation',desc:'Linguistic approaches to translation theory and practice.'},
+    {icon:'📺',title:'Journalism and Mass Communication',desc:'English for journalism, media, and mass communication.'},
+    {icon:'🌍',title:'Communication and International Relations',desc:'English for international relations and diplomacy.'},
+    {icon:'🌐',title:'French',desc:'Advanced French language skills.'},
+    {icon:'🎯',title:'Power Skills',desc:'Professional skills and career development.'}
+  ],
+  /* S5 Culture (Parcours 2) - index 8 */ [
+    {icon:'🇲🇦',title:'Moroccan Cultural Studies',desc:'Study Moroccan culture, identity, and society.'},
+    {icon:'🎬',title:'Film and Visual Culture',desc:'Analyse film and visual media in cultural contexts.'},
+    {icon:'🌍',title:'Postcolonial Literature',desc:'Postcolonial literary texts and critical approaches.'},
+    {icon:'📖',title:'Moroccan Anthropology and Travel Writing',desc:'Anthropological perspectives on Morocco and travel narratives.'},
+    {icon:'🏛️',title:'Moroccan Culture and Diplomacy',desc:'Moroccan cultural diplomacy and soft power.'},
+    {icon:'🌐',title:'French',desc:'Advanced French language skills.'},
+    {icon:'🎯',title:'Power Skills',desc:'Professional skills and career development.'}
+  ],
+  /* S6 Culture (Parcours 2) - index 9 */ [
+    {icon:'🌍',title:'Morocco Africa and the West',desc:'Morocco\'s relations with Africa and Western nations.'},
+    {icon:'🕌',title:'Spiritual Diplomacy and International Relations',desc:'Spiritual and religious diplomacy in international context.'},
+    {icon:'📖',title:'Migration and Diaspora Literature',desc:'Literature of migration, diaspora, and displacement.'},
+    {icon:'🎭',title:'Popular and Youth Culture',desc:'Study of popular culture and youth movements.'},
+    {icon:'🌐',title:'Morocco MENA and the West',desc:'Morocco\'s position in MENA region and Western relations.'},
+    {icon:'🌐',title:'French',desc:'Advanced French language skills.'},
+    {icon:'🎯',title:'Power Skills',desc:'Professional skills and career development.'}
+  ],
+  /* S5 TransLit (Parcours 3) - index 10 */ [
+    {icon:'🔄',title:'Translation Studies',desc:'Theories and methods of translation studies.'},
+    {icon:'📖',title:'Literary Translation',desc:'Translating literary texts across languages and cultures.'},
+    {icon:'🌍',title:'Postcolonial Literature',desc:'Study postcolonial literary texts and critical theory.'},
+    {icon:'🎭',title:'Drama',desc:'Analysis of dramatic works and theatrical traditions.'},
+    {icon:'📗',title:'African Literature',desc:'Explore African literary traditions and contemporary works.'},
+    {icon:'🌐',title:'French',desc:'Advanced French language skills.'},
+    {icon:'🎯',title:'Power Skills',desc:'Professional skills and career development.'}
+  ],
+  /* S6 TransLit (Parcours 3) - index 11 */ [
+    {icon:'🔄',title:'Translation in Practice',desc:'Practical translation exercises and professional translation.'},
+    {icon:'📖',title:'Cultural Translation',desc:'Translation across cultures and intercultural communication.'},
+    {icon:'📺',title:'Literature and Media',desc:'Literature in relation to film, media, and digital culture.'},
+    {icon:'🌍',title:'World Literature',desc:'Survey of major works from world literary traditions.'},
+    {icon:'📗',title:'Novel',desc:'Study of the novel form: narrative technique and themes.'},
+    {icon:'🌐',title:'French',desc:'Advanced French language skills.'},
+    {icon:'🎯',title:'Power Skills',desc:'Professional skills and career development.'}
+  ]
+];
+
 var UNI_MOD_DATA = {
   'uiz': MOD_DATA,
   'uh2c': MOD_DATA_UH2C,
@@ -3461,7 +3586,8 @@ var UNI_MOD_DATA = {
   'uae': MOD_DATA_NATIONAL,
   'ucd': MOD_DATA_NATIONAL,
   'usms': MOD_DATA_NATIONAL,
-  'uh1': MOD_DATA_NATIONAL
+  'uh1': MOD_DATA_NATIONAL,
+  'usmba_dhar': MOD_DATA_DHAR
 };
 
 function getMods(si, uniId){
@@ -3777,7 +3903,9 @@ window.renderDashboard = function renderDashboard(){
 function openSemesters(uni){
   S.uni=uni; S.sem=null; S.mod=null; updateCtx();
   var grid=el('semGrid'); grid.innerHTML='';
+  var semIndices = UNI_SEM_CONFIG[uni.id] || null;
   SEMESTERS.forEach(function(sem,idx){
+    if(semIndices && semIndices.indexOf(idx) === -1) return;
     var mods=getMods(idx,uni.id),done=0;
     mods.forEach(function(m){done+=getP(uni.id,sem.id,m.id).videos.length;});
     var total=mods.length*VIDEOS.length, pct=Math.round((done/total)*100);
