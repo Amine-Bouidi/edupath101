@@ -3801,6 +3801,27 @@ function openModules(sem,idx){
   var mods=getMods(idx,S.uni.id);
   var grid=el('modGrid'); grid.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);">Loading modules...</div>';
 
+  // Load custom module names from Firestore first
+  var namePrefix = S.uni.id + '_' + sem.id + '_';
+  db.collection('moduleNames').where('__name__', '>=', namePrefix).where('__name__', '<=', namePrefix + '\uf8ff').get().then(function(snap){
+    var customNames = {};
+    snap.forEach(function(doc){ customNames[doc.id] = doc.data().name; });
+    // Apply custom names
+    mods.forEach(function(mod, i){
+      var key = namePrefix + i;
+      if(customNames[key]) mod.title = customNames[key];
+    });
+    proceedWithModules(mods, sem, idx, grid);
+  }).catch(function(){
+    proceedWithModules(mods, sem, idx, grid);
+  });
+
+  setTopbar([S.uni.emoji+' '+S.uni.name, sem.title], sem.title+' — '+sem.sub, false);
+  el('nav-modules').style.display='flex';
+  showView('modules');
+}
+
+function proceedWithModules(mods, sem, idx, grid){
   // Check subscription for enabled modules
   var email = S.user ? S.user.email : '';
   var isAdminUser = email && ADMIN_EMAILS.indexOf(email.toLowerCase()) !== -1;
@@ -3828,10 +3849,6 @@ function openModules(sem,idx){
   } else {
     renderModuleGrid(grid, mods, sem, idx, null);
   }
-
-  setTopbar([S.uni.emoji+' '+S.uni.name, sem.title], sem.title+' — '+sem.sub, false);
-  el('nav-modules').style.display='flex';
-  showView('modules');
 }
 
 function renderModuleGrid(grid, mods, sem, idx, subData){
@@ -3866,7 +3883,7 @@ function renderModuleGrid(grid, mods, sem, idx, subData){
     var card=document.createElement('div');
     if(isAdminUser){
       card.className = 'mod-card' + (isUnlocked ? '' : ' locked');
-      card.innerHTML='<div class="mc-head"><div class="mc-icon">'+mod.icon+'</div><div><div class="mc-title">'+mod.title+'</div><div class="mc-desc">'+mod.desc+'</div></div></div><div class="pbar"><div class="pfill" style="width:'+pct+'%"></div></div><div class="mc-footer"><span class="mc-vids">5 videos'+(dv>0?' · '+dv+' done':'')+'</span>'+badge+'</div>';
+      card.innerHTML='<div class="mc-head"><div class="mc-icon">'+mod.icon+'</div><div><div class="mc-title" id="mtitle_'+modIdx+'">'+mod.title+' <span class="mod-edit-btn" data-idx="'+modIdx+'" style="cursor:pointer;font-size:13px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit name">✏️</span></div><div class="mc-desc">'+mod.desc+'</div></div></div><div class="pbar"><div class="pfill" style="width:'+pct+'%"></div></div><div class="mc-footer"><span class="mc-vids">5 videos'+(dv>0?' · '+dv+' done':'')+'</span>'+badge+'</div>';
       if(isUnlocked){
         card.onclick=(function(m){return function(){openPlayer(m);};})(mod);
       } else {
@@ -3920,6 +3937,34 @@ function renderModuleGrid(grid, mods, sem, idx, subData){
   }
 }
 el('nav-modules').onclick=function(){closeMobileMenu();if(S.sem)openModules(S.sem,S.semIdx);};
+
+/* ── MODULE NAME EDIT (admin only) ── */
+document.addEventListener('click', function(e){
+  var btn = e.target.closest('.mod-edit-btn');
+  if(!btn || !isAdmin()) return;
+  e.stopPropagation();
+  var idx = btn.getAttribute('data-idx');
+  var titleEl = el('mtitle_' + idx);
+  if(!titleEl) return;
+  var currentName = titleEl.textContent.replace('✏️','').trim();
+  titleEl.innerHTML = '<input type="text" value="' + currentName.replace(/"/g,'&quot;') + '" id="medit_' + idx + '" style="background:var(--bg3);border:1px solid var(--accent2);border-radius:6px;color:var(--text);font-size:14px;font-weight:600;padding:4px 8px;width:80%;font-family:inherit;" onclick="event.stopPropagation()"> <button onclick="event.stopPropagation();saveModName(' + idx + ')" style="background:var(--accent2);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;">Save</button>';
+  var input = el('medit_' + idx);
+  input.focus();
+  input.select();
+  input.onkeydown = function(ev){ if(ev.key === 'Enter'){ ev.preventDefault(); saveModName(parseInt(idx)); } };
+});
+
+window.saveModName = function(idx){
+  var input = el('medit_' + idx);
+  if(!input) return;
+  var newName = input.value.trim();
+  if(!newName) return;
+  var docId = S.uni.id + '_' + S.sem.id + '_' + idx;
+  db.collection('moduleNames').doc(docId).set({ name: newName, updatedAt: new Date().toISOString() }).then(function(){
+    // Refresh modules
+    openModules(S.sem, S.semIdx);
+  }).catch(function(e){ alert('Error saving: ' + e.message); });
+};
 
 /* ── PLAYER ── */
 var fakeT=null;
