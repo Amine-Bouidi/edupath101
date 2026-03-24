@@ -819,582 +819,98 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
   .wb-text h2{font-size:16px;}
 }
 /* ── LANDING PAGE (scoped) ── */
-
-  /* Landing page vars scoped */
-
-
-  #landingPage {
-    font-family: 'Outfit', sans-serif;
-    background: #0a0a12;
-    color: #e8e6f0;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  #landingPage::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    pointer-events: none;
-    opacity: 0.03;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-size: 256px;
-  }
-
-  #landingPage .glow-blob {
-    position: absolute; border-radius: 50%; filter: blur(120px);
-    pointer-events: none; z-index: 0; opacity: 0.12;
-  }
-  #landingPage .glow-blob.one { width: 500px; height: 500px; background: #7c5cfc; top: -100px; left: -100px; animation: lpBlobFloat 18s ease-in-out infinite; }
-  #landingPage .glow-blob.two { width: 400px; height: 400px; background: #ff6b9d; bottom: 10%; right: -80px; animation: lpBlobFloat 22s ease-in-out infinite reverse; }
-  #landingPage .glow-blob.three { width: 350px; height: 350px; background: #00d4aa; top: 50%; left: 30%; animation: lpBlobFloat 15s ease-in-out infinite 3s; }
-  @keyframes lpBlobFloat {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    #landingPage 33% { transform: translate(40px, -30px) scale(1.1); }
-    #landingPage 66% { transform: translate(-20px, 20px) scale(0.95); }
-  }
-
-  /* ===== PHASE 1 TOP BANNER ===== */
-  #landingPage .phase-banner {
-    position: sticky;
-    top: 0; left: 0; right: 0;
-    z-index: 200;
-    background: linear-gradient(90deg, #7c5cfc, #ff6b9d);
-    padding: 10px 24px;
-    text-align: center;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #fff;
-    letter-spacing: 0.3px;
-    animation: lpBannerPulse 4s ease-in-out infinite;
-  }
-  #landingPage .phase-banner .deadline {
-    display: inline-block;
-    background: rgba(0,0,0,0.2);
-    padding: 2px 10px;
-    border-radius: 50px;
-    margin-left: 8px;
-    font-weight: 700;
-  }
-  @keyframes lpBannerPulse {
-    0%, 100% { filter: brightness(1); }
-    #landingPage 50% { filter: brightness(1.1); }
-  }
-
-  /* ===== NAV ===== */
-  #landingPage nav {
-    position: sticky;
-    top: 38px; left: 0; right: 0;
-    z-index: 100;
-    padding: 14px 40px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    backdrop-filter: blur(20px);
-    background: rgba(10, 10, 18, 0.8);
-    border-bottom: 1px solid rgba(124, 92, 252, 0.08);
-  }
-  #landingPage .logo {
-    font-weight: 800; font-size: 1.5rem;
-    color: #ffffff; letter-spacing: -0.5px;
-  }
-  #landingPage .logo span {
-    background: linear-gradient(135deg, #7c5cfc, #ff6b9d);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  }
-  #landingPage .nav-cta {
-    padding: 10px 24px; background: #7c5cfc; color: #fff;
-    border: none; border-radius: 50px; font-family: inherit;
-    font-weight: 600; font-size: 0.9rem; cursor: pointer;
-    transition: all 0.3s; text-decoration: none;
-  }
-  #landingPage .nav-cta:hover {
-    background: #9b7fff; transform: translateY(-1px);
-    box-shadow: 0 8px 30px rgba(124, 92, 252, 0.4);
-  }
-
-  /* ===== HERO ===== */
-  #landingPage .hero {
-    position: relative; z-index: 1;
-    min-height: 100vh;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    text-align: center;
-    padding: 160px 24px 80px;
-  }
-
-  #landingPage .phase-badge {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 8px 20px; border-radius: 50px;
-    background: rgba(0, 212, 170, 0.1);
-    border: 1px solid rgba(0, 212, 170, 0.25);
-    font-size: 0.85rem; color: #00d4aa;
-    font-weight: 600; margin-bottom: 12px;
-    animation: lpFadeUp 0.8s ease both;
-  }
-  #landingPage .phase-badge .pulse-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: #00d4aa;
-    animation: lpPulse2 2s ease infinite;
-  }
-  @keyframes lpPulse2 {
-    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 212, 170, 0.5); }
-    #landingPage 50% { opacity: 0.7; box-shadow: 0 0 0 8px rgba(0, 212, 170, 0); }
-  }
-
-  #landingPage .audience-badge {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 6px 16px; border-radius: 50px;
-    background: rgba(124, 92, 252, 0.08);
-    border: 1px solid rgba(124, 92, 252, 0.15);
-    font-size: 0.8rem; color: #9b7fff;
-    font-weight: 500; margin-bottom: 28px;
-    animation: lpFadeUp 0.8s ease 0.1s both;
-  }
-
-  #landingPage .hero h1 {
-    font-size: clamp(2.5rem, 6.5vw, 5rem);
-    font-weight: 900; line-height: 1.08;
-    letter-spacing: -2px; color: #ffffff;
-    max-width: 820px; margin-bottom: 24px;
-    animation: lpFadeUp 0.8s ease 0.2s both;
-  }
-  #landingPage .hero h1 .highlight {
-    background: linear-gradient(135deg, #7c5cfc, #ff6b9d);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  }
-  #landingPage .hero h1 .highlight-green {
-    background: linear-gradient(135deg, #00d4aa, #48e8c0);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  }
-
-  #landingPage .hero-sub {
-    font-size: clamp(1.05rem, 2.5vw, 1.3rem);
-    color: #8a88a0; max-width: 580px;
-    line-height: 1.7; margin-bottom: 36px;
-    animation: lpFadeUp 0.8s ease 0.35s both;
-  }
-  #landingPage .hero-sub strong { color: #ffffff; font-weight: 600; }
-
-  #landingPage .hero-cta-row {
-    display: flex; align-items: center; gap: 16px;
-    flex-wrap: wrap; justify-content: center;
-    animation: lpFadeUp 0.8s ease 0.5s both;
-  }
-
-  #landingPage .hero-cta {
-    display: inline-flex; align-items: center; gap: 10px;
-    padding: 16px 36px; font-size: 1.1rem; font-weight: 700;
-    color: #fff; background: linear-gradient(135deg, #00d4aa, #1abc9c);
-    border: none; border-radius: 60px; cursor: pointer;
-    font-family: inherit; transition: all 0.35s;
-    text-decoration: none; position: relative; overflow: hidden;
-  }
-  #landingPage .hero-cta::after {
-    content: ''; position: absolute; inset: -2px;
-    border-radius: 60px; background: linear-gradient(135deg, #00d4aa, #1abc9c);
-    z-index: -1; filter: blur(20px); opacity: 0.4; transition: opacity 0.35s;
-  }
-  #landingPage .hero-cta:hover {
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 16px 50px rgba(0, 212, 170, 0.4);
-  }
-  #landingPage .hero-cta:hover::after { opacity: 0.7; }
-
-  #landingPage .hero-cta-secondary {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 14px 28px; font-size: 1rem; font-weight: 600;
-    color: #e8e6f0; background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1); border-radius: 60px;
-    cursor: pointer; font-family: inherit; transition: all 0.3s;
-    text-decoration: none;
-  }
-  #landingPage .hero-cta-secondary:hover {
-    background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15);
-  }
-
-  #landingPage .scroll-hint {
-    margin-top: 50px;
-    animation: lpFadeUp 0.8s ease 0.65s both;
-    display: flex; flex-direction: column; align-items: center; gap: 8px;
-    color: #8a88a0; font-size: 0.78rem; font-weight: 500;
-    letter-spacing: 2px; text-transform: uppercase;
-  }
-  #landingPage .scroll-arrow {
-    width: 20px; height: 20px;
-    border-right: 2px solid #8a88a0;
-    border-bottom: 2px solid #8a88a0;
-    transform: rotate(45deg); animation: lpBounceDown 2s ease infinite;
-  }
-  @keyframes lpBounceDown {
-    0%, 100% { transform: rotate(45deg) translateY(0); opacity: 0.5; }
-    #landingPage 50% { transform: rotate(45deg) translateY(6px); opacity: 1; }
-  }
-
-  /* ===== DEAL BANNER ===== */
-  #landingPage .deal-section {
-    position: relative; z-index: 1;
-    padding: 0 24px 80px;
-  }
-  #landingPage .deal-card {
-    max-width: 900px; margin: 0 auto;
-    background: linear-gradient(135deg, rgba(0, 212, 170, 0.08), rgba(124, 92, 252, 0.08));
-    border: 1px solid rgba(0, 212, 170, 0.15);
-    border-radius: 24px; padding: 48px 40px;
-    display: flex; align-items: center; gap: 40px;
-  }
-  #landingPage .deal-left { flex: 0 0 auto; text-align: center; }
-  #landingPage .deal-emoji { font-size: 4rem; margin-bottom: 8px; display: block; }
-  #landingPage .deal-exchange {
-    font-size: 0.8rem; font-weight: 700;
-    color: #00d4aa; text-transform: uppercase; letter-spacing: 2px;
-  }
-  #landingPage .deal-right h3 {
-    font-size: 1.5rem; font-weight: 800;
-    color: #ffffff; margin-bottom: 10px;
-  }
-  #landingPage .deal-right h3 .green { color: #00d4aa; }
-  #landingPage .deal-right p { color: #8a88a0; font-size: 1rem; line-height: 1.65; }
-  #landingPage .deal-right p strong { color: #ffffff; }
-  #landingPage .deal-perks { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
-  #landingPage .deal-perk {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 14px; border-radius: 50px; font-size: 0.82rem;
-    font-weight: 600; background: rgba(0,212,170,0.08);
-    color: #00d4aa; border: 1px solid rgba(0,212,170,0.12);
-  }
-
-  /* ===== 3 STEPS ===== */
-  #landingPage .steps-section {
-    position: relative; z-index: 1;
-    padding: 80px 24px 100px;
-  }
-  #landingPage .steps-section .section-label {
-    text-align: center; font-size: 0.85rem; font-weight: 600;
-    letter-spacing: 3px; text-transform: uppercase;
-    color: #9b7fff; margin-bottom: 16px;
-  }
-  #landingPage .steps-section h2 {
-    text-align: center;
-    font-size: clamp(1.8rem, 5vw, 3rem);
-    font-weight: 800; letter-spacing: -1px;
-    color: #ffffff; margin-bottom: 60px;
-  }
-  #landingPage .steps-container {
-    display: flex; gap: 20px;
-    max-width: 1100px; margin: 0 auto; position: relative;
-  }
-  #landingPage .steps-container::before {
-    content: ''; position: absolute; top: 85px;
-    left: 15%; right: 15%; height: 2px;
-    background: linear-gradient(90deg, #00d4aa, #7c5cfc, #ff6b9d);
-    opacity: 0.2; z-index: 0;
-  }
-  #landingPage .step-card {
-    flex: 1; background: #1a1a2e;
-    border: 1px solid rgba(255,255,255,0.04);
-    border-radius: 20px; padding: 36px 24px 32px;
-    text-align: center; position: relative; z-index: 1;
-    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    overflow: hidden;
-  }
-  #landingPage .step-card::before {
-    content: ''; position: absolute; inset: 0;
-    border-radius: 20px; opacity: 0; transition: opacity 0.4s;
-  }
-  #landingPage .step-card:nth-child(1)::before { background: linear-gradient(180deg, rgba(0, 212, 170, 0.06), transparent); }
-  #landingPage .step-card:nth-child(2)::before { background: linear-gradient(180deg, rgba(124, 92, 252, 0.06), transparent); }
-  #landingPage .step-card:nth-child(3)::before { background: linear-gradient(180deg, rgba(255, 107, 157, 0.06), transparent); }
-  #landingPage .step-card:hover::before { opacity: 1; }
-  #landingPage .step-card:hover {
-    transform: translateY(-8px); border-color: rgba(255,255,255,0.08);
-    box-shadow: 0 24px 60px rgba(0,0,0,0.4);
-  }
-  #landingPage .step-card:nth-child(1) {
-    border-color: rgba(0, 212, 170, 0.2);
-    background: linear-gradient(180deg, rgba(0, 212, 170, 0.04), #1a1a2e);
-  }
-  #landingPage .step-card:nth-child(1)::after {
-    content: '← YOU ARE HERE';
-    position: absolute; top: 12px; right: 14px;
-    font-size: 0.6rem; font-weight: 800;
-    letter-spacing: 1.5px; color: #00d4aa;
-    background: rgba(0, 212, 170, 0.1);
-    padding: 3px 10px; border-radius: 50px;
-  }
-  #landingPage .step-number {
-    width: 64px; height: 64px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 20px; font-size: 1.4rem; font-weight: 800;
-  }
-  #landingPage .step-card:nth-child(1) .step-number { background: rgba(0, 212, 170, 0.1); color: #00d4aa; border: 2px solid rgba(0, 212, 170, 0.25); }
-  #landingPage .step-card:nth-child(2) .step-number { background: rgba(124, 92, 252, 0.1); color: #7c5cfc; border: 2px solid rgba(124, 92, 252, 0.2); }
-  #landingPage .step-card:nth-child(3) .step-number { background: rgba(255, 107, 157, 0.1); color: #ff6b9d; border: 2px solid rgba(255, 107, 157, 0.2); }
-  #landingPage .step-icon { font-size: 2.6rem; margin-bottom: 14px; display: block; }
-  #landingPage .step-card h3 { font-size: 1.2rem; font-weight: 700; color: #ffffff; margin-bottom: 10px; }
-  #landingPage .step-card p { font-size: 0.9rem; line-height: 1.65; color: #8a88a0; }
-  #landingPage .step-tag {
-    display: inline-block; padding: 5px 14px; border-radius: 50px;
-    font-size: 0.72rem; font-weight: 600;
-    letter-spacing: 0.5px; text-transform: uppercase; margin-top: 16px;
-  }
-  #landingPage .step-card:nth-child(1) .step-tag { background: rgba(0,212,170,0.1); color: #00d4aa; }
-  #landingPage .step-card:nth-child(2) .step-tag { background: rgba(124,92,252,0.1); color: #9b7fff; }
-  #landingPage .step-card:nth-child(3) .step-tag { background: rgba(255,107,157,0.1); color: #ff6b9d; }
-  #landingPage .step-arrow {
-    display: flex; align-items: center; justify-content: center;
-    min-width: 36px; color: #8a88a0;
-    font-size: 1.5rem; opacity: 0.35; align-self: center; margin-top: -30px;
-  }
-
-  
-
-  /* ===== REWARDS ===== */
-  #landingPage .rewards-section {
-    position: relative; z-index: 1;
-    padding: 60px 24px 100px;
-  }
-  #landingPage .rewards-section .section-label {
-    text-align: center; font-size: 0.85rem; font-weight: 600;
-    letter-spacing: 3px; text-transform: uppercase;
-    color: #ffc857; margin-bottom: 16px;
-  }
-  #landingPage .rewards-section h2 {
-    text-align: center; font-size: clamp(1.8rem, 5vw, 2.8rem);
-    font-weight: 800; color: #ffffff; margin-bottom: 16px;
-  }
-  #landingPage .rewards-subtitle {
-    text-align: center; color: #8a88a0; font-size: 1.05rem;
-    max-width: 550px; margin: 0 auto 50px; line-height: 1.6;
-  }
-  #landingPage .rewards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 20px; max-width: 900px; margin: 0 auto;
-  }
-  #landingPage .reward-card {
-    background: #1a1a2e;
-    border: 1px solid rgba(255, 200, 87, 0.08);
-    border-radius: 18px; padding: 32px 24px;
-    text-align: center; transition: all 0.35s;
-  }
-  #landingPage .reward-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(255, 200, 87, 0.15);
-    box-shadow: 0 16px 40px rgba(0,0,0,0.3);
-  }
-  #landingPage .reward-icon { font-size: 2.4rem; margin-bottom: 14px; display: block; }
-  #landingPage .reward-card h4 { font-size: 1.1rem; font-weight: 700; color: #ffffff; margin-bottom: 8px; }
-  #landingPage .reward-card p { font-size: 0.88rem; color: #8a88a0; line-height: 1.6; }
-  #landingPage .reward-highlight {
-    display: inline-block; margin-top: 12px;
-    padding: 4px 12px; border-radius: 50px;
-    background: rgba(255, 200, 87, 0.1);
-    color: #ffc857; font-size: 0.75rem;
-    font-weight: 700; letter-spacing: 0.5px;
-  }
-
-  /* ===== TIMELINE ===== */
-  #landingPage .timeline-section {
-    position: relative; z-index: 1;
-    padding: 40px 24px 100px; text-align: center;
-  }
-  #landingPage .timeline-section h2 {
-    font-size: clamp(1.6rem, 4vw, 2.4rem);
-    font-weight: 800; color: #ffffff; margin-bottom: 48px;
-  }
-  #landingPage .timeline {
-    display: flex; gap: 0; max-width: 700px;
-    margin: 0 auto; position: relative; align-items: flex-start;
-  }
-  #landingPage .timeline::before {
-    content: ''; position: absolute;
-    top: 24px; left: 10%; right: 10%; height: 3px;
-    background: linear-gradient(90deg, #00d4aa, #7c5cfc, #ff6b9d);
-    border-radius: 3px; opacity: 0.3;
-  }
-  #landingPage .tl-item {
-    flex: 1; display: flex; flex-direction: column;
-    align-items: center; gap: 14px; position: relative;
-  }
-  #landingPage .tl-dot {
-    width: 48px; height: 48px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 0.75rem; letter-spacing: 0.5px; z-index: 2;
-  }
-  #landingPage .tl-item:nth-child(1) .tl-dot {
-    background: #00d4aa; color: #0a0a12;
-    box-shadow: 0 0 0 6px rgba(0, 212, 170, 0.15), 0 0 20px rgba(0, 212, 170, 0.3);
-    animation: lpPulse2 2.5s ease infinite;
-  }
-  #landingPage .tl-item:nth-child(2) .tl-dot {
-    background: rgba(124, 92, 252, 0.15); color: #9b7fff;
-    border: 2px solid rgba(124, 92, 252, 0.3);
-  }
-  #landingPage .tl-item:nth-child(3) .tl-dot {
-    background: rgba(255, 107, 157, 0.15); color: #ff6b9d;
-    border: 2px solid rgba(255, 107, 157, 0.3);
-  }
-  #landingPage .tl-label {
-    font-size: 0.82rem; font-weight: 700;
-    color: #ffffff; text-transform: uppercase; letter-spacing: 0.5px;
-  }
-  #landingPage .tl-desc { font-size: 0.82rem; color: #8a88a0; line-height: 1.5; max-width: 180px; }
-  #landingPage .tl-item:nth-child(1) .tl-label { color: #00d4aa; }
-
-  /* ===== UNIVERSITY TRUST SECTION ===== */
-  #landingPage .uni-section {
-    position: relative; z-index: 1;
-    padding: 80px 24px 90px;
-    text-align: center;
-    overflow: hidden;
-  }
-  #landingPage .uni-section .call-out {
-    font-size: 0.8rem; font-weight: 700;
-    letter-spacing: 3px; text-transform: uppercase;
-    color: #ff6b9d; margin-bottom: 14px;
-  }
-  #landingPage .uni-section h2 {
-    font-size: clamp(1.8rem, 5vw, 2.8rem);
-    font-weight: 900; color: #ffffff;
-    margin-bottom: 8px; letter-spacing: -0.5px;
-  }
-  #landingPage .uni-section h2 .em { 
-    font-style: italic;
-    background: linear-gradient(135deg, #7c5cfc, #ff6b9d);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  }
-  #landingPage .uni-section .uni-subtitle {
-    color: #8a88a0; font-size: 1rem;
-    max-width: 500px; margin: 0 auto 50px; line-height: 1.6;
-  }
-
-  /* Marquee wrapper */
-  #landingPage .marquee-wrapper {
-    position: relative;
-    width: 100%;
-    overflow: hidden;
-    mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
-    -webkit-mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
-  }
-  #landingPage .marquee-track {
-    display: flex;
-    gap: 48px;
-    width: max-content;
-    animation: lpMarqueeScroll 40s linear infinite;
-  }
-  #landingPage .marquee-track:hover { animation-play-state: paused; }
-
-  @keyframes lpMarqueeScroll {
-    0% { transform: translateX(0); }
-    #landingPage 100% { transform: translateX(-50%); }
-  }
-
-  #landingPage .uni-logo-item {
-    display: flex; flex-direction: column;
-    align-items: center; gap: 10px;
-    min-width: 110px; flex-shrink: 0;
-    opacity: 0.45; transition: opacity 0.4s;
-  }
-  #landingPage .uni-logo-item:hover { opacity: 0.85; }
-
-  #landingPage .uni-crest {
-    width: 72px; height: 72px;
-    border-radius: 14px;
-    object-fit: contain;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.06);
-    padding: 6px;
-    filter: grayscale(1) brightness(1.2);
-    transition: filter 0.4s;
-  }
-  #landingPage .uni-logo-item:hover .uni-crest { filter: grayscale(0) brightness(1); }
-
-  #landingPage .uni-name {
-    font-size: 0.68rem; font-weight: 600;
-    color: #8a88a0; text-align: center;
-    letter-spacing: 0.3px; line-height: 1.3;
-    max-width: 110px;
-  }
-
-  /* Second row scrolls opposite */
-  #landingPage .marquee-track.reverse {
-    animation-direction: reverse;
-  }
-  #landingPage .marquee-row-gap {
-    height: 28px;
-  }
-
-  #landingPage .uni-section .join-line {
-    margin-top: 44px;
-    font-size: 0.95rem;
-    color: #8a88a0;
-  }
-  #landingPage .uni-section .join-line strong {
-    color: #00d4aa; font-weight: 700;
-  }
-
-  /* ===== CTA ===== */
-  #landingPage .cta-section {
-    position: relative; z-index: 1;
-    text-align: center; padding: 40px 24px 120px;
-  }
-  #landingPage .cta-box {
-    max-width: 720px; margin: 0 auto;
-    padding: 56px 40px;
-    background: linear-gradient(135deg, rgba(0, 212, 170, 0.06), rgba(124, 92, 252, 0.06));
-    border: 1px solid rgba(0, 212, 170, 0.12);
-    border-radius: 28px; position: relative; overflow: hidden;
-  }
-  #landingPage .cta-box::before {
-    content: ''; position: absolute; top: -50%; left: -50%;
-    width: 200%; height: 200%;
-    background: radial-gradient(circle at center, rgba(0, 212, 170, 0.05), transparent 60%);
-    pointer-events: none;
-  }
-  #landingPage .cta-box h2 {
-    font-size: clamp(1.5rem, 4vw, 2.2rem);
-    font-weight: 800; color: #ffffff;
-    margin-bottom: 14px; position: relative;
-  }
-  #landingPage .cta-box p {
-    color: #8a88a0; font-size: 1.05rem;
-    line-height: 1.6; margin-bottom: 28px; position: relative;
-  }
-  #landingPage .cta-box .hero-cta { animation: none; }
-
-  #landingPage footer {
-    position: relative; z-index: 1;
-    text-align: center; padding: 32px 24px 40px;
-    color: #8a88a0; font-size: 0.82rem;
-    border-top: 1px solid rgba(255,255,255,0.04);
-  }
-
-  @keyframes lpFadeUp {
-    from { opacity: 0; transform: translateY(24px); }
-    #landingPage to { opacity: 1; transform: translateY(0); }
-  }
-  #landingPage .reveal {
-    opacity: 0; transform: translateY(30px);
-    transition: all 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  }
-  #landingPage .reveal.visible { opacity: 1; transform: translateY(0); }
-
-  @media (max-width: 820px) {
-    .steps-container { flex-direction: column; max-width: 440px; }
-    #landingPage .steps-container::before { display: none; }
-    #landingPage .step-arrow { transform: rotate(90deg); margin: -8px auto; min-width: auto; margin-top: 0; }
-    #landingPage nav { padding: 14px 20px; }
-    #landingPage .cta-box { padding: 44px 24px; }
-    #landingPage .deal-card { flex-direction: column; text-align: center; gap: 24px; padding: 36px 24px; }
-    #landingPage .timeline { flex-direction: column; gap: 28px; align-items: center; }
-    #landingPage .timeline::before { display: none; }
-    #landingPage .hero-cta-row { flex-direction: column; }
-    #landingPage .step-card:nth-child(1)::after { display: none; }
-    #landingPage .rewards-grid { grid-template-columns: 1fr; max-width: 400px; }
-  }
-
+#landingPage {
+  font-family: 'Outfit', sans-serif;
+  background: #0a0a12;
+  color: #e8e6f0;
+  min-height: 100vh;
+}
+#landingPage .glow-blob { position: absolute; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; opacity: 0.12; }
+#landingPage .glow-blob.one { width: 500px; height: 500px; background: #7c5cfc; top: -100px; left: -100px; animation: lpBlobFloat 18s ease-in-out infinite; }
+#landingPage .glow-blob.two { width: 400px; height: 400px; background: #ff6b9d; bottom: 10%; right: -80px; animation: lpBlobFloat 22s ease-in-out infinite reverse; }
+#landingPage .glow-blob.three { width: 350px; height: 350px; background: #00d4aa; top: 50%; left: 30%; animation: lpBlobFloat 15s ease-in-out infinite 3s; }
+@keyframes lpBlobFloat { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(40px,-30px) scale(1.1)} 66%{transform:translate(-20px,20px) scale(.95)} }
+#landingPage .phase-banner { position:sticky; top:0; left:0; right:0; z-index:200; background:linear-gradient(90deg,#7c5cfc,#ff6b9d); padding:10px 24px; text-align:center; font-size:.85rem; font-weight:600; color:#fff; letter-spacing:.3px; }
+#landingPage .phase-banner .deadline { display:inline-block; background:rgba(0,0,0,.2); padding:2px 10px; border-radius:50px; margin-left:8px; font-weight:700; }
+#landingPage nav { position:sticky; top:38px; left:0; right:0; z-index:100; padding:14px 40px; display:flex; align-items:center; justify-content:space-between; backdrop-filter:blur(20px); background:rgba(10,10,18,.8); border-bottom:1px solid rgba(124,92,252,.08); }
+#landingPage .logo { font-weight:800; font-size:1.5rem; }
+#landingPage .logo span { background:linear-gradient(135deg,#7c5cfc,#ff6b9d); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+#landingPage .nav-links { display:flex; gap:28px; align-items:center; }
+#landingPage .nav-links a { color:#8a88a0; text-decoration:none; font-size:.9rem; font-weight:500; transition:color .3s; }
+#landingPage .nav-links a:hover { color:#fff; }
+#landingPage .nav-cta { background:#7c5cfc!important; color:#fff!important; padding:8px 22px!important; border-radius:50px!important; font-weight:600!important; font-size:.85rem!important; transition:all .3s!important; }
+#landingPage .nav-cta:hover { background:#9b7fff!important; transform:translateY(-1px)!important; }
+#landingPage .hero { text-align:center; padding:160px 24px 80px; max-width:800px; margin:0 auto; position:relative; z-index:1; }
+#landingPage .hero h1 { font-size:3.2rem; font-weight:900; line-height:1.15; margin-bottom:24px; color:#fff; }
+#landingPage .highlight-green { color:#00d4aa; }
+#landingPage .hero-sub { font-size:1.15rem; color:#8a88a0; line-height:1.7; max-width:600px; margin:0 auto 36px; }
+#landingPage .hero-sub strong { color:#e8e6f0; }
+#landingPage .hero-actions { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; }
+#landingPage .hero-cta { display:inline-flex; align-items:center; gap:8px; background:linear-gradient(135deg,#7c5cfc,#9b7fff); color:#fff; padding:16px 36px; border-radius:50px; font-weight:700; font-size:1.1rem; text-decoration:none; transition:all .3s; box-shadow:0 4px 24px rgba(124,92,252,.3); }
+#landingPage .hero-cta:hover { transform:translateY(-2px); box-shadow:0 8px 32px rgba(124,92,252,.5); }
+#landingPage .trust-row { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:32px; font-size:.85rem; color:#8a88a0; }
+#landingPage .trust-row .pulse-dot { width:8px; height:8px; background:#00d4aa; border-radius:50%; animation:lpPulse 2s infinite; }
+@keyframes lpPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.3)} }
+#landingPage .uni-section { padding:80px 24px; text-align:center; }
+#landingPage .uni-section h2 { font-size:2rem; font-weight:800; margin-bottom:12px; color:#fff; }
+#landingPage .uni-subtitle { color:#8a88a0; font-size:1rem; max-width:600px; margin:0 auto 48px; line-height:1.6; }
+#landingPage .uni-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(100px,1fr)); gap:24px; max-width:900px; margin:0 auto; }
+#landingPage .uni-item { display:flex; flex-direction:column; align-items:center; gap:12px; padding:24px 12px; border-radius:16px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); transition:all .3s; }
+#landingPage .uni-item:hover { background:rgba(124,92,252,.08); border-color:rgba(124,92,252,.2); transform:translateY(-4px); }
+#landingPage .uni-item img { width:56px; height:56px; object-fit:contain; border-radius:12px; }
+#landingPage .uni-item span { font-size:.75rem; color:#8a88a0; font-weight:500; text-align:center; line-height:1.3; }
+#landingPage .deal-section { padding:80px 24px; text-align:center; }
+#landingPage .deal-card { max-width:700px; margin:0 auto; background:linear-gradient(135deg,rgba(124,92,252,.1),rgba(255,107,157,.1)); border:1px solid rgba(124,92,252,.2); border-radius:24px; padding:48px 36px; position:relative; overflow:hidden; }
+#landingPage .deal-card h2 { font-size:2rem; font-weight:800; margin-bottom:16px; color:#fff; }
+#landingPage .deal-card h2 .emoji { font-size:1.8rem; }
+#landingPage .deal-card p { color:#8a88a0; font-size:1rem; line-height:1.7; max-width:500px; margin:0 auto; }
+#landingPage .deal-card p strong { color:#00d4aa; }
+#landingPage .steps-section { padding:80px 24px; }
+#landingPage .steps-section .section-label { text-align:center; font-size:.85rem; color:#7c5cfc; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; }
+#landingPage .steps-section h2 { text-align:center; font-size:2rem; font-weight:800; margin-bottom:48px; color:#fff; }
+#landingPage .steps-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:24px; max-width:900px; margin:0 auto; }
+#landingPage .step-card { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:20px; padding:32px 24px; text-align:center; transition:all .3s; }
+#landingPage .step-card:hover { background:rgba(124,92,252,.06); border-color:rgba(124,92,252,.15); transform:translateY(-4px); }
+#landingPage .step-num { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,#7c5cfc,#9b7fff); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.1rem; margin:0 auto 16px; }
+#landingPage .step-card h3 { font-size:1.15rem; font-weight:700; margin-bottom:8px; color:#fff; }
+#landingPage .step-card p { color:#8a88a0; font-size:.9rem; line-height:1.6; }
+#landingPage .rewards-section { padding:80px 24px; }
+#landingPage .rewards-section .section-label { text-align:center; font-size:.85rem; color:#ffc857; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; }
+#landingPage .rewards-section h2 { text-align:center; font-size:2rem; font-weight:800; margin-bottom:12px; color:#fff; }
+#landingPage .rewards-subtitle { text-align:center; color:#8a88a0; font-size:1rem; max-width:550px; margin:0 auto 48px; line-height:1.6; }
+#landingPage .rewards-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:20px; max-width:900px; margin:0 auto; }
+#landingPage .reward-card { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:20px; padding:28px 24px; transition:all .3s; }
+#landingPage .reward-card:hover { background:rgba(255,200,87,.05); border-color:rgba(255,200,87,.15); transform:translateY(-4px); }
+#landingPage .reward-card .reward-icon { font-size:2rem; margin-bottom:12px; }
+#landingPage .reward-card h3 { font-size:1.05rem; font-weight:700; margin-bottom:8px; color:#fff; }
+#landingPage .reward-card p { color:#8a88a0; font-size:.85rem; line-height:1.5; }
+#landingPage .reward-card .reward-tag { display:inline-block; margin-top:12px; background:rgba(255,200,87,.12); color:#ffc857; padding:4px 14px; border-radius:50px; font-size:.75rem; font-weight:700; }
+#landingPage .timeline-section { padding:80px 24px; text-align:center; }
+#landingPage .timeline-section h2 { font-size:2rem; font-weight:800; margin-bottom:48px; color:#fff; }
+#landingPage .timeline { display:flex; justify-content:center; gap:0; max-width:700px; margin:0 auto; flex-wrap:wrap; }
+#landingPage .tl-item { flex:1; min-width:150px; text-align:center; padding:20px 16px; position:relative; }
+#landingPage .tl-item::after { content:''; position:absolute; top:32px; right:0; width:50%; height:2px; background:rgba(124,92,252,.2); }
+#landingPage .tl-item:last-child::after { display:none; }
+#landingPage .tl-dot { width:16px; height:16px; border-radius:50%; margin:0 auto 12px; }
+#landingPage .tl-dot.active { background:#7c5cfc; box-shadow:0 0 12px rgba(124,92,252,.5); }
+#landingPage .tl-dot.future { background:rgba(255,255,255,.15); }
+#landingPage .tl-item h4 { font-size:.95rem; font-weight:700; margin-bottom:4px; color:#fff; }
+#landingPage .tl-item p { font-size:.8rem; color:#8a88a0; }
+#landingPage .cta-section { padding:80px 24px; }
+#landingPage .cta-box { max-width:600px; margin:0 auto; text-align:center; background:linear-gradient(135deg,rgba(124,92,252,.12),rgba(0,212,170,.08)); border:1px solid rgba(124,92,252,.2); border-radius:24px; padding:48px 36px; }
+#landingPage .cta-box h2 { font-size:1.8rem; font-weight:800; margin-bottom:12px; color:#fff; }
+#landingPage .cta-box p { color:#8a88a0; font-size:1rem; line-height:1.6; margin-bottom:28px; }
+#landingPage footer { text-align:center; padding:32px 24px; border-top:1px solid rgba(255,255,255,.06); color:#8a88a0; font-size:.8rem; }
+#landingPage .reveal { opacity:0; transform:translateY(30px); transition:all .7s cubic-bezier(.25,.46,.45,.94); }
+#landingPage .reveal.visible { opacity:1; transform:translateY(0); }
+@media(max-width:768px){
+  #landingPage .hero h1 { font-size:2rem; }
+  #landingPage .hero { padding:120px 16px 60px; }
+  #landingPage nav { padding:14px 20px; }
+  #landingPage .nav-links a:not(.nav-cta) { display:none; }
+  #landingPage .uni-grid { grid-template-columns:repeat(3,1fr); gap:16px; }
+  #landingPage .deal-card { padding:32px 20px; }
+}
 </style>
 
 <!-- Firebase SDK -->
@@ -1826,9 +1342,9 @@ function openLoginFromLanding(){
       <div class="sb-item" id="nav-semesters" style="display:none;"><span class="sb-icon">📅</span><span class="sb-item-label"> Semesters</span></div>
       <div class="sb-item" id="nav-modules"   style="display:none;"><span class="sb-icon">📚</span><span class="sb-item-label"> Modules</span></div>
       <div class="sb-item" id="nav-player"    style="display:none;"><span class="sb-icon">▶</span><span class="sb-item-label"> Now watching</span></div>
-      <div class="sb-item" id="nav-notifs" style="display:none;"><span class="sb-icon">🔔</span><span class="sb-item-label"> Notifications <span id="notifBadge" style="display:none;background:#ff6584;color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;margin-left:4px;">0</span></span></div>
+      <div class="sb-item" id="nav-notifs"><span class="sb-icon">🔔</span><span class="sb-item-label"> Notifications <span id="notifBadge" style="display:none;background:#ff6584;color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;margin-left:4px;">0</span></span></div>
       <div class="sb-sec" style="margin-top:12px;">Account</div>
-      <div class="sb-item" id="nav-pricing" style="display:none;"><span class="sb-icon">💎</span><span class="sb-item-label"> Plans & Pricing</span></div>
+      <div class="sb-item" id="nav-pricing"><span class="sb-icon">💎</span><span class="sb-item-label"> Plans & Pricing</span></div>
       <div class="sb-item" id="nav-admin" style="display:none;"><span class="sb-icon">⚙️</span><span class="sb-item-label"> Admin Panel</span></div>
       <div class="sb-item" id="nav-profile"><span class="sb-icon">👤</span><span class="sb-item-label"> My Profile</span></div>
       <div class="sb-item" id="nav-privacy"><span class="sb-icon">🔒</span><span class="sb-item-label"> Privacy Policy</span></div>
@@ -1858,116 +1374,18 @@ function openLoginFromLanding(){
     </div>
 
     <div class="main-scroll">
-      <!-- DASHBOARD — PHASE 1 -->
+      <!-- DASHBOARD -->
       <div class="view active" id="view-dashboard">
-        <!-- Welcome -->
-        <div class="welcome-banner" style="text-align:center;flex-direction:column;gap:8px;">
-          <div class="wb-text"><h2 id="wbGreet" style="margin-bottom:4px;">Welcome back!</h2><p style="color:var(--text2);font-size:13px;">Phase 1 — Help us build video lessons by sharing your handouts</p></div>
-        </div>
-
-        <!-- Reward Progress -->
-        <div id="rewardBar" style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:20px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-            <div style="font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--text);">🎁 Your Rewards</div>
-            <div id="rewardCount" style="font-size:12px;color:var(--accent2);font-weight:600;">0 uploads</div>
-          </div>
-          <div style="display:flex;gap:8px;margin-bottom:14px;">
-            <div id="rStep1" style="flex:1;text-align:center;padding:10px 6px;border-radius:10px;border:1px dashed var(--border2);background:var(--bg3);transition:all .3s;">
-              <div style="font-size:18px;margin-bottom:4px;">🔓</div>
-              <div style="font-size:11px;font-weight:600;color:var(--text2);">1 upload</div>
-              <div style="font-size:10px;color:var(--text3);margin-top:2px;">Free video access</div>
-            </div>
-            <div id="rStep2" style="flex:1;text-align:center;padding:10px 6px;border-radius:10px;border:1px dashed var(--border);background:var(--bg3);transition:all .3s;">
-              <div style="font-size:18px;margin-bottom:4px;">📚</div>
-              <div style="font-size:11px;font-weight:600;color:var(--text2);">3 uploads</div>
-              <div style="font-size:10px;color:var(--text3);margin-top:2px;">Full module unlock</div>
-            </div>
-            <div id="rStep3" style="flex:1;text-align:center;padding:10px 6px;border-radius:10px;border:1px dashed var(--border);background:var(--bg3);transition:all .3s;">
-              <div style="font-size:18px;margin-bottom:4px;">⭐</div>
-              <div style="font-size:11px;font-weight:600;color:var(--text2);">5 uploads</div>
-              <div style="font-size:10px;color:var(--text3);margin-top:2px;">Founding member</div>
-            </div>
-          </div>
-          <div id="rewardMsg" style="font-size:12px;color:var(--accent2);text-align:center;padding:6px;background:rgba(108,99,255,.06);border-radius:8px;">Upload your first handout to unlock free video access!</div>
-        </div>
-
-        <!-- BIG UPLOAD BUTTON -->
-        <div onclick="showView('upload')" style="cursor:pointer;background:linear-gradient(135deg,rgba(0,212,170,.08),rgba(108,99,255,.08));border:2px dashed var(--accent2);border-radius:18px;padding:40px 24px;text-align:center;transition:all .25s;margin-bottom:24px;" onmouseover="this.style.borderColor='var(--teal)';this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 32px rgba(0,0,0,.2)'" onmouseout="this.style.borderColor='var(--accent2)';this.style.transform='none';this.style.boxShadow='none'">
-          <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--accent));display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;color:#fff;">+</div>
-          <div style="font-family:'Sora',sans-serif;font-size:20px;font-weight:800;color:var(--text);margin-bottom:6px;">Share My Handout Now</div>
-          <div style="font-size:13px;color:var(--text2);max-width:400px;margin:0 auto;">Upload a photo of your lecture handout, PDF or slides. Takes 30 seconds.</div>
-        </div>
-
-        <!-- Upload History -->
-        <div style="margin-bottom:20px;">
-          <div style="font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;">📋 My Uploads</div>
-          <div id="uploadHistory" style="display:flex;flex-direction:column;gap:8px;">
-            <div style="text-align:center;padding:24px;color:var(--text3);font-size:13px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;">No uploads yet — your first one unlocks free video access! 🎁</div>
+        <div class="welcome-banner">
+          <div class="wb-text"><h2 id="wbGreet">Welcome back!</h2><p>Pick a university to continue your learning journey.</p></div>
+          <div class="wb-stats">
+            <div class="wb-stat"><div class="wb-stat-n" id="statVids">0</div><div class="wb-stat-l">Videos done</div></div>
+            <div class="wb-stat"><div class="wb-stat-n" id="statMods">0</div><div class="wb-stat-l">Modules done</div></div>
+            <div class="wb-stat"><div class="wb-stat-n" id="statPts">0</div><div class="wb-stat-l">Points earned</div></div>
           </div>
         </div>
-      </div>
-
-      <!-- UPLOAD PAGE -->
-      <div class="view" id="view-upload" style="display:none;">
-        <div style="max-width:520px;margin:0 auto;padding:0 8px;">
-          <!-- Header -->
-          <div style="text-align:center;margin-bottom:24px;">
-            <div style="font-size:36px;margin-bottom:8px;">📤</div>
-            <div style="font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:var(--text);margin-bottom:4px;">Upload a Handout</div>
-            <div style="font-size:13px;color:var(--text2);">Share your professor's materials — we turn them into video lessons</div>
-          </div>
-
-          <!-- Upload Form -->
-          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;">
-            <!-- University -->
-            <div class="field" style="margin-bottom:14px;">
-              <label style="font-size:12px;font-weight:600;color:var(--text2);">University</label>
-              <select id="uploadUni" class="admin-select" style="margin:0;width:100%;" onchange="uploadLoadSemesters()">
-                <option value="">— Select your university —</option>
-              </select>
-            </div>
-
-            <!-- Semester -->
-            <div class="field" style="margin-bottom:14px;">
-              <label style="font-size:12px;font-weight:600;color:var(--text2);">Semester</label>
-              <select id="uploadSem" class="admin-select" style="margin:0;width:100%;" onchange="uploadLoadModules()">
-                <option value="">— Select semester —</option>
-              </select>
-            </div>
-
-            <!-- Module -->
-            <div class="field" style="margin-bottom:14px;">
-              <label style="font-size:12px;font-weight:600;color:var(--text2);">Module</label>
-              <select id="uploadMod" class="admin-select" style="margin:0;width:100%;">
-                <option value="">— Select module —</option>
-              </select>
-            </div>
-
-            <!-- Upload method tabs -->
-            <div style="margin-bottom:14px;">
-              <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:8px;">Upload your file</label>
-              <div style="display:flex;gap:6px;margin-bottom:10px;">
-                <button id="tabPhoto" onclick="switchUploadTab('photo')" style="flex:1;padding:9px;font-size:12px;font-weight:600;border-radius:8px;cursor:pointer;border:1px solid var(--border2);background:rgba(108,99,255,.15);color:var(--accent2);font-family:inherit;transition:all .2s;">📷 Photo / Image</button>
-                <button id="tabDrive" onclick="switchUploadTab('drive')" style="flex:1;padding:9px;font-size:12px;font-weight:600;border-radius:8px;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-family:inherit;transition:all .2s;">🔗 Google Drive Link</button>
-              </div>
-              <div id="uploadTabPhoto">
-                <input type="file" id="uploadFile" accept="image/*,.pdf" style="font-size:13px;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;width:100%;box-sizing:border-box;color:var(--text);">
-                <div style="font-size:11px;color:var(--text3);margin-top:4px;">Take a photo of the lesson pages or select a file. Max 10MB.</div>
-              </div>
-              <div id="uploadTabDrive" style="display:none;">
-                <input type="text" id="uploadDriveLink" placeholder="https://drive.google.com/file/d/..." style="width:100%;padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;font-family:inherit;box-sizing:border-box;">
-                <div style="font-size:11px;color:var(--text3);margin-top:4px;">Paste a Google Drive link to your PDF or document.</div>
-              </div>
-            </div>
-
-            <!-- Submit -->
-            <button id="uploadSubmitBtn" onclick="submitUpload()" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),#9b59b6);border:none;border-radius:12px;color:#fff;font-family:'Sora',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;margin-top:4px;">📤 Submit Handout</button>
-            <div id="uploadMsg" class="admin-msg" style="margin-top:10px;"></div>
-
-            <!-- Back -->
-            <button onclick="showView('dashboard');renderPhase1Dashboard();" style="width:100%;padding:10px;margin-top:10px;background:none;border:1px solid var(--border);border-radius:10px;color:var(--text2);font-size:13px;cursor:pointer;font-family:inherit;transition:all .2s;">← Back to Dashboard</button>
-          </div>
-        </div>
+        <div class="sec-hdr">Select your university</div>
+        <div class="uni-grid" id="uniGrid"></div>
       </div>
 
       <!-- SEMESTERS -->
@@ -2052,7 +1470,7 @@ function openLoginFromLanding(){
             <h3 style="color:var(--accent2);margin:0 0 8px;">10. اتصل بنا 📞</h3>
             <p style="margin:0;"><strong>الاسم:</strong> أمين بويدي<br>
             <strong>WhatsApp:</strong> <span dir="ltr">+212 606-248409</span><br>
-            <strong>البريد الإلكتروني:</strong> <a href="mailto:aminebouidi000@gmail.com" style="color:var(--accent2);">aminebouidi000@gmail.com</a></p>
+            <strong>البريد الإلكتروني:</strong> bouidipro555@gmail.com</p>
           </div>
           </div>
 
@@ -2116,7 +1534,7 @@ function openLoginFromLanding(){
             <h3 style="color:var(--accent2);margin:0 0 8px;">10. Contact 📞</h3>
             <p style="margin:0;"><strong>Name:</strong> Amine Bouidi<br>
             <strong>WhatsApp:</strong> +212 606-248409<br>
-            <strong>Email:</strong> <a href="mailto:aminebouidi000@gmail.com" style="color:var(--accent2);">aminebouidi000@gmail.com</a></p>
+            <strong>Email:</strong> bouidipro555@gmail.com</p>
           </div>
           </div>
 
@@ -3540,9 +2958,8 @@ function getP(u,s,m){var k=u+'_'+s+'_'+m;return S.progress[k]||{videos:[],quizze
 
 /* ── HELPERS ── */
 function el(id){return document.getElementById(id);}
-window.showView = function showView(id){
-  if(id === 'upload'){ setTimeout(initUploadPage, 50); }
-  ['dashboard','semesters','modules','contact','pricing','admin','profile','privacy','contribute','notifs','upload'].forEach(function(v){
+function showView(id){
+  ['dashboard','semesters','modules','contact','pricing','admin','profile','privacy','contribute','notifs'].forEach(function(v){
     var e=el('view-'+v); if(e){e.style.display='none';e.classList.remove('active');}
   });
   var pl=el('view-player');
@@ -3700,7 +3117,7 @@ function enterApp(name, email){
   if(email && email !== ''){
     setTimeout(function(){ checkProfileSetup(email, name); }, 500);
   }
-  renderPhase1Dashboard();
+  renderDashboard();
 }
 function googleSignIn(){
   var provider = new firebase.auth.GoogleAuthProvider();
@@ -3727,7 +3144,7 @@ el('btnSignOut').onclick=function(){
 };
 
 /* ── DASHBOARD ── */
-window.renderDashboard = function renderDashboard(){
+function renderDashboard(){
   el('wbGreet').textContent='Welcome back, '+S.user.name.split(' ')[0]+'!';
   var totalVids=0,totalMods=0,totalPts=0;
   UNIVERSITIES.forEach(function(uni){
@@ -4222,8 +3639,8 @@ function openContact(){
 el('nav-contact').onclick=function(){closeMobileMenu();openContact();};
 el('nav-pricing').onclick=function(){closeMobileMenu();openPricing();};
 el('btnSubmitContact').onclick=function(){el('cFormCard').style.display='none';el('cSuccess').style.display='block';};
-el('btnBackDash').onclick=function(){showView('dashboard');renderPhase1Dashboard();};
-el('nav-dashboard').onclick=function(){closeMobileMenu();showView('dashboard');renderPhase1Dashboard();};
+el('btnBackDash').onclick=function(){renderDashboard();};
+el('nav-dashboard').onclick=function(){closeMobileMenu();renderDashboard();};
 
 /* ═══════════════════════════════════════════
    COMMUNITY — classmates + public discussion
@@ -6225,225 +5642,6 @@ window.submitContribution = function(){
   }
 };
 
-
-
-/* ── PHASE 1 UPLOAD PAGE ── */
-window.switchUploadTab = function(tab){
-  if(tab === 'photo'){
-    el('uploadTabPhoto').style.display = 'block';
-    el('uploadTabDrive').style.display = 'none';
-    el('tabPhoto').style.background = 'rgba(108,99,255,.15)';
-    el('tabPhoto').style.color = 'var(--accent2)';
-    el('tabPhoto').style.borderColor = 'var(--border2)';
-    el('tabDrive').style.background = 'var(--bg3)';
-    el('tabDrive').style.color = 'var(--text2)';
-    el('tabDrive').style.borderColor = 'var(--border)';
-  } else {
-    el('uploadTabPhoto').style.display = 'none';
-    el('uploadTabDrive').style.display = 'block';
-    el('tabDrive').style.background = 'rgba(108,99,255,.15)';
-    el('tabDrive').style.color = 'var(--accent2)';
-    el('tabDrive').style.borderColor = 'var(--border2)';
-    el('tabPhoto').style.background = 'var(--bg3)';
-    el('tabPhoto').style.color = 'var(--text2)';
-    el('tabPhoto').style.borderColor = 'var(--border)';
-  }
-};
-
-window.uploadLoadSemesters = function(){
-  var sel = el('uploadSem');
-  sel.innerHTML = '<option value="">— Select semester —</option>';
-  el('uploadMod').innerHTML = '<option value="">— Select module —</option>';
-  SEMESTERS.forEach(function(s, i){
-    sel.innerHTML += '<option value="' + i + '">' + s.title + '</option>';
-  });
-};
-
-window.uploadLoadModules = function(){
-  var sel = el('uploadMod');
-  sel.innerHTML = '<option value="">— Select module —</option>';
-  var si = el('uploadSem').value;
-  var uniId = el('uploadUni').value;
-  if(si === '') return;
-  var mods = getMods(parseInt(si), uniId);
-  mods.forEach(function(m){
-    sel.innerHTML += '<option value="' + m.title + '">' + m.icon + ' ' + m.title + '</option>';
-  });
-};
-
-window.initUploadPage = function(){
-  var sel = el('uploadUni');
-  sel.innerHTML = '<option value="">— Select your university —</option>';
-  UNIVERSITIES.forEach(function(u){
-    sel.innerHTML += '<option value="' + u.id + '">' + u.name + '</option>';
-  });
-  // Auto-fill from profile if available
-  if(S.user && S.user.email){
-    var docId = S.user.email.replace(/[^a-zA-Z0-9]/g,'_');
-    db.collection('users').doc(docId).get().then(function(doc){
-      if(doc.exists){
-        var d = doc.data();
-        if(d.university){ sel.value = d.university; uploadLoadSemesters(); }
-        if(d.semester){
-          setTimeout(function(){
-            for(var i=0;i<SEMESTERS.length;i++){
-              if(SEMESTERS[i].id === d.semester){ el('uploadSem').value = i; uploadLoadModules(); break; }
-            }
-          }, 100);
-        }
-      }
-    }).catch(function(){});
-  }
-};
-
-window.submitUpload = function(){
-  var msg = el('uploadMsg');
-  var uni = el('uploadUni').value;
-  var semIdx = el('uploadSem').value;
-  var mod = el('uploadMod').value;
-  var fileInput = el('uploadFile');
-  var driveLink = el('uploadDriveLink') ? el('uploadDriveLink').value.trim() : '';
-
-  if(!uni || semIdx === '' || !mod){
-    msg.className = 'admin-msg error';
-    msg.textContent = 'Please select university, semester, and module.';
-    return;
-  }
-  if(!fileInput.files.length && !driveLink){
-    msg.className = 'admin-msg error';
-    msg.textContent = 'Please upload a photo or paste a Google Drive link.';
-    return;
-  }
-
-  msg.className = 'admin-msg';
-  msg.textContent = 'Uploading...';
-  el('uploadSubmitBtn').disabled = true;
-
-  var uniObj = UNIVERSITIES.find(function(u){ return u.id === uni; });
-  var semObj = SEMESTERS[parseInt(semIdx)];
-
-  function saveUpload(imageData){
-    var docId = S.user.email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + Date.now();
-    db.collection('contributions').doc(docId).set({
-      email: S.user.email,
-      name: S.user.name || '',
-      university: uni,
-      universityName: uniObj ? uniObj.name : uni,
-      semester: semObj ? semObj.id : '',
-      semesterTitle: semObj ? semObj.title : '',
-      module: mod,
-      moduleIcon: '',
-      fileType: 'lesson',
-      driveLink: driveLink,
-      notes: '',
-      imageData: imageData || '',
-      status: 'pending',
-      createdAt: new Date().toISOString()
-    }).then(function(){
-      msg.className = 'admin-msg success';
-      msg.textContent = '✅ Handout submitted! We will review it within 24 hours.';
-      el('uploadSubmitBtn').disabled = false;
-      el('uploadFile').value = '';
-      if(el('uploadDriveLink')) el('uploadDriveLink').value = '';
-      // Refresh dashboard after 2 sec
-      setTimeout(function(){
-        showView('dashboard');
-        renderPhase1Dashboard();
-      }, 2500);
-    }).catch(function(e){
-      msg.className = 'admin-msg error';
-      msg.textContent = 'Error: ' + e.message;
-      el('uploadSubmitBtn').disabled = false;
-    });
-  }
-
-  if(fileInput.files.length > 0){
-    var file = fileInput.files[0];
-    if(file.size > 10 * 1024 * 1024){
-      msg.className = 'admin-msg error';
-      msg.textContent = 'File too large. Max 10MB.';
-      el('uploadSubmitBtn').disabled = false;
-      return;
-    }
-    msg.textContent = 'Compressing & uploading...';
-    compressAndReadFile(file, 800, 0.6, function(compressed, err){
-      if(err){
-        msg.className = 'admin-msg error';
-        msg.textContent = err;
-        el('uploadSubmitBtn').disabled = false;
-        return;
-      }
-      saveUpload(compressed);
-    });
-  } else {
-    saveUpload('');
-  }
-};
-
-/* ── PHASE 1 DASHBOARD RENDER ── */
-window.renderPhase1Dashboard = function(){
-  if(!S.user || !S.user.email) return;
-  el('wbGreet').textContent = 'Welcome, ' + S.user.name.split(' ')[0] + '!';
-
-  // Load user uploads from Firestore
-  db.collection('contributions')
-    .where('email', '==', S.user.email)
-    .orderBy('createdAt', 'desc').limit(50)
-    .get().then(function(snap){
-      var count = snap.size;
-      var hist = el('uploadHistory');
-
-      // Update reward bar
-      el('rewardCount').textContent = count + ' upload' + (count !== 1 ? 's' : '');
-
-      // Highlight reward steps
-      var r1 = el('rStep1'), r2 = el('rStep2'), r3 = el('rStep3');
-      r1.style.borderStyle = count >= 1 ? 'solid' : 'dashed';
-      r1.style.borderColor = count >= 1 ? 'var(--teal)' : 'var(--border)';
-      r1.style.background = count >= 1 ? 'rgba(56,249,215,.08)' : 'var(--bg3)';
-      r2.style.borderStyle = count >= 3 ? 'solid' : 'dashed';
-      r2.style.borderColor = count >= 3 ? 'var(--teal)' : 'var(--border)';
-      r2.style.background = count >= 3 ? 'rgba(56,249,215,.08)' : 'var(--bg3)';
-      r3.style.borderStyle = count >= 5 ? 'solid' : 'dashed';
-      r3.style.borderColor = count >= 5 ? 'var(--teal)' : 'var(--border)';
-      r3.style.background = count >= 5 ? 'rgba(56,249,215,.08)' : 'var(--bg3)';
-
-      // Reward message
-      var rmsg = el('rewardMsg');
-      if(count === 0) rmsg.textContent = 'Upload your first handout to unlock free video access!';
-      else if(count < 3) rmsg.textContent = '🎉 ' + count + ' uploaded! ' + (3 - count) + ' more to unlock full module access.';
-      else if(count < 5) rmsg.textContent = '🔥 Full module unlocked! ' + (5 - count) + ' more for founding member badge.';
-      else rmsg.textContent = '⭐ You are a Founding Member! Thank you for your ' + count + ' contributions.';
-      rmsg.style.background = count >= 5 ? 'rgba(56,249,215,.08)' : count >= 1 ? 'rgba(108,99,255,.06)' : 'rgba(108,99,255,.06)';
-      rmsg.style.color = count >= 5 ? 'var(--teal)' : 'var(--accent2)';
-
-      // Render upload history
-      if(snap.empty){
-        hist.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;">No uploads yet — your first one unlocks free video access! 🎁</div>';
-        return;
-      }
-      var html = '';
-      snap.forEach(function(doc){
-        var d = doc.data();
-        var date = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : '';
-        var statusIcon = d.status === 'pending' ? '⏳' : d.status === 'reviewed' ? '✅' : d.status === 'used' ? '🎬' : '❌';
-        var statusText = d.status === 'pending' ? 'Pending review' : d.status === 'reviewed' ? 'Reviewed' : d.status === 'used' ? 'Used in video!' : 'Rejected';
-        var statusColor = d.status === 'pending' ? '#f9a825' : d.status === 'reviewed' ? '#56ccf2' : d.status === 'used' ? '#43e97b' : '#e05252';
-        html += '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;">' +
-          '<div style="font-size:20px;flex-shrink:0;">📄</div>' +
-          '<div style="flex:1;min-width:0;">' +
-            '<div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (d.module || 'Unknown module') + '</div>' +
-            '<div style="font-size:11px;color:var(--text3);margin-top:2px;">' + (d.universityName || '').split('—')[0].trim() + ' · ' + (d.semesterTitle || '') + ' · ' + date + '</div>' +
-          '</div>' +
-          '<div style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;background:' + statusColor + '15;color:' + statusColor + ';white-space:nowrap;flex-shrink:0;">' + statusIcon + ' ' + statusText + '</div>' +
-        '</div>';
-      });
-      hist.innerHTML = html;
-    }).catch(function(e){
-      el('uploadHistory').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">Could not load uploads.</div>';
-    });
-};
-
 /* Typewriter animation for login page */
 (function(){
   var twPhrases = [
@@ -6473,10 +5671,13 @@ window.renderPhase1Dashboard = function(){
     } else {
       twEl.textContent = cur.substring(0, twChar - 1);
       twChar--;
-      if(twChar === 0){ twDel = false; twIdx = (twIdx + 1) % twPhrases.length; setTimeout(twType, 400);       return; }
-      setTimeout(twType, 60);
+      if(twChar === 0){ twDel = false; twIdx = (twIdx + 1) % twPhrases.length; setTimeout(twType, 400); return; }
+      setTimeout(twType, 40);
     }
   }
+  var twStyle = document.createElement('style');
+  twStyle.textContent = '@keyframes twBlink{0%,100%{border-color:var(--accent2)}50%{border-color:transparent}}#typewriterText{animation:twBlink .75s step-end infinite}';
+  document.head.appendChild(twStyle);
   twType();
 })();
 
