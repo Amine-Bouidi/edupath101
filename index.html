@@ -289,11 +289,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .mc-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#9b59b6);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
 .mc-title{font-family:'Sora',sans-serif;font-size:14px;font-weight:600;margin-bottom:3px;}
 .mc-title-wrap{display:flex;align-items:center;gap:6px;}
-.mc-edit-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:2px 4px;border-radius:4px;transition:color .2s,background .2s;flex-shrink:0;line-height:1;}
+.mc-edit-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px;padding:2px 4px;border-radius:4px;transition:color .2s,background .2s;flex-shrink:0;line-height:1;}
 .mc-edit-btn:hover{color:var(--accent2);background:rgba(108,99,255,.12);}
 .mc-edit-input{font-family:'Sora',sans-serif;font-size:13px;font-weight:600;color:var(--text);background:var(--bg3);border:1px solid var(--accent);border-radius:6px;padding:3px 8px;outline:none;width:100%;min-width:0;}
 .mc-edit-actions{display:flex;gap:4px;margin-top:4px;}
-.mc-edit-save,.mc-edit-cancel{background:none;border:none;cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;transition:background .2s;}
+.mc-edit-save,.mc-edit-cancel{background:none;border:none;cursor:pointer;font-size:13px;padding:2px 6px;border-radius:4px;transition:background .2s;}
 .mc-edit-save:hover{background:rgba(67,233,123,.15);}
 .mc-edit-cancel:hover{background:rgba(255,101,132,.15);}
 .mc-desc{font-size:11px;color:var(--text3);}
@@ -3814,12 +3814,9 @@ function openModules(sem,idx){
   var isAdminUser = email && ADMIN_EMAILS.indexOf(email.toLowerCase()) !== -1;
   var isDemoUser = S.user && S.user.name === 'Demo Student';
 
-  // Fetch custom module names from Firestore first
-  fetchCustomModuleNames(S.uni.id, sem.id, mods.length, function(customNames){
-    // Apply custom names to mods
-    for(var i=0;i<mods.length;i++){
-      if(customNames[i]) mods[i].title = customNames[i];
-    }
+  // Fetch custom module names from Firestore, then render
+  _fetchCustomModNames(S.uni.id, sem.id, mods.length, function(custom){
+    for(var i=0;i<mods.length;i++){ if(custom[i]) mods[i].title = custom[i]; }
 
     if(isAdminUser || isDemoUser){
       renderModuleGrid(grid, mods, sem, idx, null);
@@ -3851,92 +3848,54 @@ function openModules(sem,idx){
 }
 
 /* Fetch custom module names from Firestore moduleNames collection */
-function fetchCustomModuleNames(uniId, semId, count, cb){
-  var customNames = {};
-  var docIds = [];
+function _fetchCustomModNames(uniId, semId, count, cb){
+  var names={}, done=0;
+  if(!count){ return cb(names); }
   for(var i=0;i<count;i++){
-    docIds.push(uniId + '_' + semId + '_' + i);
+    (function(idx){
+      db.collection('moduleNames').doc(uniId+'_'+semId+'_'+idx).get().then(function(doc){
+        if(doc.exists && doc.data().name) names[idx]=doc.data().name;
+      }).catch(function(){}).finally(function(){ done++; if(done===count) cb(names); });
+    })(i);
   }
-  if(docIds.length === 0) return cb(customNames);
-
-  var fetched = 0;
-  docIds.forEach(function(docId, idx){
-    db.collection('moduleNames').doc(docId).get().then(function(doc){
-      if(doc.exists && doc.data().name){
-        customNames[idx] = doc.data().name;
-      }
-      fetched++;
-      if(fetched === docIds.length) cb(customNames);
-    }).catch(function(){
-      fetched++;
-      if(fetched === docIds.length) cb(customNames);
-    });
-  });
 }
 
-/* Admin: edit module name inline */
-window.adminEditModName = function(modIdx, btn){
-  var titleEl = document.getElementById('mcTitle_' + modIdx);
+/* Admin inline module-name editing */
+window.adminEditModName=function(modIdx,btn){
+  var titleEl=document.getElementById('mcTitle_'+modIdx);
   if(!titleEl) return;
-  var currentName = titleEl.textContent;
-  var wrap = titleEl.parentElement; // mc-title-wrap
-  // Hide title and edit button, show input
-  titleEl.style.display = 'none';
-  btn.style.display = 'none';
-  // Create input and action buttons
-  var editWrap = document.createElement('div');
-  editWrap.id = 'mcEditWrap_' + modIdx;
-  editWrap.style.cssText = 'display:flex;flex-direction:column;gap:4px;flex:1;min-width:0;';
-  var input = document.createElement('input');
-  input.type = 'text';
-  input.value = currentName;
-  input.className = 'mc-edit-input';
-  input.id = 'mcEditInput_' + modIdx;
-  var actions = document.createElement('div');
-  actions.className = 'mc-edit-actions';
-  actions.innerHTML = '<button class="mc-edit-save" onclick="event.stopPropagation();adminSaveModName('+modIdx+')" title="Save">✅</button><button class="mc-edit-cancel" onclick="event.stopPropagation();adminCancelEditMod('+modIdx+')" title="Cancel">❌</button>';
-  editWrap.appendChild(input);
-  editWrap.appendChild(actions);
-  wrap.appendChild(editWrap);
-  input.focus();
-  input.select();
-  // Save on Enter, cancel on Escape
-  input.addEventListener('keydown', function(e){
-    if(e.key === 'Enter'){ e.preventDefault(); adminSaveModName(modIdx); }
-    if(e.key === 'Escape'){ e.preventDefault(); adminCancelEditMod(modIdx); }
-  });
+  var cur=titleEl.textContent, wrap=titleEl.parentElement;
+  titleEl.style.display='none'; btn.style.display='none';
+  var ew=document.createElement('div'); ew.id='mcEW_'+modIdx;
+  ew.style.cssText='display:flex;flex-direction:column;gap:4px;flex:1;min-width:0;';
+  var inp=document.createElement('input'); inp.type='text'; inp.value=cur;
+  inp.className='mc-edit-input'; inp.id='mcEI_'+modIdx;
+  var acts=document.createElement('div'); acts.className='mc-edit-actions';
+  acts.innerHTML='<button class="mc-edit-save" onclick="event.stopPropagation();adminSaveModName('+modIdx+')" title="Save">✅</button><button class="mc-edit-cancel" onclick="event.stopPropagation();adminCancelModEdit('+modIdx+')" title="Cancel">❌</button>';
+  ew.appendChild(inp); ew.appendChild(acts); wrap.appendChild(ew);
+  inp.focus(); inp.select();
+  inp.onkeydown=function(e){
+    if(e.key==='Enter'){e.preventDefault();adminSaveModName(modIdx);}
+    if(e.key==='Escape'){e.preventDefault();adminCancelModEdit(modIdx);}
+  };
 };
-
-window.adminSaveModName = function(modIdx){
-  var input = document.getElementById('mcEditInput_' + modIdx);
-  if(!input) return;
-  var newName = input.value.trim();
-  if(!newName) return adminCancelEditMod(modIdx);
-  var docId = S.uni.id + '_' + S.sem.id + '_' + modIdx;
-  // Save to Firestore
+window.adminSaveModName=function(modIdx){
+  var inp=document.getElementById('mcEI_'+modIdx);
+  if(!inp) return;
+  var v=inp.value.trim();
+  if(!v) return adminCancelModEdit(modIdx);
+  var docId=S.uni.id+'_'+S.sem.id+'_'+modIdx;
   db.collection('moduleNames').doc(docId).set({
-    name: newName,
-    university: S.uni.id,
-    semester: S.sem.id,
-    moduleIndex: modIdx,
-    updatedAt: new Date().toISOString()
+    name:v, university:S.uni.id, semester:S.sem.id, moduleIndex:modIdx, updatedAt:new Date().toISOString()
   }).then(function(){
-    var titleEl = document.getElementById('mcTitle_' + modIdx);
-    if(titleEl) titleEl.textContent = newName;
-    adminCancelEditMod(modIdx); // cleanup edit UI
-  }).catch(function(err){
-    console.error('Failed to save module name:', err);
-    alert('Failed to save. Check console for details.');
-  });
+    var t=document.getElementById('mcTitle_'+modIdx); if(t) t.textContent=v;
+    adminCancelModEdit(modIdx);
+  }).catch(function(err){ console.error('Save module name failed:',err); alert('Save failed — see console.'); });
 };
-
-window.adminCancelEditMod = function(modIdx){
-  var editWrap = document.getElementById('mcEditWrap_' + modIdx);
-  if(editWrap) editWrap.remove();
-  var titleEl = document.getElementById('mcTitle_' + modIdx);
-  var btn = document.querySelector('.mc-edit-btn[data-mod-idx="'+modIdx+'"]');
-  if(titleEl) titleEl.style.display = '';
-  if(btn) btn.style.display = '';
+window.adminCancelModEdit=function(modIdx){
+  var ew=document.getElementById('mcEW_'+modIdx); if(ew) ew.remove();
+  var t=document.getElementById('mcTitle_'+modIdx); if(t) t.style.display='';
+  var b=document.querySelector('.mc-edit-btn[data-mod-idx="'+modIdx+'"]'); if(b) b.style.display='';
 };
 
 function renderModuleGrid(grid, mods, sem, idx, subData){
