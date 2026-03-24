@@ -3801,16 +3801,34 @@ function openModules(sem,idx){
   var mods=getMods(idx,S.uni.id);
   var grid=el('modGrid'); grid.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);">Loading modules...</div>';
 
-  // Load custom module names from Firestore first
   var namePrefix = S.uni.id + '_' + sem.id + '_';
-  db.collection('moduleNames').where('__name__', '>=', namePrefix).where('__name__', '<=', namePrefix + '\uf8ff').get().then(function(snap){
+
+  // Load both custom names AND custom modules from Firestore
+  var p1 = db.collection('moduleNames').where('__name__', '>=', namePrefix).where('__name__', '<=', namePrefix + '\uf8ff').get();
+  var p2 = db.collection('customModules').where('university', '==', S.uni.id).where('semester', '==', sem.id).get();
+
+  Promise.all([p1, p2]).then(function(results){
+    var namesSnap = results[0];
+    var customSnap = results[1];
+
+    // Apply custom names to hardcoded modules
     var customNames = {};
-    snap.forEach(function(doc){ customNames[doc.id] = doc.data().name; });
-    // Apply custom names
+    namesSnap.forEach(function(doc){ customNames[doc.id] = doc.data().name; });
     mods.forEach(function(mod, i){
       var key = namePrefix + i;
       if(customNames[key]) mod.title = customNames[key];
     });
+
+    // Append custom modules from Firestore
+    var customMods = [];
+    customSnap.forEach(function(doc){
+      var d = doc.data();
+      customMods.push({id: doc.id, icon:'📘', title: d.name || 'New Module', desc: d.desc || 'Custom module', isCustom: true, firestoreId: doc.id});
+    });
+    // Sort by createdAt
+    customMods.sort(function(a,b){ return (a.id).localeCompare(b.id); });
+    customMods.forEach(function(cm){ mods.push(cm); });
+
     proceedWithModules(mods, sem, idx, grid);
   }).catch(function(){
     proceedWithModules(mods, sem, idx, grid);
@@ -3883,12 +3901,12 @@ function renderModuleGrid(grid, mods, sem, idx, subData){
     var card=document.createElement('div');
     if(isAdminUser){
       card.className = 'mod-card' + (isUnlocked ? '' : ' locked');
-      card.innerHTML='<div class="mc-head"><div class="mc-icon">'+mod.icon+'</div><div><div class="mc-title" id="mtitle_'+modIdx+'">'+mod.title+' <span class="mod-edit-btn" data-idx="'+modIdx+'" style="cursor:pointer;font-size:13px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit name">✏️</span></div><div class="mc-desc">'+mod.desc+'</div></div></div><div class="pbar"><div class="pfill" style="width:'+pct+'%"></div></div><div class="mc-footer"><span class="mc-vids">5 videos'+(dv>0?' · '+dv+' done':'')+'</span>'+badge+'</div>';
+      card.innerHTML='<div class="mc-head"><div class="mc-icon">'+mod.icon+'</div><div><div class="mc-title" id="mtitle_'+modIdx+'">'+mod.title+' <span class="mod-edit-btn" data-idx="'+modIdx+'" style="cursor:pointer;font-size:13px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit name">✏️</span>'+(mod.isCustom?'<span class="mod-del-btn" data-fid="'+mod.firestoreId+'" style="cursor:pointer;font-size:13px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Delete module">🗑️</span>':'')+'</div><div class="mc-desc">'+mod.desc+'</div></div></div><div class="pbar"><div class="pfill" style="width:'+pct+'%"></div></div><div class="mc-footer"><span class="mc-vids">5 videos'+(dv>0?' · '+dv+' done':'')+'</span>'+badge+'</div>';
       if(isUnlocked){
-        card.onclick=(function(m){return function(e){if(e.target.closest('.mod-edit-btn'))return;openPlayer(m);};})(mod);
+        card.onclick=(function(m){return function(e){if(e.target.closest('.mod-edit-btn')||e.target.closest('.mod-del-btn'))return;openPlayer(m);};})(mod);
       } else {
         card.innerHTML += '<div class="mod-lock-overlay"><div class="mod-lock-badge">🔒 Upgrade to access</div></div>';
-        card.onclick=function(e){ if(e.target.closest('.mod-edit-btn'))return; showView('pricing'); setTopbar([],'Plans & Pricing',false); };
+        card.onclick=function(e){ if(e.target.closest('.mod-edit-btn')||e.target.closest('.mod-del-btn'))return; showView('pricing'); setTopbar([],'Plans & Pricing',false); };
       }
     } else {
       card.className = 'mod-card';
@@ -3898,6 +3916,18 @@ function renderModuleGrid(grid, mods, sem, idx, subData){
     }
     grid.appendChild(card);
   });
+
+  // Add Module card (admin only)
+  if(isAdminUser){
+    var addCard = document.createElement('div');
+    addCard.className = 'mod-card';
+    addCard.style.cssText = 'cursor:pointer;border:2px dashed var(--border2);background:rgba(108,99,255,.04);display:flex;align-items:center;justify-content:center;min-height:140px;transition:all .25s;';
+    addCard.innerHTML = '<div style="text-align:center;"><div style="width:48px;height:48px;border-radius:50%;background:rgba(108,99,255,.12);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:24px;color:var(--accent2);">+</div><div style="font-family:\'Sora\',sans-serif;font-size:14px;font-weight:700;color:var(--accent2);">Add Module</div></div>';
+    addCard.onmouseover = function(){ this.style.borderColor='var(--accent2)'; this.style.background='rgba(108,99,255,.08)'; };
+    addCard.onmouseout = function(){ this.style.borderColor='var(--border2)'; this.style.background='rgba(108,99,255,.04)'; };
+    addCard.onclick = function(){ addNewModule(); };
+    grid.appendChild(addCard);
+  }
 
   // Load contribution counts for non-admin
   if(!isAdminUser){
@@ -3946,12 +3976,20 @@ document.addEventListener('click', function(e){
   var idx = btn.getAttribute('data-idx');
   var titleEl = el('mtitle_' + idx);
   if(!titleEl) return;
-  var currentName = titleEl.textContent.replace('✏️','').trim();
+  var currentName = titleEl.textContent.replace('✏️','').replace('🗑️','').trim();
   titleEl.innerHTML = '<input type="text" value="' + currentName.replace(/"/g,'&quot;') + '" id="medit_' + idx + '" style="background:var(--bg3);border:1px solid var(--accent2);border-radius:6px;color:var(--text);font-size:14px;font-weight:600;padding:4px 8px;width:80%;font-family:inherit;" onclick="event.stopPropagation()"> <button onclick="event.stopPropagation();saveModName(' + idx + ')" style="background:var(--accent2);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;">Save</button>';
   var input = el('medit_' + idx);
   input.focus();
   input.select();
   input.onkeydown = function(ev){ if(ev.key === 'Enter'){ ev.preventDefault(); saveModName(parseInt(idx)); } };
+});
+
+document.addEventListener('click', function(e){
+  var btn = e.target.closest('.mod-del-btn');
+  if(!btn || !isAdmin()) return;
+  e.stopPropagation();
+  var fid = btn.getAttribute('data-fid');
+  if(fid) deleteModule(fid);
 });
 
 window.saveModName = function(idx){
@@ -3961,9 +3999,33 @@ window.saveModName = function(idx){
   if(!newName) return;
   var docId = S.uni.id + '_' + S.sem.id + '_' + idx;
   db.collection('moduleNames').doc(docId).set({ name: newName, updatedAt: new Date().toISOString() }).then(function(){
-    // Refresh modules
     openModules(S.sem, S.semIdx);
   }).catch(function(e){ alert('Error saving: ' + e.message); });
+};
+
+window.addNewModule = function(){
+  if(!isAdmin() || !S.uni || !S.sem) return;
+  var name = prompt('Enter module name:');
+  if(!name || !name.trim()) return;
+  var docId = S.uni.id + '_' + S.sem.id + '_custom_' + Date.now();
+  db.collection('customModules').doc(docId).set({
+    university: S.uni.id,
+    semester: S.sem.id,
+    name: name.trim(),
+    desc: 'Custom module',
+    icon: '📘',
+    createdAt: new Date().toISOString()
+  }).then(function(){
+    openModules(S.sem, S.semIdx);
+  }).catch(function(e){ alert('Error adding module: ' + e.message); });
+};
+
+window.deleteModule = function(firestoreId){
+  if(!isAdmin()) return;
+  if(!confirm('Delete this module? This cannot be undone.')) return;
+  db.collection('customModules').doc(firestoreId).delete().then(function(){
+    openModules(S.sem, S.semIdx);
+  }).catch(function(e){ alert('Error deleting: ' + e.message); });
 };
 
 /* ── PLAYER ── */
