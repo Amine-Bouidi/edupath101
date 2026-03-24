@@ -1826,9 +1826,9 @@ function openLoginFromLanding(){
       <div class="sb-item" id="nav-semesters" style="display:none;"><span class="sb-icon">📅</span><span class="sb-item-label"> Semesters</span></div>
       <div class="sb-item" id="nav-modules"   style="display:none;"><span class="sb-icon">📚</span><span class="sb-item-label"> Modules</span></div>
       <div class="sb-item" id="nav-player"    style="display:none;"><span class="sb-icon">▶</span><span class="sb-item-label"> Now watching</span></div>
-      <div class="sb-item" id="nav-notifs"><span class="sb-icon">🔔</span><span class="sb-item-label"> Notifications <span id="notifBadge" style="display:none;background:#ff6584;color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;margin-left:4px;">0</span></span></div>
+      <div class="sb-item" id="nav-notifs" style="display:none;"><span class="sb-icon">🔔</span><span class="sb-item-label"> Notifications <span id="notifBadge" style="display:none;background:#ff6584;color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;margin-left:4px;">0</span></span></div>
       <div class="sb-sec" style="margin-top:12px;">Account</div>
-      <div class="sb-item" id="nav-pricing"><span class="sb-icon">💎</span><span class="sb-item-label"> Plans & Pricing</span></div>
+      <div class="sb-item" id="nav-pricing" style="display:none;"><span class="sb-icon">💎</span><span class="sb-item-label"> Plans & Pricing</span></div>
       <div class="sb-item" id="nav-admin" style="display:none;"><span class="sb-icon">⚙️</span><span class="sb-item-label"> Admin Panel</span></div>
       <div class="sb-item" id="nav-profile"><span class="sb-icon">👤</span><span class="sb-item-label"> My Profile</span></div>
       <div class="sb-item" id="nav-privacy"><span class="sb-icon">🔒</span><span class="sb-item-label"> Privacy Policy</span></div>
@@ -1858,18 +1858,116 @@ function openLoginFromLanding(){
     </div>
 
     <div class="main-scroll">
-      <!-- DASHBOARD -->
+      <!-- DASHBOARD — PHASE 1 -->
       <div class="view active" id="view-dashboard">
-        <div class="welcome-banner">
-          <div class="wb-text"><h2 id="wbGreet">Welcome back!</h2><p>Pick a university to continue your learning journey.</p></div>
-          <div class="wb-stats">
-            <div class="wb-stat"><div class="wb-stat-n" id="statVids">0</div><div class="wb-stat-l">Videos done</div></div>
-            <div class="wb-stat"><div class="wb-stat-n" id="statMods">0</div><div class="wb-stat-l">Modules done</div></div>
-            <div class="wb-stat"><div class="wb-stat-n" id="statPts">0</div><div class="wb-stat-l">Points earned</div></div>
+        <!-- Welcome -->
+        <div class="welcome-banner" style="text-align:center;flex-direction:column;gap:8px;">
+          <div class="wb-text"><h2 id="wbGreet" style="margin-bottom:4px;">Welcome back!</h2><p style="color:var(--text2);font-size:13px;">Phase 1 — Help us build video lessons by sharing your handouts</p></div>
+        </div>
+
+        <!-- Reward Progress -->
+        <div id="rewardBar" style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:20px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--text);">🎁 Your Rewards</div>
+            <div id="rewardCount" style="font-size:12px;color:var(--accent2);font-weight:600;">0 uploads</div>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:14px;">
+            <div id="rStep1" style="flex:1;text-align:center;padding:10px 6px;border-radius:10px;border:1px dashed var(--border2);background:var(--bg3);transition:all .3s;">
+              <div style="font-size:18px;margin-bottom:4px;">🔓</div>
+              <div style="font-size:11px;font-weight:600;color:var(--text2);">1 upload</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:2px;">Free video access</div>
+            </div>
+            <div id="rStep2" style="flex:1;text-align:center;padding:10px 6px;border-radius:10px;border:1px dashed var(--border);background:var(--bg3);transition:all .3s;">
+              <div style="font-size:18px;margin-bottom:4px;">📚</div>
+              <div style="font-size:11px;font-weight:600;color:var(--text2);">3 uploads</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:2px;">Full module unlock</div>
+            </div>
+            <div id="rStep3" style="flex:1;text-align:center;padding:10px 6px;border-radius:10px;border:1px dashed var(--border);background:var(--bg3);transition:all .3s;">
+              <div style="font-size:18px;margin-bottom:4px;">⭐</div>
+              <div style="font-size:11px;font-weight:600;color:var(--text2);">5 uploads</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:2px;">Founding member</div>
+            </div>
+          </div>
+          <div id="rewardMsg" style="font-size:12px;color:var(--accent2);text-align:center;padding:6px;background:rgba(108,99,255,.06);border-radius:8px;">Upload your first handout to unlock free video access!</div>
+        </div>
+
+        <!-- BIG UPLOAD BUTTON -->
+        <div onclick="showView('upload')" style="cursor:pointer;background:linear-gradient(135deg,rgba(0,212,170,.08),rgba(108,99,255,.08));border:2px dashed var(--accent2);border-radius:18px;padding:40px 24px;text-align:center;transition:all .25s;margin-bottom:24px;" onmouseover="this.style.borderColor='var(--teal)';this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 32px rgba(0,0,0,.2)'" onmouseout="this.style.borderColor='var(--accent2)';this.style.transform='none';this.style.boxShadow='none'">
+          <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--accent));display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;color:#fff;">+</div>
+          <div style="font-family:'Sora',sans-serif;font-size:20px;font-weight:800;color:var(--text);margin-bottom:6px;">Share My Handout Now</div>
+          <div style="font-size:13px;color:var(--text2);max-width:400px;margin:0 auto;">Upload a photo of your lecture handout, PDF or slides. Takes 30 seconds.</div>
+        </div>
+
+        <!-- Upload History -->
+        <div style="margin-bottom:20px;">
+          <div style="font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;">📋 My Uploads</div>
+          <div id="uploadHistory" style="display:flex;flex-direction:column;gap:8px;">
+            <div style="text-align:center;padding:24px;color:var(--text3);font-size:13px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;">No uploads yet — your first one unlocks free video access! 🎁</div>
           </div>
         </div>
-        <div class="sec-hdr">Select your university</div>
-        <div class="uni-grid" id="uniGrid"></div>
+      </div>
+
+      <!-- UPLOAD PAGE -->
+      <div class="view" id="view-upload" style="display:none;">
+        <div style="max-width:520px;margin:0 auto;padding:0 8px;">
+          <!-- Header -->
+          <div style="text-align:center;margin-bottom:24px;">
+            <div style="font-size:36px;margin-bottom:8px;">📤</div>
+            <div style="font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:var(--text);margin-bottom:4px;">Upload a Handout</div>
+            <div style="font-size:13px;color:var(--text2);">Share your professor's materials — we turn them into video lessons</div>
+          </div>
+
+          <!-- Upload Form -->
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;">
+            <!-- University -->
+            <div class="field" style="margin-bottom:14px;">
+              <label style="font-size:12px;font-weight:600;color:var(--text2);">University</label>
+              <select id="uploadUni" class="admin-select" style="margin:0;width:100%;" onchange="uploadLoadSemesters()">
+                <option value="">— Select your university —</option>
+              </select>
+            </div>
+
+            <!-- Semester -->
+            <div class="field" style="margin-bottom:14px;">
+              <label style="font-size:12px;font-weight:600;color:var(--text2);">Semester</label>
+              <select id="uploadSem" class="admin-select" style="margin:0;width:100%;" onchange="uploadLoadModules()">
+                <option value="">— Select semester —</option>
+              </select>
+            </div>
+
+            <!-- Module -->
+            <div class="field" style="margin-bottom:14px;">
+              <label style="font-size:12px;font-weight:600;color:var(--text2);">Module</label>
+              <select id="uploadMod" class="admin-select" style="margin:0;width:100%;">
+                <option value="">— Select module —</option>
+              </select>
+            </div>
+
+            <!-- Upload method tabs -->
+            <div style="margin-bottom:14px;">
+              <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:8px;">Upload your file</label>
+              <div style="display:flex;gap:6px;margin-bottom:10px;">
+                <button id="tabPhoto" onclick="switchUploadTab('photo')" style="flex:1;padding:9px;font-size:12px;font-weight:600;border-radius:8px;cursor:pointer;border:1px solid var(--border2);background:rgba(108,99,255,.15);color:var(--accent2);font-family:inherit;transition:all .2s;">📷 Photo / Image</button>
+                <button id="tabDrive" onclick="switchUploadTab('drive')" style="flex:1;padding:9px;font-size:12px;font-weight:600;border-radius:8px;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-family:inherit;transition:all .2s;">🔗 Google Drive Link</button>
+              </div>
+              <div id="uploadTabPhoto">
+                <input type="file" id="uploadFile" accept="image/*,.pdf" style="font-size:13px;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;width:100%;box-sizing:border-box;color:var(--text);">
+                <div style="font-size:11px;color:var(--text3);margin-top:4px;">Take a photo of the lesson pages or select a file. Max 10MB.</div>
+              </div>
+              <div id="uploadTabDrive" style="display:none;">
+                <input type="text" id="uploadDriveLink" placeholder="https://drive.google.com/file/d/..." style="width:100%;padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;font-family:inherit;box-sizing:border-box;">
+                <div style="font-size:11px;color:var(--text3);margin-top:4px;">Paste a Google Drive link to your PDF or document.</div>
+              </div>
+            </div>
+
+            <!-- Submit -->
+            <button id="uploadSubmitBtn" onclick="submitUpload()" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),#9b59b6);border:none;border-radius:12px;color:#fff;font-family:'Sora',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;margin-top:4px;">📤 Submit Handout</button>
+            <div id="uploadMsg" class="admin-msg" style="margin-top:10px;"></div>
+
+            <!-- Back -->
+            <button onclick="showView('dashboard');renderPhase1Dashboard();" style="width:100%;padding:10px;margin-top:10px;background:none;border:1px solid var(--border);border-radius:10px;color:var(--text2);font-size:13px;cursor:pointer;font-family:inherit;transition:all .2s;">← Back to Dashboard</button>
+          </div>
+        </div>
       </div>
 
       <!-- SEMESTERS -->
@@ -3443,7 +3541,8 @@ function getP(u,s,m){var k=u+'_'+s+'_'+m;return S.progress[k]||{videos:[],quizze
 /* ── HELPERS ── */
 function el(id){return document.getElementById(id);}
 function showView(id){
-  ['dashboard','semesters','modules','contact','pricing','admin','profile','privacy','contribute','notifs'].forEach(function(v){
+  if(id === 'upload'){ setTimeout(initUploadPage, 50); }
+  ['dashboard','semesters','modules','contact','pricing','admin','profile','privacy','contribute','notifs','upload'].forEach(function(v){
     var e=el('view-'+v); if(e){e.style.display='none';e.classList.remove('active');}
   });
   var pl=el('view-player');
@@ -3601,7 +3700,7 @@ function enterApp(name, email){
   if(email && email !== ''){
     setTimeout(function(){ checkProfileSetup(email, name); }, 500);
   }
-  renderDashboard();
+  renderPhase1Dashboard();
 }
 function googleSignIn(){
   var provider = new firebase.auth.GoogleAuthProvider();
@@ -6124,6 +6223,225 @@ window.submitContribution = function(){
   } else {
     saveToFirestore('');
   }
+};
+
+
+
+/* ── PHASE 1 UPLOAD PAGE ── */
+window.switchUploadTab = function(tab){
+  if(tab === 'photo'){
+    el('uploadTabPhoto').style.display = 'block';
+    el('uploadTabDrive').style.display = 'none';
+    el('tabPhoto').style.background = 'rgba(108,99,255,.15)';
+    el('tabPhoto').style.color = 'var(--accent2)';
+    el('tabPhoto').style.borderColor = 'var(--border2)';
+    el('tabDrive').style.background = 'var(--bg3)';
+    el('tabDrive').style.color = 'var(--text2)';
+    el('tabDrive').style.borderColor = 'var(--border)';
+  } else {
+    el('uploadTabPhoto').style.display = 'none';
+    el('uploadTabDrive').style.display = 'block';
+    el('tabDrive').style.background = 'rgba(108,99,255,.15)';
+    el('tabDrive').style.color = 'var(--accent2)';
+    el('tabDrive').style.borderColor = 'var(--border2)';
+    el('tabPhoto').style.background = 'var(--bg3)';
+    el('tabPhoto').style.color = 'var(--text2)';
+    el('tabPhoto').style.borderColor = 'var(--border)';
+  }
+};
+
+window.uploadLoadSemesters = function(){
+  var sel = el('uploadSem');
+  sel.innerHTML = '<option value="">— Select semester —</option>';
+  el('uploadMod').innerHTML = '<option value="">— Select module —</option>';
+  SEMESTERS.forEach(function(s, i){
+    sel.innerHTML += '<option value="' + i + '">' + s.title + '</option>';
+  });
+};
+
+window.uploadLoadModules = function(){
+  var sel = el('uploadMod');
+  sel.innerHTML = '<option value="">— Select module —</option>';
+  var si = el('uploadSem').value;
+  var uniId = el('uploadUni').value;
+  if(si === '') return;
+  var mods = getMods(parseInt(si), uniId);
+  mods.forEach(function(m){
+    sel.innerHTML += '<option value="' + m.title + '">' + m.icon + ' ' + m.title + '</option>';
+  });
+};
+
+window.initUploadPage = function(){
+  var sel = el('uploadUni');
+  sel.innerHTML = '<option value="">— Select your university —</option>';
+  UNIVERSITIES.forEach(function(u){
+    sel.innerHTML += '<option value="' + u.id + '">' + u.name + '</option>';
+  });
+  // Auto-fill from profile if available
+  if(S.user && S.user.email){
+    var docId = S.user.email.replace(/[^a-zA-Z0-9]/g,'_');
+    db.collection('users').doc(docId).get().then(function(doc){
+      if(doc.exists){
+        var d = doc.data();
+        if(d.university){ sel.value = d.university; uploadLoadSemesters(); }
+        if(d.semester){
+          setTimeout(function(){
+            for(var i=0;i<SEMESTERS.length;i++){
+              if(SEMESTERS[i].id === d.semester){ el('uploadSem').value = i; uploadLoadModules(); break; }
+            }
+          }, 100);
+        }
+      }
+    }).catch(function(){});
+  }
+};
+
+window.submitUpload = function(){
+  var msg = el('uploadMsg');
+  var uni = el('uploadUni').value;
+  var semIdx = el('uploadSem').value;
+  var mod = el('uploadMod').value;
+  var fileInput = el('uploadFile');
+  var driveLink = el('uploadDriveLink') ? el('uploadDriveLink').value.trim() : '';
+
+  if(!uni || semIdx === '' || !mod){
+    msg.className = 'admin-msg error';
+    msg.textContent = 'Please select university, semester, and module.';
+    return;
+  }
+  if(!fileInput.files.length && !driveLink){
+    msg.className = 'admin-msg error';
+    msg.textContent = 'Please upload a photo or paste a Google Drive link.';
+    return;
+  }
+
+  msg.className = 'admin-msg';
+  msg.textContent = 'Uploading...';
+  el('uploadSubmitBtn').disabled = true;
+
+  var uniObj = UNIVERSITIES.find(function(u){ return u.id === uni; });
+  var semObj = SEMESTERS[parseInt(semIdx)];
+
+  function saveUpload(imageData){
+    var docId = S.user.email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + Date.now();
+    db.collection('contributions').doc(docId).set({
+      email: S.user.email,
+      name: S.user.name || '',
+      university: uni,
+      universityName: uniObj ? uniObj.name : uni,
+      semester: semObj ? semObj.id : '',
+      semesterTitle: semObj ? semObj.title : '',
+      module: mod,
+      moduleIcon: '',
+      fileType: 'lesson',
+      driveLink: driveLink,
+      notes: '',
+      imageData: imageData || '',
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    }).then(function(){
+      msg.className = 'admin-msg success';
+      msg.textContent = '✅ Handout submitted! We will review it within 24 hours.';
+      el('uploadSubmitBtn').disabled = false;
+      el('uploadFile').value = '';
+      if(el('uploadDriveLink')) el('uploadDriveLink').value = '';
+      // Refresh dashboard after 2 sec
+      setTimeout(function(){
+        showView('dashboard');
+        renderPhase1Dashboard();
+      }, 2500);
+    }).catch(function(e){
+      msg.className = 'admin-msg error';
+      msg.textContent = 'Error: ' + e.message;
+      el('uploadSubmitBtn').disabled = false;
+    });
+  }
+
+  if(fileInput.files.length > 0){
+    var file = fileInput.files[0];
+    if(file.size > 10 * 1024 * 1024){
+      msg.className = 'admin-msg error';
+      msg.textContent = 'File too large. Max 10MB.';
+      el('uploadSubmitBtn').disabled = false;
+      return;
+    }
+    msg.textContent = 'Compressing & uploading...';
+    compressAndReadFile(file, 800, 0.6, function(compressed, err){
+      if(err){
+        msg.className = 'admin-msg error';
+        msg.textContent = err;
+        el('uploadSubmitBtn').disabled = false;
+        return;
+      }
+      saveUpload(compressed);
+    });
+  } else {
+    saveUpload('');
+  }
+};
+
+/* ── PHASE 1 DASHBOARD RENDER ── */
+window.renderPhase1Dashboard = function(){
+  if(!S.user || !S.user.email) return;
+  el('wbGreet').textContent = 'Welcome, ' + S.user.name.split(' ')[0] + '!';
+
+  // Load user uploads from Firestore
+  db.collection('contributions')
+    .where('email', '==', S.user.email)
+    .orderBy('createdAt', 'desc').limit(50)
+    .get().then(function(snap){
+      var count = snap.size;
+      var hist = el('uploadHistory');
+
+      // Update reward bar
+      el('rewardCount').textContent = count + ' upload' + (count !== 1 ? 's' : '');
+
+      // Highlight reward steps
+      var r1 = el('rStep1'), r2 = el('rStep2'), r3 = el('rStep3');
+      r1.style.borderStyle = count >= 1 ? 'solid' : 'dashed';
+      r1.style.borderColor = count >= 1 ? 'var(--teal)' : 'var(--border)';
+      r1.style.background = count >= 1 ? 'rgba(56,249,215,.08)' : 'var(--bg3)';
+      r2.style.borderStyle = count >= 3 ? 'solid' : 'dashed';
+      r2.style.borderColor = count >= 3 ? 'var(--teal)' : 'var(--border)';
+      r2.style.background = count >= 3 ? 'rgba(56,249,215,.08)' : 'var(--bg3)';
+      r3.style.borderStyle = count >= 5 ? 'solid' : 'dashed';
+      r3.style.borderColor = count >= 5 ? 'var(--teal)' : 'var(--border)';
+      r3.style.background = count >= 5 ? 'rgba(56,249,215,.08)' : 'var(--bg3)';
+
+      // Reward message
+      var rmsg = el('rewardMsg');
+      if(count === 0) rmsg.textContent = 'Upload your first handout to unlock free video access!';
+      else if(count < 3) rmsg.textContent = '🎉 ' + count + ' uploaded! ' + (3 - count) + ' more to unlock full module access.';
+      else if(count < 5) rmsg.textContent = '🔥 Full module unlocked! ' + (5 - count) + ' more for founding member badge.';
+      else rmsg.textContent = '⭐ You are a Founding Member! Thank you for your ' + count + ' contributions.';
+      rmsg.style.background = count >= 5 ? 'rgba(56,249,215,.08)' : count >= 1 ? 'rgba(108,99,255,.06)' : 'rgba(108,99,255,.06)';
+      rmsg.style.color = count >= 5 ? 'var(--teal)' : 'var(--accent2)';
+
+      // Render upload history
+      if(snap.empty){
+        hist.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;">No uploads yet — your first one unlocks free video access! 🎁</div>';
+        return;
+      }
+      var html = '';
+      snap.forEach(function(doc){
+        var d = doc.data();
+        var date = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : '';
+        var statusIcon = d.status === 'pending' ? '⏳' : d.status === 'reviewed' ? '✅' : d.status === 'used' ? '🎬' : '❌';
+        var statusText = d.status === 'pending' ? 'Pending review' : d.status === 'reviewed' ? 'Reviewed' : d.status === 'used' ? 'Used in video!' : 'Rejected';
+        var statusColor = d.status === 'pending' ? '#f9a825' : d.status === 'reviewed' ? '#56ccf2' : d.status === 'used' ? '#43e97b' : '#e05252';
+        html += '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;">' +
+          '<div style="font-size:20px;flex-shrink:0;">📄</div>' +
+          '<div style="flex:1;min-width:0;">' +
+            '<div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (d.module || 'Unknown module') + '</div>' +
+            '<div style="font-size:11px;color:var(--text3);margin-top:2px;">' + (d.universityName || '').split('—')[0].trim() + ' · ' + (d.semesterTitle || '') + ' · ' + date + '</div>' +
+          '</div>' +
+          '<div style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;background:' + statusColor + '15;color:' + statusColor + ';white-space:nowrap;flex-shrink:0;">' + statusIcon + ' ' + statusText + '</div>' +
+        '</div>';
+      });
+      hist.innerHTML = html;
+    }).catch(function(e){
+      el('uploadHistory').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">Could not load uploads.</div>';
+    });
 };
 
 /* Typewriter animation for login page */
