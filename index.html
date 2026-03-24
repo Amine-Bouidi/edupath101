@@ -6155,4 +6155,14 @@ window.submitContribution = function(){
     } else {
       twEl.textContent = cur.substring(0, twChar - 1);
       twChar--;
-      if(twChar === 0){ twDel = false; twIdx = (twIdx + 1) % twPhrases.length; setTimeout(twType, 400); 
+      if(twChar === 0){ twDel = false; twIdx = (twIdx + 1) % twPhrases.length; setTimeout(twType, 400);       return; }
+      setTimeout(twType, 60);
+    }
+  }
+  twType();
+})();
+
+})();
+</script>
+</body>
+</html>
