@@ -288,14 +288,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .mc-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;}
 .mc-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#9b59b6);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
 .mc-title{font-family:'Sora',sans-serif;font-size:14px;font-weight:600;margin-bottom:3px;}
-.mc-title-wrap{display:flex;align-items:center;gap:6px;}
-.mc-edit-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px;padding:2px 4px;border-radius:4px;transition:color .2s,background .2s;flex-shrink:0;line-height:1;}
-.mc-edit-btn:hover{color:var(--accent2);background:rgba(108,99,255,.12);}
-.mc-edit-input{font-family:'Sora',sans-serif;font-size:13px;font-weight:600;color:var(--text);background:var(--bg3);border:1px solid var(--accent);border-radius:6px;padding:3px 8px;outline:none;width:100%;min-width:0;}
-.mc-edit-actions{display:flex;gap:4px;margin-top:4px;}
-.mc-edit-save,.mc-edit-cancel{background:none;border:none;cursor:pointer;font-size:13px;padding:2px 6px;border-radius:4px;transition:background .2s;}
-.mc-edit-save:hover{background:rgba(67,233,123,.15);}
-.mc-edit-cancel:hover{background:rgba(255,101,132,.15);}
 .mc-desc{font-size:11px;color:var(--text3);}
 .mc-footer{display:flex;align-items:center;justify-content:space-between;}
 .mc-vids{font-size:11px;color:var(--text2);}
@@ -2076,7 +2068,7 @@ function openLoginFromLanding(){
             <h3 style="color:var(--accent2);margin:0 0 8px;">10. اتصل بنا 📞</h3>
             <p style="margin:0;"><strong>الاسم:</strong> أمين بويدي<br>
             <strong>WhatsApp:</strong> <span dir="ltr">+212 606-248409</span><br>
-            <strong>البريد الإلكتروني:</strong> <a href="/cdn-cgi/l/email-protection#83e2eeeaede6e1ecf6eae7eab3b3b3c3e4eee2eaefade0ecee" style="color:var(--accent2);"><span class="__cf_email__" data-cfemail="0f6e6266616a6d607a666b663f3f3f4f68626e6663216c6062">[email&#160;protected]</span></a></p>
+            <strong>البريد الإلكتروني:</strong> <a href="mailto:aminebouidi000@gmail.com" style="color:var(--accent2);">aminebouidi000@gmail.com</a></p>
           </div>
           </div>
 
@@ -2140,7 +2132,7 @@ function openLoginFromLanding(){
             <h3 style="color:var(--accent2);margin:0 0 8px;">10. Contact 📞</h3>
             <p style="margin:0;"><strong>Name:</strong> Amine Bouidi<br>
             <strong>WhatsApp:</strong> +212 606-248409<br>
-            <strong>Email:</strong> <a href="/cdn-cgi/l/email-protection#b4d5d9dddad1d6dbc1ddd0dd848484f4d3d9d5ddd89ad7dbd9" style="color:var(--accent2);"><span class="__cf_email__" data-cfemail="9efff3f7f0fbfcf1ebf7faf7aeaeaedef9f3fff7f2b0fdf1f3">[email&#160;protected]</span></a></p>
+            <strong>Email:</strong> <a href="mailto:aminebouidi000@gmail.com" style="color:var(--accent2);">aminebouidi000@gmail.com</a></p>
           </div>
           </div>
 
@@ -2981,7 +2973,7 @@ function openLoginFromLanding(){
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 (function(){
 
 /* ── SIDEBAR TOGGLE ── */
@@ -3874,7 +3866,7 @@ function renderModuleGrid(grid, mods, sem, idx, subData){
     var card=document.createElement('div');
     if(isAdminUser){
       card.className = 'mod-card' + (isUnlocked ? '' : ' locked');
-      card.innerHTML='<div class="mc-head"><div class="mc-icon">'+mod.icon+'</div><div><div class="mc-title-wrap"><div class="mc-title" id="mcTitle_'+modIdx+'">'+mod.title+'</div><button class="mc-edit-btn" data-mod-idx="'+modIdx+'" title="Edit module name" onclick="event.stopPropagation();adminEditModName('+modIdx+',this)">✏️</button></div><div class="mc-desc">'+mod.desc+'</div></div></div><div class="pbar"><div class="pfill" style="width:'+pct+'%"></div></div><div class="mc-footer"><span class="mc-vids">5 videos'+(dv>0?' · '+dv+' done':'')+'</span>'+badge+'</div>';
+      card.innerHTML='<div class="mc-head"><div class="mc-icon">'+mod.icon+'</div><div><div class="mc-title">'+mod.title+'</div><div class="mc-desc">'+mod.desc+'</div></div></div><div class="pbar"><div class="pfill" style="width:'+pct+'%"></div></div><div class="mc-footer"><span class="mc-vids">5 videos'+(dv>0?' · '+dv+' done':'')+'</span>'+badge+'</div>';
       if(isUnlocked){
         card.onclick=(function(m){return function(){openPlayer(m);};})(mod);
       } else {
@@ -6386,7 +6378,18 @@ window.submitUpload = function(){
   }
 
   if(fileInput.files.length > 0){
-    var file = file(err){
+    var file = fileInput.files[0];
+    if(file.size > 10 * 1024 * 1024){
+      msg.className = 'admin-msg error';
+      msg.textContent = 'File too large. Max 10MB.';
+      el('uploadSubmitBtn').disabled = false;
+      return;
+    }
+    msg.textContent = 'Uploading...';
+    var isImage = file.type.startsWith('image/');
+    if(isImage){
+      compressAndReadFile(file, 800, 0.6, function(compressed, err){
+        if(err){
           msg.className = 'admin-msg error';
           msg.textContent = err;
           el('uploadSubmitBtn').disabled = false;
@@ -6483,95 +6486,6 @@ window.renderPhase1Dashboard = function(){
       console.error('Upload history error:', e);
     });
 };
-
-/* ── ADMIN MODULE NAME EDITING ── */
-window.adminEditModName=function(modIdx,btn){
-  var titleEl=document.getElementById('mcTitle_'+modIdx);
-  if(!titleEl)return;
-  var cur=titleEl.textContent;
-  var wrap=titleEl.parentElement;
-  titleEl.style.display='none';
-  btn.style.display='none';
-  var ew=document.createElement('div');
-  ew.id='mcEW_'+modIdx;
-  ew.style.cssText='display:flex;flex-direction:column;gap:4px;flex:1;min-width:0;';
-  var inp=document.createElement('input');
-  inp.type='text';
-  inp.value=cur;
-  inp.className='mc-edit-input';
-  inp.id='mcEI_'+modIdx;
-  var acts=document.createElement('div');
-  acts.className='mc-edit-actions';
-  acts.innerHTML='<button class="mc-edit-save" onclick="event.stopPropagation();adminSaveModName('+modIdx+')" title="Save">✅</button><button class="mc-edit-cancel" onclick="event.stopPropagation();adminCancelModEdit('+modIdx+')" title="Cancel">❌</button>';
-  ew.appendChild(inp);
-  ew.appendChild(acts);
-  wrap.appendChild(ew);
-  inp.focus();
-  inp.select();
-  inp.onkeydown=function(e){
-    if(e.key==='Enter'){e.preventDefault();adminSaveModName(modIdx);}
-    if(e.key==='Escape'){e.preventDefault();adminCancelModEdit(modIdx);}
-  };
-};
-window.adminSaveModName=function(modIdx){
-  var inp=document.getElementById('mcEI_'+modIdx);
-  if(!inp)return;
-  var v=inp.value.trim();
-  if(!v)return adminCancelModEdit(modIdx);
-  var docId=S.uni.id+'_'+S.sem.id+'_'+modIdx;
-  db.collection('moduleNames').doc(docId).set({
-    name:v,university:S.uni.id,semester:S.sem.id,moduleIndex:modIdx,updatedAt:new Date().toISOString()
-  }).then(function(){
-    var t=document.getElementById('mcTitle_'+modIdx);
-    if(t)t.textContent=v;
-    adminCancelModEdit(modIdx);
-  }).catch(function(err){
-    console.error('Save module name failed:',err);
-    alert('Save failed. Check browser console (F12) for details.');
-  });
-};
-window.adminCancelModEdit=function(modIdx){
-  var ew=document.getElementById('mcEW_'+modIdx);
-  if(ew)ew.remove();
-  var t=document.getElementById('mcTitle_'+modIdx);
-  if(t)t.style.display='';
-  var b=document.querySelector('.mc-edit-btn[data-mod-idx="'+modIdx+'"]');
-  if(b)b.style.display='';
-};
-
-/* ── Load custom module names when modules page opens ── */
-(function(){
-  var _origOpenModules=openModules;
-  openModules=function(sem,idx){
-    var uniId=S.uni?S.uni.id:'';
-    var semId=sem?sem.id:'';
-    var mods=getMods(idx,uniId);
-    var count=mods.length;
-    if(!count||!uniId||!semId){_origOpenModules(sem,idx);return;}
-    var done=0,names={};
-    for(var i=0;i<count;i++){
-      (function(j){
-        db.collection('moduleNames').doc(uniId+'_'+semId+'_'+j).get().then(function(doc){
-          if(doc.exists&&doc.data().name)names[j]=doc.data().name;
-        }).catch(function(){}).finally(function(){
-          done++;
-          if(done===count){
-            var data=(uniId&&UNI_MOD_DATA[uniId])?UNI_MOD_DATA[uniId]:MOD_DATA;
-            var arr=data[idx]||data[0];
-            var origTitles={};
-            for(var k in names){
-              if(arr[k]){origTitles[k]=arr[k].title;arr[k].title=names[k];}
-            }
-            _origOpenModules(sem,idx);
-            for(var k in origTitles){
-              if(arr[k])arr[k].title=origTitles[k];
-            }
-          }
-        });
-      })(i);
-    }
-  };
-})();
 
 /* Typewriter animation for login page */
 (function(){
