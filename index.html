@@ -3666,14 +3666,15 @@ function updatePhase2Countdown(){
   var d = Math.floor(diff / 86400000);
   var h = Math.floor((diff % 86400000) / 3600000);
   var m = Math.floor((diff % 3600000) / 60000);
-  el('trialCountdown').textContent = d + 'd ' + h + 'h ' + m + 'm';
+  var s = Math.floor((diff % 60000) / 1000);
+  el('trialCountdown').textContent = d + 'd ' + h + 'h ' + m + 'm ' + s + 's';
 }
 
 function startTrialTimer(){
   if(trialInterval) clearInterval(trialInterval);
   el('paywallOverlay').style.display='none';
   updatePhase2Countdown();
-  trialInterval = setInterval(updatePhase2Countdown, 60000);
+  trialInterval = setInterval(updatePhase2Countdown, 1000);
 }
 
 /* ── LOGIN ── */
