@@ -3540,7 +3540,7 @@ function getP(u,s,m){var k=u+'_'+s+'_'+m;return S.progress[k]||{videos:[],quizze
 
 /* ── HELPERS ── */
 function el(id){return document.getElementById(id);}
-function showView(id){
+window.showView = function showView(id){
   if(id === 'upload'){ setTimeout(initUploadPage, 50); }
   ['dashboard','semesters','modules','contact','pricing','admin','profile','privacy','contribute','notifs','upload'].forEach(function(v){
     var e=el('view-'+v); if(e){e.style.display='none';e.classList.remove('active');}
@@ -3727,7 +3727,7 @@ el('btnSignOut').onclick=function(){
 };
 
 /* ── DASHBOARD ── */
-function renderDashboard(){
+window.renderDashboard = function renderDashboard(){
   el('wbGreet').textContent='Welcome back, '+S.user.name.split(' ')[0]+'!';
   var totalVids=0,totalMods=0,totalPts=0;
   UNIVERSITIES.forEach(function(uni){
