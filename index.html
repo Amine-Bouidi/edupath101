@@ -4222,8 +4222,8 @@ function openContact(){
 el('nav-contact').onclick=function(){closeMobileMenu();openContact();};
 el('nav-pricing').onclick=function(){closeMobileMenu();openPricing();};
 el('btnSubmitContact').onclick=function(){el('cFormCard').style.display='none';el('cSuccess').style.display='block';};
-el('btnBackDash').onclick=function(){renderDashboard();};
-el('nav-dashboard').onclick=function(){closeMobileMenu();renderDashboard();};
+el('btnBackDash').onclick=function(){showView('dashboard');renderPhase1Dashboard();};
+el('nav-dashboard').onclick=function(){closeMobileMenu();showView('dashboard');renderPhase1Dashboard();};
 
 /* ═══════════════════════════════════════════
    COMMUNITY — classmates + public discussion
