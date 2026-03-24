@@ -6595,4 +6595,22 @@ window.adminCancelModEdit=function(modIdx){
     if(!twDel){
       twEl.textContent = cur.substring(0, twChar + 1);
       twChar++;
-      if(t
+      if(twChar === cur.length){
+        setTimeout(function(){ twDel = true; twType(); }, 1800);
+        return;
+      }
+    } else {
+      twEl.textContent = cur.substring(0, twChar - 1);
+      twChar--;
+      if(twChar === 0){
+        twDel = false;
+        twIdx = (twIdx + 1) % twPhrases.length;
+      }
+    }
+    setTimeout(twType, twDel ? 40 : 80);
+  }
+  twType();
+})();
+</script>
+</body>
+</html>
