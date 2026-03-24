@@ -3885,10 +3885,10 @@ function renderModuleGrid(grid, mods, sem, idx, subData){
       card.className = 'mod-card' + (isUnlocked ? '' : ' locked');
       card.innerHTML='<div class="mc-head"><div class="mc-icon">'+mod.icon+'</div><div><div class="mc-title" id="mtitle_'+modIdx+'">'+mod.title+' <span class="mod-edit-btn" data-idx="'+modIdx+'" style="cursor:pointer;font-size:13px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit name">✏️</span></div><div class="mc-desc">'+mod.desc+'</div></div></div><div class="pbar"><div class="pfill" style="width:'+pct+'%"></div></div><div class="mc-footer"><span class="mc-vids">5 videos'+(dv>0?' · '+dv+' done':'')+'</span>'+badge+'</div>';
       if(isUnlocked){
-        card.onclick=(function(m){return function(){openPlayer(m);};})(mod);
+        card.onclick=(function(m){return function(e){if(e.target.closest('.mod-edit-btn'))return;openPlayer(m);};})(mod);
       } else {
         card.innerHTML += '<div class="mod-lock-overlay"><div class="mod-lock-badge">🔒 Upgrade to access</div></div>';
-        card.onclick=function(){ showView('pricing'); setTopbar([],'Plans & Pricing',false); };
+        card.onclick=function(e){ if(e.target.closest('.mod-edit-btn'))return; showView('pricing'); setTopbar([],'Plans & Pricing',false); };
       }
     } else {
       card.className = 'mod-card';
