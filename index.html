@@ -3903,8 +3903,26 @@ window.renderDashboard = function renderDashboard(){
 /* ── SEMESTERS ── */
 function openSemesters(uni){
   S.uni=uni; S.sem=null; S.mod=null; updateCtx();
-  var grid=el('semGrid'); grid.innerHTML='';
+  var grid=el('semGrid'); grid.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);">Loading semesters...</div>';
   var semIndices = UNI_SEM_CONFIG[uni.id] || null;
+
+  /* Load custom semester names from Firestore */
+  var namePrefix = uni.id + '_sem';
+  db.collection('semesterNames').where('__name__', '>=', namePrefix).where('__name__', '<=', namePrefix + '\uf8ff').get().then(function(snap){
+    var customNames = {};
+    snap.forEach(function(doc){ customNames[doc.id] = doc.data(); });
+    renderSemesterGrid(uni, grid, semIndices, customNames);
+  }).catch(function(){
+    renderSemesterGrid(uni, grid, semIndices, {});
+  });
+
+  setTopbar([uni.emoji+' '+uni.name],'Choose a Semester',false);
+  el('nav-semesters').style.display='flex';
+  showView('semesters');
+}
+
+function renderSemesterGrid(uni, grid, semIndices, customNames){
+  grid.innerHTML='';
   SEMESTERS.forEach(function(sem,idx){
     if(semIndices && semIndices.indexOf(idx) === -1) return;
     var mods=getMods(idx,uni.id),done=0;
@@ -3912,15 +3930,21 @@ function openSemesters(uni){
     var total=mods.length*VIDEOS.length, pct=Math.round((done/total)*100);
     var isAll=done===total, isSome=done>0&&!isAll;
     var badge=isSome?'<span class="badge b-prog">'+pct+'%</span>':isAll?'<span class="badge b-done">✓ Done</span>':'<span class="badge b-new">New</span>';
+
+    /* Use custom names if saved */
+    var docKey = uni.id + '_' + sem.id;
+    var displayTitle = (customNames[docKey] && customNames[docKey].title) ? customNames[docKey].title : sem.title;
+    var displaySub = (customNames[docKey] && customNames[docKey].sub) ? customNames[docKey].sub : sem.sub;
+
+    /* Admin pen icon */
+    var editBtn = isAdmin() ? ' <span class="sem-edit-btn" data-idx="'+idx+'" style="cursor:pointer;font-size:13px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit name">✏️</span>' : '';
+
     var card=document.createElement('div'); card.className='sem-card';
     card.style.setProperty('--sc1',sem.c1); card.style.setProperty('--sc2',sem.c2);
-    card.innerHTML='<div class="sc-num" style="color:'+sem.c1+'">'+sem.title+'</div><div class="sc-title">'+sem.sub+'</div><div class="pbar"><div class="pfill" style="width:'+pct+'%;background:linear-gradient(90deg,'+sem.c1+','+sem.c2+');"></div></div><div class="sc-footer"><span style="font-size:12px;color:var(--text2);">'+mods.length+' modules</span>'+badge+'</div>';
-    card.onclick=(function(s,i){return function(){openModules(s,i);};})(sem,idx);
+    card.innerHTML='<div class="sc-num" style="color:'+sem.c1+'" id="stitle_'+idx+'">'+displayTitle+editBtn+'</div><div class="sc-title" id="ssub_'+idx+'">'+displaySub+'</div><div class="pbar"><div class="pfill" style="width:'+pct+'%;background:linear-gradient(90deg,'+sem.c1+','+sem.c2+');"></div></div><div class="sc-footer"><span style="font-size:12px;color:var(--text2);">'+mods.length+' modules</span>'+badge+'</div>';
+    card.onclick=(function(s,i){return function(e){if(e.target.closest('.sem-edit-btn'))return;openModules(s,i);};})(sem,idx);
     grid.appendChild(card);
   });
-  setTopbar([uni.emoji+' '+uni.name],'Choose a Semester',false);
-  el('nav-semesters').style.display='flex';
-  showView('semesters');
 }
 el('nav-semesters').onclick=function(){closeMobileMenu();if(S.uni)openSemesters(S.uni);};
 
@@ -4130,6 +4154,42 @@ window.saveModName = function(idx){
   db.collection('moduleNames').doc(docId).set({ name: newName, updatedAt: new Date().toISOString() }).then(function(){
     openModules(S.sem, S.semIdx);
   }).catch(function(e){ alert('Error saving: ' + e.message); });
+};
+
+/* ── SEMESTER NAME EDIT (admin only) ── */
+document.addEventListener('click', function(e){
+  var btn = e.target.closest('.sem-edit-btn');
+  if(!btn || !isAdmin()) return;
+  e.stopPropagation();
+  var idx = parseInt(btn.getAttribute('data-idx'));
+  var sem = SEMESTERS[idx];
+  if(!sem) return;
+  var titleEl = el('stitle_' + idx);
+  var subEl = el('ssub_' + idx);
+  if(!titleEl || !subEl) return;
+  var currentTitle = titleEl.textContent.replace('✏️','').trim();
+  var currentSub = subEl.textContent.trim();
+  titleEl.innerHTML = '<input type="text" value="' + currentTitle.replace(/"/g,'&quot;') + '" id="sedit_title_' + idx + '" style="background:var(--bg3);border:1px solid var(--accent2);border-radius:6px;color:var(--text);font-size:13px;font-weight:600;padding:4px 8px;width:100%;font-family:inherit;box-sizing:border-box;" onclick="event.stopPropagation()" placeholder="Semester title">';
+  subEl.innerHTML = '<input type="text" value="' + currentSub.replace(/"/g,'&quot;') + '" id="sedit_sub_' + idx + '" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text2);font-size:12px;padding:4px 8px;width:100%;font-family:inherit;box-sizing:border-box;margin-top:4px;" onclick="event.stopPropagation()" placeholder="Subtitle"> <button onclick="event.stopPropagation();saveSemName(' + idx + ')" style="background:var(--accent2);color:#fff;border:none;border-radius:6px;padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;margin-top:6px;">Save</button>';
+  var titleInput = el('sedit_title_' + idx);
+  titleInput.focus();
+  titleInput.select();
+  titleInput.onkeydown = function(ev){ if(ev.key === 'Enter'){ ev.preventDefault(); el('sedit_sub_' + idx).focus(); } };
+  el('sedit_sub_' + idx).onkeydown = function(ev){ if(ev.key === 'Enter'){ ev.preventDefault(); saveSemName(idx); } };
+});
+
+window.saveSemName = function(idx){
+  var titleInput = el('sedit_title_' + idx);
+  var subInput = el('sedit_sub_' + idx);
+  if(!titleInput || !subInput) return;
+  var newTitle = titleInput.value.trim();
+  var newSub = subInput.value.trim();
+  if(!newTitle) return;
+  var sem = SEMESTERS[idx];
+  var docId = S.uni.id + '_' + sem.id;
+  db.collection('semesterNames').doc(docId).set({ title: newTitle, sub: newSub || sem.sub, updatedAt: new Date().toISOString() }).then(function(){
+    openSemesters(S.uni);
+  }).catch(function(e){ alert('Error saving semester name: ' + e.message); });
 };
 
 window.addNewModule = function(){
@@ -6508,10 +6568,33 @@ window.switchUploadTab = function(tab){
 
 window.uploadLoadSemesters = function(){
   var sel = el('uploadSem');
-  sel.innerHTML = '<option value="">— Select semester —</option>';
+  sel.innerHTML = '<option value="">— Loading semesters... —</option>';
   el('uploadMod').innerHTML = '<option value="">— Select module —</option>';
-  SEMESTERS.forEach(function(s, i){
-    sel.innerHTML += '<option value="' + i + '">' + s.title + '</option>';
+  var uniId = el('uploadUni').value;
+  if(!uniId){
+    sel.innerHTML = '<option value="">— Select semester —</option>';
+    return;
+  }
+  var semIndices = UNI_SEM_CONFIG[uniId] || null;
+
+  /* Load custom semester names */
+  var namePrefix = uniId + '_sem';
+  db.collection('semesterNames').where('__name__', '>=', namePrefix).where('__name__', '<=', namePrefix + '\uf8ff').get().then(function(snap){
+    var customNames = {};
+    snap.forEach(function(doc){ customNames[doc.id] = doc.data(); });
+    sel.innerHTML = '<option value="">— Select semester —</option>';
+    SEMESTERS.forEach(function(s, i){
+      if(semIndices && semIndices.indexOf(i) === -1) return;
+      var docKey = uniId + '_' + s.id;
+      var displayTitle = (customNames[docKey] && customNames[docKey].title) ? customNames[docKey].title : s.title;
+      sel.innerHTML += '<option value="' + i + '">' + displayTitle + '</option>';
+    });
+  }).catch(function(){
+    sel.innerHTML = '<option value="">— Select semester —</option>';
+    SEMESTERS.forEach(function(s, i){
+      if(semIndices && semIndices.indexOf(i) === -1) return;
+      sel.innerHTML += '<option value="' + i + '">' + s.title + '</option>';
+    });
   });
 };
 
