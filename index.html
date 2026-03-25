@@ -6140,6 +6140,31 @@ window.viewFullImage = function(src){
   document.body.appendChild(ov);
 };
 
+/* Preview: images open overlay, PDFs open in new tab, docs trigger download */
+window.previewContribFile = function(src, fileExt){
+  if(!src) return;
+  if(fileExt === 'img'){
+    viewFullImage(src);
+  } else if(fileExt === 'pdf'){
+    window.open(src, '_blank');
+  } else {
+    downloadContribFile(src, 'handout');
+  }
+};
+
+/* Force download any file */
+window.downloadContribFile = function(src, name){
+  if(!src) return;
+  var a = document.createElement('a');
+  a.href = src;
+  a.target = '_blank';
+  a.download = (name || 'file') + '_edupath';
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function(){ document.body.removeChild(a); }, 200);
+};
+
 /* ── IMAGE COMPRESSION & FILE HANDLING ── */
 function compressAndReadFile(file, maxWidth, quality, callback){
   var reader = new FileReader();
@@ -6440,9 +6465,20 @@ window.loadContributions = function(){
       var hasImage = (d.imageUrl && d.imageUrl.length > 10) || (d.imageData && d.imageData.length > 50);
       var imgSrc = (d.imageUrl && d.imageUrl.length > 10) ? d.imageUrl : d.imageData;
       var hasDrive = d.driveLink && d.driveLink.length > 5;
+      var hasFile = hasImage || (d.imageUrl && d.imageUrl.length > 10);
       var date = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : '';
+      var fileExt = '';
+      if(d.imageUrl && d.imageUrl.length > 10){
+        var urlLower = d.imageUrl.toLowerCase();
+        if(urlLower.indexOf('.pdf') !== -1) fileExt = 'pdf';
+        else if(urlLower.indexOf('.doc') !== -1) fileExt = 'doc';
+        else if(urlLower.indexOf('.ppt') !== -1) fileExt = 'ppt';
+        else fileExt = 'img';
+      } else if(hasImage) { fileExt = 'img'; }
+      var thumbClick = hasFile ? 'onclick="previewContribFile(\'' + (imgSrc||'').replace(/'/g,"\\'") + '\',\'' + fileExt + '\')"' : '';
+      var fileIcon = fileExt === 'pdf' ? '📄' : fileExt === 'doc' ? '📝' : fileExt === 'ppt' ? '📊' : '🖼️';
       html += '<div style="display:flex;align-items:center;gap:10px;border-left:3px solid ' + statusColor + ';background:var(--card);border-radius:0 8px 8px 0;padding:8px 10px;margin-bottom:6px;">' +
-        (hasImage ? '<img src="' + imgSrc + '" style="width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;flex-shrink:0;" onclick="viewFullImage(this.src)">' : '<div style="width:44px;height:44px;background:var(--bg5);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">' + (d.moduleIcon||'📄') + '</div>') +
+        (hasImage ? '<img src="' + imgSrc + '" style="width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;flex-shrink:0;" ' + thumbClick + '>' : '<div style="width:44px;height:44px;background:var(--bg5);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;cursor:' + (hasFile?'pointer':'default') + ';" ' + thumbClick + '>' + (hasFile ? fileIcon : (d.moduleIcon||'📄')) + '</div>') +
         '<div style="flex:1;min-width:0;overflow:hidden;">' +
           '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
             '<span style="font-size:12px;font-weight:700;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (d.module||'') + '</span>' +
@@ -6450,7 +6486,8 @@ window.loadContributions = function(){
           '</div>' +
           '<div style="font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (d.name||'') + ' · ' + (d.universityName||d.university||'').split('—')[0].trim() + ' · ' + (d.semesterTitle||'') + ' · ' + (d.fileType||'') + ' · ' + date + (d.bookRef ? ' · 📖 ' + d.bookRef : '') + '</div>' +
         '</div>' +
-        '<div style="display:flex;gap:4px;flex-shrink:0;">' +
+        '<div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">' +
+          (hasFile ? '<button style="border:none;background:none;cursor:pointer;font-size:14px;padding:2px;" onclick="downloadContribFile(\'' + (imgSrc||'').replace(/'/g,"\\'") + '\',\'' + (d.module||'file').replace(/'/g,'') + '\')" title="Download file">⬇️</button>' : '') +
           (hasDrive ? '<a href="' + d.driveLink + '" target="_blank" style="font-size:14px;text-decoration:none;" title="Open Drive link">📎</a>' : '') +
           '<button style="border:none;background:none;cursor:pointer;font-size:14px;padding:2px;" onclick="updateContribStatus(\'' + d._id + '\',\'reviewed\')" title="Reviewed">✅</button>' +
           '<button style="border:none;background:none;cursor:pointer;font-size:14px;padding:2px;" onclick="updateContribStatus(\'' + d._id + '\',\'used\')" title="Used">📺</button>' +
