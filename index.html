@@ -1401,6 +1401,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 <script>
   var firebaseConfig = {
     apiKey: "AIzaSyDDvXYqYyZV45UvxhE7f70P0JmJlKN5SLg",
@@ -1413,6 +1414,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
   };
   firebase.initializeApp(firebaseConfig);
   var db = firebase.firestore();
+  var storage = firebase.storage();
 </script>
 </head>
 <body>
@@ -1968,8 +1970,8 @@ function openLoginFromLanding(){
                 <button id="tabDrive" onclick="switchUploadTab('drive')" style="flex:1;padding:9px;font-size:12px;font-weight:600;border-radius:8px;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-family:inherit;transition:all .2s;">🔗 Google Drive Link</button>
               </div>
               <div id="uploadTabPhoto">
-                <input type="file" id="uploadFile" accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.rtf,.odt,.odp,.pages,.key" style="font-size:13px;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;width:100%;box-sizing:border-box;color:var(--text);">
-                <div style="font-size:11px;color:var(--text3);margin-top:4px;">Photos, PDFs, Word, PowerPoint, Excel, or any document. Max 10MB.</div>
+                <input type="file" id="uploadFile" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.ppt,.pptx" style="font-size:13px;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;width:100%;box-sizing:border-box;color:var(--text);">
+                <div style="font-size:11px;color:var(--text3);margin-top:4px;">Accepted: JPG, PNG, PDF, Word (.doc/.docx), PowerPoint (.ppt/.pptx). Max 20MB.</div>
               </div>
               <div id="uploadTabDrive" style="display:none;">
                 <input type="text" id="uploadDriveLink" placeholder="https://drive.google.com/file/d/..." style="width:100%;padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;font-family:inherit;box-sizing:border-box;">
@@ -2954,9 +2956,9 @@ function openLoginFromLanding(){
       </select>
     </div>
     <div class="field" style="margin-bottom:10px;">
-      <label style="font-size:12px;font-weight:600;">Upload screenshot (photo of your lesson)</label>
-      <input type="file" id="contribFile" accept="image/*" style="font-size:13px;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;width:100%;box-sizing:border-box;">
-      <div style="font-size:11px;color:var(--text3);margin-top:4px;">Take a photo of the lesson pages or select a PDF. Max 5MB.</div>
+      <label style="font-size:12px;font-weight:600;">Upload your file</label>
+      <input type="file" id="contribFile" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.ppt,.pptx" style="font-size:13px;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;width:100%;box-sizing:border-box;">
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;">Accepted: JPG, PNG, PDF, Word, PowerPoint. Max 20MB.</div>
     </div>
     <div class="field" style="margin-bottom:10px;">
       <label style="font-size:12px;font-weight:600;">Google Drive link (optional — if you have a PDF)</label>
@@ -6435,11 +6437,12 @@ window.loadContributions = function(){
     var html = '';
     items.forEach(function(d){
       var statusColor = d.status === 'pending' ? '#f9a825' : d.status === 'used' ? '#43e97b' : d.status === 'reviewed' ? '#56ccf2' : '#e05252';
-      var hasImage = d.imageData && d.imageData.length > 50;
+      var hasImage = (d.imageUrl && d.imageUrl.length > 10) || (d.imageData && d.imageData.length > 50);
+      var imgSrc = (d.imageUrl && d.imageUrl.length > 10) ? d.imageUrl : d.imageData;
       var hasDrive = d.driveLink && d.driveLink.length > 5;
       var date = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : '';
       html += '<div style="display:flex;align-items:center;gap:10px;border-left:3px solid ' + statusColor + ';background:var(--card);border-radius:0 8px 8px 0;padding:8px 10px;margin-bottom:6px;">' +
-        (hasImage ? '<img src="' + d.imageData + '" style="width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;flex-shrink:0;" onclick="viewFullImage(this.src)">' : '<div style="width:44px;height:44px;background:var(--bg5);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">' + (d.moduleIcon||'📄') + '</div>') +
+        (hasImage ? '<img src="' + imgSrc + '" style="width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;flex-shrink:0;" onclick="viewFullImage(this.src)">' : '<div style="width:44px;height:44px;background:var(--bg5);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">' + (d.moduleIcon||'📄') + '</div>') +
         '<div style="flex:1;min-width:0;overflow:hidden;">' +
           '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
             '<span style="font-size:12px;font-weight:700;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (d.module||'') + '</span>' +
@@ -6490,58 +6493,90 @@ window.submitContribution = function(){
 
   if(!fileInput.files.length && !driveLink){
     msg.className = 'admin-msg error';
-    msg.textContent = 'Please upload a photo or paste a Google Drive link.';
+    msg.textContent = 'Please upload a file or paste a Google Drive link.';
     return;
   }
 
-  msg.className = 'admin-msg';
-  msg.textContent = 'Uploading...';
-
-  function saveToFirestore(imageData){
-    var docId = S.user.email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + Date.now();
-    db.collection('contributions').doc(docId).set({
-      email: S.user.email,
-      name: S.user.name || '',
-      university: S.uni.id,
-      universityName: S.uni.name,
-      semester: S.sem.id,
-      semesterTitle: S.sem.title,
-      module: S.mod.title,
-      moduleIcon: S.mod.icon,
-      fileType: fileType,
-      driveLink: driveLink,
-      notes: notes,
-      imageData: imageData || '',
-      status: 'pending',
-      createdAt: new Date().toISOString()
-    }).then(function(){
-      msg.className = 'admin-msg success';
-      msg.textContent = '✅ Thank you! Your contribution has been submitted. Your upload will be reviewed within 24 hours. Check 🔔 Notifications for updates!';
-      setTimeout(function(){ el('contributeModal').classList.remove('open'); }, 3000);
-    }).catch(function(e){
-      msg.className = 'admin-msg error';
-      msg.textContent = 'Error: ' + e.message;
-    });
-  }
+  var ALLOWED_TYPES = ['image/jpeg','image/png','application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-powerpoint','application/vnd.openxmlformats-officedocument.presentationml.presentation'];
+  var ALLOWED_EXT = ['.jpg','.jpeg','.png','.pdf','.doc','.docx','.ppt','.pptx'];
 
   if(fileInput.files.length > 0){
     var file = fileInput.files[0];
-    if(file.size > 10 * 1024 * 1024){
+    var ext = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+    if(ALLOWED_TYPES.indexOf(file.type) === -1 && ALLOWED_EXT.indexOf(ext) === -1){
       msg.className = 'admin-msg error';
-      msg.textContent = 'File too large. Max 10MB.';
+      msg.textContent = 'Only JPG, PNG, PDF, Word (.doc/.docx), and PowerPoint (.ppt/.pptx) files are accepted.';
       return;
     }
-    msg.textContent = 'Compressing & uploading...';
-    compressAndReadFile(file, 800, 0.6, function(compressed, err){
-      if(err){
+    if(file.size > 20 * 1024 * 1024){
+      msg.className = 'admin-msg error';
+      msg.textContent = 'File too large. Max 20MB.';
+      return;
+    }
+  }
+
+  msg.className = 'admin-msg';
+  msg.textContent = 'Checking upload limit...';
+
+  db.collection('contributions').where('email','==',S.user.email).where('status','==','pending').get().then(function(snap){
+    if(snap.size >= 5){
+      msg.className = 'admin-msg error';
+      msg.textContent = 'You have 5 pending uploads. Please wait for admin review before submitting more.';
+      return;
+    }
+    proceedContrib();
+  }).catch(function(){
+    proceedContrib();
+  });
+
+  function proceedContrib(){
+    msg.className = 'admin-msg';
+    msg.textContent = 'Uploading...';
+
+    function saveToFirestore(imageUrl){
+      var docId = S.user.email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + Date.now();
+      db.collection('contributions').doc(docId).set({
+        email: S.user.email,
+        name: S.user.name || '',
+        university: S.uni.id,
+        universityName: S.uni.name,
+        semester: S.sem.id,
+        semesterTitle: S.sem.title,
+        module: S.mod.title,
+        moduleIcon: S.mod.icon,
+        fileType: fileType,
+        driveLink: driveLink,
+        notes: notes,
+        imageUrl: imageUrl || '',
+        imageData: '',
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      }).then(function(){
+        msg.className = 'admin-msg success';
+        msg.textContent = '✅ Thank you! Your contribution has been submitted. Your upload will be reviewed within 24 hours. Check 🔔 Notifications for updates!';
+        setTimeout(function(){ el('contributeModal').classList.remove('open'); }, 3000);
+      }).catch(function(e){
         msg.className = 'admin-msg error';
-        msg.textContent = err;
-        return;
-      }
-      saveToFirestore(compressed);
-    });
-  } else {
-    saveToFirestore('');
+        msg.textContent = 'Error: ' + e.message;
+      });
+    }
+
+    if(fileInput.files.length > 0){
+      var file = fileInput.files[0];
+      msg.textContent = 'Uploading to cloud...';
+      var fileName = S.user.email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g,'_');
+      var ref = storage.ref('contributions/' + fileName);
+      ref.put(file).then(function(snapshot){
+        return snapshot.ref.getDownloadURL();
+      }).then(function(url){
+        saveToFirestore(url);
+      }).catch(function(e){
+        msg.className = 'admin-msg error';
+        msg.textContent = 'Upload failed: ' + e.message;
+      });
+    } else {
+      saveToFirestore('');
+    }
   }
 };
 
@@ -6678,18 +6713,52 @@ window.submitUpload = function(){
   }
   if(!fileInput.files.length && !driveLink){
     msg.className = 'admin-msg error';
-    msg.textContent = 'Please upload a photo or paste a Google Drive link.';
+    msg.textContent = 'Please upload a file or paste a Google Drive link.';
     return;
   }
 
+  var ALLOWED_TYPES = ['image/jpeg','image/png','application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-powerpoint','application/vnd.openxmlformats-officedocument.presentationml.presentation'];
+  var ALLOWED_EXT = ['.jpg','.jpeg','.png','.pdf','.doc','.docx','.ppt','.pptx'];
+
+  if(fileInput.files.length > 0){
+    var file = fileInput.files[0];
+    var ext = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+    if(ALLOWED_TYPES.indexOf(file.type) === -1 && ALLOWED_EXT.indexOf(ext) === -1){
+      msg.className = 'admin-msg error';
+      msg.textContent = 'Only JPG, PNG, PDF, Word (.doc/.docx), and PowerPoint (.ppt/.pptx) files are accepted.';
+      return;
+    }
+    if(file.size > 20 * 1024 * 1024){
+      msg.className = 'admin-msg error';
+      msg.textContent = 'File too large. Max 20MB.';
+      return;
+    }
+  }
+
   msg.className = 'admin-msg';
-  msg.textContent = 'Uploading...';
+  msg.textContent = 'Checking upload limit...';
   el('uploadSubmitBtn').disabled = true;
 
-  var uniObj = UNIVERSITIES.find(function(u){ return u.id === uni; });
-  var semObj = SEMESTERS[parseInt(semIdx)];
+  db.collection('contributions').where('email','==',S.user.email).where('status','==','pending').get().then(function(snap){
+    if(snap.size >= 5){
+      msg.className = 'admin-msg error';
+      msg.textContent = 'You have 5 pending uploads. Please wait for admin review before submitting more.';
+      el('uploadSubmitBtn').disabled = false;
+      return;
+    }
+    proceedWithUpload();
+  }).catch(function(){
+    proceedWithUpload();
+  });
 
-  function saveUpload(imageData){
+  function proceedWithUpload(){
+    msg.className = 'admin-msg';
+    msg.textContent = 'Uploading...';
+
+    var uniObj = UNIVERSITIES.find(function(u){ return u.id === uni; });
+    var semObj = SEMESTERS[parseInt(semIdx)];
+
+  function saveUpload(imageUrl){
     var docId = S.user.email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + Date.now();
     db.collection('contributions').doc(docId).set({
       email: S.user.email,
@@ -6703,7 +6772,8 @@ window.submitUpload = function(){
       fileType: 'lesson',
       driveLink: driveLink,
       notes: '',
-      imageData: imageData || '',
+      imageUrl: imageUrl || '',
+      imageData: '',
       status: 'pending',
       createdAt: new Date().toISOString()
     }).then(function(){
@@ -6726,40 +6796,22 @@ window.submitUpload = function(){
 
   if(fileInput.files.length > 0){
     var file = fileInput.files[0];
-    if(file.size > 10 * 1024 * 1024){
+    msg.textContent = 'Uploading to cloud...';
+    var fileName = S.user.email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g,'_');
+    var ref = storage.ref('contributions/' + fileName);
+    ref.put(file).then(function(snapshot){
+      return snapshot.ref.getDownloadURL();
+    }).then(function(url){
+      saveUpload(url);
+    }).catch(function(e){
       msg.className = 'admin-msg error';
-      msg.textContent = 'File too large. Max 10MB.';
+      msg.textContent = 'Upload failed: ' + e.message;
       el('uploadSubmitBtn').disabled = false;
-      return;
-    }
-    msg.textContent = 'Uploading...';
-    var isImage = file.type.startsWith('image/');
-    if(isImage){
-      compressAndReadFile(file, 800, 0.6, function(compressed, err){
-        if(err){
-          msg.className = 'admin-msg error';
-          msg.textContent = err;
-          el('uploadSubmitBtn').disabled = false;
-          return;
-        }
-        saveUpload(compressed);
-      });
-    } else if(file.size <= 900000){
-      // Small docs (under 900KB) - store as base64 in Firestore
-      var reader = new FileReader();
-      reader.onload = function(e){ saveUpload(e.target.result); };
-      reader.onerror = function(){ msg.className='admin-msg error'; msg.textContent='Could not read file.'; el('uploadSubmitBtn').disabled=false; };
-      reader.readAsDataURL(file);
-    } else {
-      // Large docs - store filename only, ask for Drive link
-      msg.className = 'admin-msg error';
-      msg.textContent = 'This file is too large to upload directly (' + Math.round(file.size/1024) + 'KB). Please use the Google Drive link option instead, or upload a photo/screenshot of the pages.';
-      el('uploadSubmitBtn').disabled = false;
-      return;
-    }
+    });
   } else {
     saveUpload('');
   }
+  } /* end proceedWithUpload */
 };
 
 /* ── PHASE 1 DASHBOARD RENDER ── */
