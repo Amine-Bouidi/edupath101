@@ -1981,6 +1981,15 @@ function openLoginFromLanding(){
 
             <!-- Submit -->
             <button id="uploadSubmitBtn" onclick="submitUpload()" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),#9b59b6);border:none;border-radius:12px;color:#fff;font-family:'Sora',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;margin-top:4px;">📤 Submit Handout</button>
+            <div id="uploadProgress" style="display:none;margin-top:10px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                <span style="font-size:12px;color:var(--text2);font-weight:600;">Uploading...</span>
+                <span id="uploadPct" style="font-size:12px;color:var(--accent2);font-weight:700;">0%</span>
+              </div>
+              <div style="height:6px;background:var(--bg5);border-radius:3px;overflow:hidden;">
+                <div id="uploadBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent3));border-radius:3px;transition:width .2s;"></div>
+              </div>
+            </div>
             <div id="uploadMsg" class="admin-msg" style="margin-top:10px;"></div>
 
             <!-- Back -->
@@ -2971,6 +2980,15 @@ function openLoginFromLanding(){
     <div style="display:flex;gap:8px;">
       <button class="admin-btn" style="flex:1;" onclick="submitContribution()">📤 Submit</button>
       <button class="admin-btn danger" style="flex:0;" onclick="el('contributeModal').classList.remove('open');">Cancel</button>
+    </div>
+    <div id="contribProgress" style="display:none;margin-top:8px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-size:12px;color:var(--text2);font-weight:600;">Uploading...</span>
+        <span id="contribPct" style="font-size:12px;color:var(--accent2);font-weight:700;">0%</span>
+      </div>
+      <div style="height:6px;background:var(--bg5);border-radius:3px;overflow:hidden;">
+        <div id="contribBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent3));border-radius:3px;transition:width .2s;"></div>
+      </div>
     </div>
     <div id="contribMsg" class="admin-msg" style="margin-top:8px;"></div>
   </div>
@@ -6600,16 +6618,26 @@ window.submitContribution = function(){
 
     if(fileInput.files.length > 0){
       var file = fileInput.files[0];
-      msg.textContent = 'Uploading to cloud...';
+      msg.textContent = '';
+      el('contribProgress').style.display = 'block';
+      el('contribBar').style.width = '0%';
+      el('contribPct').textContent = '0%';
       var fileName = S.user.email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g,'_');
       var ref = storage.ref('contributions/' + fileName);
-      ref.put(file).then(function(snapshot){
-        return snapshot.ref.getDownloadURL();
-      }).then(function(url){
-        saveToFirestore(url);
-      }).catch(function(e){
+      var uploadTask = ref.put(file);
+      uploadTask.on('state_changed', function(snapshot){
+        var pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+        el('contribBar').style.width = pct + '%';
+        el('contribPct').textContent = pct + '%';
+      }, function(e){
+        el('contribProgress').style.display = 'none';
         msg.className = 'admin-msg error';
         msg.textContent = 'Upload failed: ' + e.message;
+      }, function(){
+        uploadTask.snapshot.ref.getDownloadURL().then(function(url){
+          el('contribProgress').style.display = 'none';
+          saveToFirestore(url);
+        });
       });
     } else {
       saveToFirestore('');
@@ -6833,17 +6861,27 @@ window.submitUpload = function(){
 
   if(fileInput.files.length > 0){
     var file = fileInput.files[0];
-    msg.textContent = 'Uploading to cloud...';
+    msg.textContent = '';
+    el('uploadProgress').style.display = 'block';
+    el('uploadBar').style.width = '0%';
+    el('uploadPct').textContent = '0%';
     var fileName = S.user.email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g,'_');
     var ref = storage.ref('contributions/' + fileName);
-    ref.put(file).then(function(snapshot){
-      return snapshot.ref.getDownloadURL();
-    }).then(function(url){
-      saveUpload(url);
-    }).catch(function(e){
+    var uploadTask = ref.put(file);
+    uploadTask.on('state_changed', function(snapshot){
+      var pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+      el('uploadBar').style.width = pct + '%';
+      el('uploadPct').textContent = pct + '%';
+    }, function(e){
+      el('uploadProgress').style.display = 'none';
       msg.className = 'admin-msg error';
       msg.textContent = 'Upload failed: ' + e.message;
       el('uploadSubmitBtn').disabled = false;
+    }, function(){
+      uploadTask.snapshot.ref.getDownloadURL().then(function(url){
+        el('uploadProgress').style.display = 'none';
+        saveUpload(url);
+      });
     });
   } else {
     saveUpload('');
