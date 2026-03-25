@@ -1724,9 +1724,10 @@ function openLoginFromLanding(){
     </div>
 
   </div>
+  <div id="loginCountdownFooter" style="position:sticky;bottom:0;left:0;right:0;text-align:center;font-size:13px;font-weight:600;color:#fff;padding:12px 16px;background:linear-gradient(135deg,#6c63ff,#f857a6);z-index:10;">
+    🚀 Phase 2 launches in <span style="font-family:'Sora',monospace;font-size:15px;letter-spacing:1px;margin:0 6px;" id="loginCountdown">--d --h --m</span> — Video summaries & quizzes go live!
+  </div>
 </div>
-
-<!-- APP -->
 <!-- PROFILE SETUP POPUP (first login) -->
 <div class="profile-popup-ov" id="profilePopup">
   <div class="profile-popup">
@@ -1786,7 +1787,7 @@ function openLoginFromLanding(){
 </div>
 
 <!-- TRIAL BANNER -->
-<div id="trialBanner" class="trial-banner" style="display:block;">
+<div id="trialBanner" class="trial-banner" style="display:none;">
   🚀 Phase 2 launches in <span class="trial-time" id="trialCountdown">--d --h --m</span> — Video summaries & quizzes go live!
 </div>
 <!-- PAYWALL OVERLAY -->
@@ -3788,13 +3789,16 @@ function updatePhase2Countdown(){
   var diff = launch - now;
   if(diff <= 0){
     el('trialCountdown').textContent = 'NOW LIVE!';
+    var lc = document.getElementById('loginCountdown'); if(lc) lc.textContent = 'NOW LIVE!';
     return;
   }
   var d = Math.floor(diff / 86400000);
   var h = Math.floor((diff % 86400000) / 3600000);
   var m = Math.floor((diff % 3600000) / 60000);
   var s = Math.floor((diff % 60000) / 1000);
-  el('trialCountdown').textContent = d + 'd ' + h + 'h ' + m + 'm ' + s + 's';
+  var txt = d + 'd ' + h + 'h ' + m + 'm ' + s + 's';
+  el('trialCountdown').textContent = txt;
+  var lc = document.getElementById('loginCountdown'); if(lc) lc.textContent = txt;
 }
 
 function startTrialTimer(){
@@ -6834,16 +6838,14 @@ window.renderPhase1Dashboard = function(){
 (function(){
   var twPhrases = [
     "Everyone",
-    "Students",
-    "Students who are abroad",
-    "Students who missed class",
-    "Students who need extra help",
-    "Students who work",
-    "Students who live far away",
-    "Students with busy schedules",
-    "Students who struggle with exams",
-    "Students who want to revise",
-    "Students who learn at their own pace",
+    "Every student",
+    "Busy students",
+    "Working students",
+    "Struggling students",
+    "Absent students",
+    "Distant students",
+    "Exam preppers",
+    "Self learners",
     "You"
   ];
   var twEl = document.getElementById('typewriterText');
@@ -6873,6 +6875,24 @@ window.renderPhase1Dashboard = function(){
     }
   }
   twType();
+})();
+
+/* Start login page countdown immediately */
+(function(){
+  function updateLoginCountdown(){
+    var launch = new Date('2026-04-20T09:00:00').getTime();
+    var diff = launch - Date.now();
+    var lc = document.getElementById('loginCountdown');
+    if(!lc) return;
+    if(diff <= 0){ lc.textContent = 'NOW LIVE!'; return; }
+    var d = Math.floor(diff / 86400000);
+    var h = Math.floor((diff % 86400000) / 3600000);
+    var m = Math.floor((diff % 3600000) / 60000);
+    var s = Math.floor((diff % 60000) / 1000);
+    lc.textContent = d + 'd ' + h + 'h ' + m + 'm ' + s + 's';
+  }
+  updateLoginCountdown();
+  setInterval(updateLoginCountdown, 1000);
 })();
 
 })();
