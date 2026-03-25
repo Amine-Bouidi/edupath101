@@ -2068,7 +2068,7 @@ function openLoginFromLanding(){
             <h3 style="color:var(--accent2);margin:0 0 8px;">10. اتصل بنا 📞</h3>
             <p style="margin:0;"><strong>الاسم:</strong> أمين بويدي<br>
             <strong>WhatsApp:</strong> <span dir="ltr">+212 606-248409</span><br>
-            <strong>البريد الإلكتروني:</strong> <a href="mailto:aminebouidi000@gmail.com" style="color:var(--accent2);">aminebouidi000@gmail.com</a></p>
+            <strong>البريد الإلكتروني:</strong> <a href="/cdn-cgi/l/email-protection#2f4e4246414a4d405a464b461f1f1f6f48424e4643014c4042" style="color:var(--accent2);"><span class="__cf_email__" data-cfemail="f8999591969d9a978d919c91c8c8c8b89f95999194d69b9795">[email&#160;protected]</span></a></p>
           </div>
           </div>
 
@@ -2132,7 +2132,7 @@ function openLoginFromLanding(){
             <h3 style="color:var(--accent2);margin:0 0 8px;">10. Contact 📞</h3>
             <p style="margin:0;"><strong>Name:</strong> Amine Bouidi<br>
             <strong>WhatsApp:</strong> +212 606-248409<br>
-            <strong>Email:</strong> <a href="mailto:aminebouidi000@gmail.com" style="color:var(--accent2);">aminebouidi000@gmail.com</a></p>
+            <strong>Email:</strong> <a href="/cdn-cgi/l/email-protection#85e4e8ecebe0e7eaf0ece1ecb5b5b5c5e2e8e4ece9abe6eae8" style="color:var(--accent2);"><span class="__cf_email__" data-cfemail="3b5a5652555e59544e525f520b0b0b7b5c565a525715585456">[email&#160;protected]</span></a></p>
           </div>
           </div>
 
@@ -2973,7 +2973,7 @@ function openLoginFromLanding(){
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 (function(){
 
 /* ── SIDEBAR TOGGLE ── */
@@ -3107,7 +3107,8 @@ var SEMESTERS = [
 
 /* University-specific semester display config */
 var UNI_SEM_CONFIG = {
-  'usmba_dhar': [0,1,2,3,8,9,10,11,12,13]
+  'usmba_dhar': [0,1,2,3,8,9,10,11,12,13],
+  'usmba': [0,1,2,3,4,5,6,7]
 };
 /* Module data per semester index */
 var MOD_DATA = [
@@ -6770,19 +6771,4 @@ window.renderPhase1Dashboard = function(){
     if(!twDel){
       twEl.textContent = cur.substring(0, twChar + 1);
       twChar++;
-      if(twChar === cur.length){ twDel = true; setTimeout(twType, 1500); return; }
-      setTimeout(twType, 80);
-    } else {
-      twEl.textContent = cur.substring(0, twChar - 1);
-      twChar--;
-      if(twChar === 0){ twDel = false; twIdx = (twIdx + 1) % twPhrases.length; setTimeout(twType, 400);       return; }
-      setTimeout(twType, 60);
-    }
-  }
-  twType();
-})();
-
-})();
-</script>
-</body>
-</html>
+      if(t
