@@ -851,8 +851,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
   #landingPage .glow-blob.three { width: 350px; height: 350px; background: #00d4aa; top: 50%; left: 30%; animation: lpBlobFloat 15s ease-in-out infinite 3s; }
   @keyframes lpBlobFloat {
     0%, 100% { transform: translate(0, 0) scale(1); }
-    33% { transform: translate(40px, -30px) scale(1.1); }
-    66% { transform: translate(-20px, 20px) scale(0.95); }
+    #landingPage 33% { transform: translate(40px, -30px) scale(1.1); }
+    #landingPage 66% { transform: translate(-20px, 20px) scale(0.95); }
   }
 
   /* ===== PHASE 1 TOP BANNER ===== */
@@ -879,7 +879,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
   }
   @keyframes lpBannerPulse {
     0%, 100% { filter: brightness(1); }
-    50% { filter: brightness(1.1); }
+    #landingPage 50% { filter: brightness(1.1); }
   }
 
   /* ===== NAV ===== */
@@ -940,7 +940,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
   }
   @keyframes lpPulse2 {
     0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 212, 170, 0.5); }
-    50% { opacity: 0.7; box-shadow: 0 0 0 8px rgba(0, 212, 170, 0); }
+    #landingPage 50% { opacity: 0.7; box-shadow: 0 0 0 8px rgba(0, 212, 170, 0); }
   }
 
   #landingPage .audience-badge {
@@ -1029,7 +1029,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
   }
   @keyframes lpBounceDown {
     0%, 100% { transform: rotate(45deg) translateY(0); opacity: 0.5; }
-    50% { transform: rotate(45deg) translateY(6px); opacity: 1; }
+    #landingPage 50% { transform: rotate(45deg) translateY(6px); opacity: 1; }
   }
 
   /* ===== DEAL BANNER ===== */
@@ -1288,7 +1288,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 
   @keyframes lpMarqueeScroll {
     0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+    #landingPage 100% { transform: translateX(-50%); }
   }
 
   #landingPage .uni-logo-item {
@@ -1401,7 +1401,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 <script>
   var firebaseConfig = {
     apiKey: "AIzaSyDDvXYqYyZV45UvxhE7f70P0JmJlKN5SLg",
@@ -1414,8 +1413,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
   };
   firebase.initializeApp(firebaseConfig);
   var db = firebase.firestore();
-  var storage = firebase.storage();
 </script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-DW1MT8LWDG"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-DW1MT8LWDG");</script>
 </head>
 <body>
 
@@ -1726,10 +1725,9 @@ function openLoginFromLanding(){
     </div>
 
   </div>
-  <div id="loginCountdownFooter" style="position:sticky;bottom:0;left:0;right:0;text-align:center;font-size:13px;font-weight:600;color:#fff;padding:12px 16px;background:linear-gradient(135deg,#6c63ff,#f857a6);z-index:10;">
-    🚀 Phase 2 launches in <span style="font-family:'Sora',monospace;font-size:15px;letter-spacing:1px;margin:0 6px;" id="loginCountdown">--d --h --m</span> — Video summaries & quizzes go live!
-  </div>
 </div>
+
+<!-- APP -->
 <!-- PROFILE SETUP POPUP (first login) -->
 <div class="profile-popup-ov" id="profilePopup">
   <div class="profile-popup">
@@ -1789,7 +1787,7 @@ function openLoginFromLanding(){
 </div>
 
 <!-- TRIAL BANNER -->
-<div id="trialBanner" class="trial-banner" style="display:none;">
+<div id="trialBanner" class="trial-banner" style="display:block;">
   🚀 Phase 2 launches in <span class="trial-time" id="trialCountdown">--d --h --m</span> — Video summaries & quizzes go live!
 </div>
 <!-- PAYWALL OVERLAY -->
@@ -1970,8 +1968,8 @@ function openLoginFromLanding(){
                 <button id="tabDrive" onclick="switchUploadTab('drive')" style="flex:1;padding:9px;font-size:12px;font-weight:600;border-radius:8px;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-family:inherit;transition:all .2s;">🔗 Google Drive Link</button>
               </div>
               <div id="uploadTabPhoto">
-                <input type="file" id="uploadFile" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.ppt,.pptx" style="font-size:13px;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;width:100%;box-sizing:border-box;color:var(--text);">
-                <div style="font-size:11px;color:var(--text3);margin-top:4px;">Accepted: JPG, PNG, PDF, Word (.doc/.docx), PowerPoint (.ppt/.pptx). Max 20MB.</div>
+                <input type="file" id="uploadFile" accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.rtf,.odt,.odp,.pages,.key" style="font-size:13px;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;width:100%;box-sizing:border-box;color:var(--text);">
+                <div style="font-size:11px;color:var(--text3);margin-top:4px;">Photos, PDFs, Word, PowerPoint, Excel, or any document. Max 10MB.</div>
               </div>
               <div id="uploadTabDrive" style="display:none;">
                 <input type="text" id="uploadDriveLink" placeholder="https://drive.google.com/file/d/..." style="width:100%;padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;font-family:inherit;box-sizing:border-box;">
@@ -1981,15 +1979,6 @@ function openLoginFromLanding(){
 
             <!-- Submit -->
             <button id="uploadSubmitBtn" onclick="submitUpload()" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),#9b59b6);border:none;border-radius:12px;color:#fff;font-family:'Sora',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;margin-top:4px;">📤 Submit Handout</button>
-            <div id="uploadProgress" style="display:none;margin-top:10px;">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-                <span style="font-size:12px;color:var(--text2);font-weight:600;">Uploading...</span>
-                <span id="uploadPct" style="font-size:12px;color:var(--accent2);font-weight:700;">0%</span>
-              </div>
-              <div style="height:6px;background:var(--bg5);border-radius:3px;overflow:hidden;">
-                <div id="uploadBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent3));border-radius:3px;transition:width .2s;"></div>
-              </div>
-            </div>
             <div id="uploadMsg" class="admin-msg" style="margin-top:10px;"></div>
 
             <!-- Back -->
@@ -2080,7 +2069,7 @@ function openLoginFromLanding(){
             <h3 style="color:var(--accent2);margin:0 0 8px;">10. اتصل بنا 📞</h3>
             <p style="margin:0;"><strong>الاسم:</strong> أمين بويدي<br>
             <strong>WhatsApp:</strong> <span dir="ltr">+212 606-248409</span><br>
-            <strong>البريد الإلكتروني:</strong> <a href="/cdn-cgi/l/email-protection#e3828e8a8d86818c968a878ad3d3d3a3848e828a8fcd808c8e" style="color:var(--accent2);"><span class="__cf_email__" data-cfemail="1a7b7773747f78756f737e732a2a2a5a7d777b737634797577">[email&#160;protected]</span></a></p>
+            <strong>البريد الإلكتروني:</strong> <a href="mailto:aminebouidi000@gmail.com" style="color:var(--accent2);">aminebouidi000@gmail.com</a></p>
           </div>
           </div>
 
@@ -2144,7 +2133,7 @@ function openLoginFromLanding(){
             <h3 style="color:var(--accent2);margin:0 0 8px;">10. Contact 📞</h3>
             <p style="margin:0;"><strong>Name:</strong> Amine Bouidi<br>
             <strong>WhatsApp:</strong> +212 606-248409<br>
-            <strong>Email:</strong> <a href="/cdn-cgi/l/email-protection#dcbdb1b5b2b9beb3a9b5b8b5ececec9cbbb1bdb5b0f2bfb3b1" style="color:var(--accent2);"><span class="__cf_email__" data-cfemail="94f5f9fdfaf1f6fbe1fdf0fda4a4a4d4f3f9f5fdf8baf7fbf9">[email&#160;protected]</span></a></p>
+            <strong>Email:</strong> <a href="mailto:aminebouidi000@gmail.com" style="color:var(--accent2);">aminebouidi000@gmail.com</a></p>
           </div>
           </div>
 
@@ -2965,9 +2954,9 @@ function openLoginFromLanding(){
       </select>
     </div>
     <div class="field" style="margin-bottom:10px;">
-      <label style="font-size:12px;font-weight:600;">Upload your file</label>
-      <input type="file" id="contribFile" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.ppt,.pptx" style="font-size:13px;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;width:100%;box-sizing:border-box;">
-      <div style="font-size:11px;color:var(--text3);margin-top:4px;">Accepted: JPG, PNG, PDF, Word, PowerPoint. Max 20MB.</div>
+      <label style="font-size:12px;font-weight:600;">Upload screenshot (photo of your lesson)</label>
+      <input type="file" id="contribFile" accept="image/*" style="font-size:13px;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;width:100%;box-sizing:border-box;">
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;">Take a photo of the lesson pages or select a PDF. Max 5MB.</div>
     </div>
     <div class="field" style="margin-bottom:10px;">
       <label style="font-size:12px;font-weight:600;">Google Drive link (optional — if you have a PDF)</label>
@@ -2981,20 +2970,11 @@ function openLoginFromLanding(){
       <button class="admin-btn" style="flex:1;" onclick="submitContribution()">📤 Submit</button>
       <button class="admin-btn danger" style="flex:0;" onclick="el('contributeModal').classList.remove('open');">Cancel</button>
     </div>
-    <div id="contribProgress" style="display:none;margin-top:8px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-        <span style="font-size:12px;color:var(--text2);font-weight:600;">Uploading...</span>
-        <span id="contribPct" style="font-size:12px;color:var(--accent2);font-weight:700;">0%</span>
-      </div>
-      <div style="height:6px;background:var(--bg5);border-radius:3px;overflow:hidden;">
-        <div id="contribBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent3));border-radius:3px;transition:width .2s;"></div>
-      </div>
-    </div>
     <div id="contribMsg" class="admin-msg" style="margin-top:8px;"></div>
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 (function(){
 
 /* ── SIDEBAR TOGGLE ── */
@@ -3128,8 +3108,7 @@ var SEMESTERS = [
 
 /* University-specific semester display config */
 var UNI_SEM_CONFIG = {
-  'usmba_dhar': [0,1,2,3,8,9,10,11,12,13],
-  'usmba': [0,1,2,3,4,5,6,7]
+  'usmba_dhar': [0,1,2,3,8,9,10,11,12,13]
 };
 /* Module data per semester index */
 var MOD_DATA = [
@@ -3809,16 +3788,13 @@ function updatePhase2Countdown(){
   var diff = launch - now;
   if(diff <= 0){
     el('trialCountdown').textContent = 'NOW LIVE!';
-    var lc = document.getElementById('loginCountdown'); if(lc) lc.textContent = 'NOW LIVE!';
     return;
   }
   var d = Math.floor(diff / 86400000);
   var h = Math.floor((diff % 86400000) / 3600000);
   var m = Math.floor((diff % 3600000) / 60000);
   var s = Math.floor((diff % 60000) / 1000);
-  var txt = d + 'd ' + h + 'h ' + m + 'm ' + s + 's';
-  el('trialCountdown').textContent = txt;
-  var lc = document.getElementById('loginCountdown'); if(lc) lc.textContent = txt;
+  el('trialCountdown').textContent = d + 'd ' + h + 'h ' + m + 'm ' + s + 's';
 }
 
 function startTrialTimer(){
@@ -3927,26 +3903,8 @@ window.renderDashboard = function renderDashboard(){
 /* ── SEMESTERS ── */
 function openSemesters(uni){
   S.uni=uni; S.sem=null; S.mod=null; updateCtx();
-  var grid=el('semGrid'); grid.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);">Loading semesters...</div>';
+  var grid=el('semGrid'); grid.innerHTML='';
   var semIndices = UNI_SEM_CONFIG[uni.id] || null;
-
-  /* Load custom semester names from Firestore */
-  var namePrefix = uni.id + '_sem';
-  db.collection('semesterNames').where('__name__', '>=', namePrefix).where('__name__', '<=', namePrefix + '\uf8ff').get().then(function(snap){
-    var customNames = {};
-    snap.forEach(function(doc){ customNames[doc.id] = doc.data(); });
-    renderSemesterGrid(uni, grid, semIndices, customNames);
-  }).catch(function(){
-    renderSemesterGrid(uni, grid, semIndices, {});
-  });
-
-  setTopbar([uni.emoji+' '+uni.name],'Choose a Semester',false);
-  el('nav-semesters').style.display='flex';
-  showView('semesters');
-}
-
-function renderSemesterGrid(uni, grid, semIndices, customNames){
-  grid.innerHTML='';
   SEMESTERS.forEach(function(sem,idx){
     if(semIndices && semIndices.indexOf(idx) === -1) return;
     var mods=getMods(idx,uni.id),done=0;
@@ -3954,21 +3912,15 @@ function renderSemesterGrid(uni, grid, semIndices, customNames){
     var total=mods.length*VIDEOS.length, pct=Math.round((done/total)*100);
     var isAll=done===total, isSome=done>0&&!isAll;
     var badge=isSome?'<span class="badge b-prog">'+pct+'%</span>':isAll?'<span class="badge b-done">✓ Done</span>':'<span class="badge b-new">New</span>';
-
-    /* Use custom names if saved */
-    var docKey = uni.id + '_' + sem.id;
-    var displayTitle = (customNames[docKey] && customNames[docKey].title) ? customNames[docKey].title : sem.title;
-    var displaySub = (customNames[docKey] && customNames[docKey].sub) ? customNames[docKey].sub : sem.sub;
-
-    /* Admin pen icon */
-    var editBtn = isAdmin() ? ' <span class="sem-edit-btn" data-idx="'+idx+'" style="cursor:pointer;font-size:13px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit name">✏️</span>' : '';
-
     var card=document.createElement('div'); card.className='sem-card';
     card.style.setProperty('--sc1',sem.c1); card.style.setProperty('--sc2',sem.c2);
-    card.innerHTML='<div class="sc-num" style="color:'+sem.c1+'" id="stitle_'+idx+'">'+displayTitle+editBtn+'</div><div class="sc-title" id="ssub_'+idx+'">'+displaySub+'</div><div class="pbar"><div class="pfill" style="width:'+pct+'%;background:linear-gradient(90deg,'+sem.c1+','+sem.c2+');"></div></div><div class="sc-footer"><span style="font-size:12px;color:var(--text2);">'+mods.length+' modules</span>'+badge+'</div>';
-    card.onclick=(function(s,i){return function(e){if(e.target.closest('.sem-edit-btn'))return;openModules(s,i);};})(sem,idx);
+    card.innerHTML='<div class="sc-num" style="color:'+sem.c1+'">'+sem.title+'</div><div class="sc-title">'+sem.sub+'</div><div class="pbar"><div class="pfill" style="width:'+pct+'%;background:linear-gradient(90deg,'+sem.c1+','+sem.c2+');"></div></div><div class="sc-footer"><span style="font-size:12px;color:var(--text2);">'+mods.length+' modules</span>'+badge+'</div>';
+    card.onclick=(function(s,i){return function(){openModules(s,i);};})(sem,idx);
     grid.appendChild(card);
   });
+  setTopbar([uni.emoji+' '+uni.name],'Choose a Semester',false);
+  el('nav-semesters').style.display='flex';
+  showView('semesters');
 }
 el('nav-semesters').onclick=function(){closeMobileMenu();if(S.uni)openSemesters(S.uni);};
 
@@ -4178,42 +4130,6 @@ window.saveModName = function(idx){
   db.collection('moduleNames').doc(docId).set({ name: newName, updatedAt: new Date().toISOString() }).then(function(){
     openModules(S.sem, S.semIdx);
   }).catch(function(e){ alert('Error saving: ' + e.message); });
-};
-
-/* ── SEMESTER NAME EDIT (admin only) ── */
-document.addEventListener('click', function(e){
-  var btn = e.target.closest('.sem-edit-btn');
-  if(!btn || !isAdmin()) return;
-  e.stopPropagation();
-  var idx = parseInt(btn.getAttribute('data-idx'));
-  var sem = SEMESTERS[idx];
-  if(!sem) return;
-  var titleEl = el('stitle_' + idx);
-  var subEl = el('ssub_' + idx);
-  if(!titleEl || !subEl) return;
-  var currentTitle = titleEl.textContent.replace('✏️','').trim();
-  var currentSub = subEl.textContent.trim();
-  titleEl.innerHTML = '<input type="text" value="' + currentTitle.replace(/"/g,'&quot;') + '" id="sedit_title_' + idx + '" style="background:var(--bg3);border:1px solid var(--accent2);border-radius:6px;color:var(--text);font-size:13px;font-weight:600;padding:4px 8px;width:100%;font-family:inherit;box-sizing:border-box;" onclick="event.stopPropagation()" placeholder="Semester title">';
-  subEl.innerHTML = '<input type="text" value="' + currentSub.replace(/"/g,'&quot;') + '" id="sedit_sub_' + idx + '" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text2);font-size:12px;padding:4px 8px;width:100%;font-family:inherit;box-sizing:border-box;margin-top:4px;" onclick="event.stopPropagation()" placeholder="Subtitle"> <button onclick="event.stopPropagation();saveSemName(' + idx + ')" style="background:var(--accent2);color:#fff;border:none;border-radius:6px;padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;margin-top:6px;">Save</button>';
-  var titleInput = el('sedit_title_' + idx);
-  titleInput.focus();
-  titleInput.select();
-  titleInput.onkeydown = function(ev){ if(ev.key === 'Enter'){ ev.preventDefault(); el('sedit_sub_' + idx).focus(); } };
-  el('sedit_sub_' + idx).onkeydown = function(ev){ if(ev.key === 'Enter'){ ev.preventDefault(); saveSemName(idx); } };
-});
-
-window.saveSemName = function(idx){
-  var titleInput = el('sedit_title_' + idx);
-  var subInput = el('sedit_sub_' + idx);
-  if(!titleInput || !subInput) return;
-  var newTitle = titleInput.value.trim();
-  var newSub = subInput.value.trim();
-  if(!newTitle) return;
-  var sem = SEMESTERS[idx];
-  var docId = S.uni.id + '_' + sem.id;
-  db.collection('semesterNames').doc(docId).set({ title: newTitle, sub: newSub || sem.sub, updatedAt: new Date().toISOString() }).then(function(){
-    openSemesters(S.uni);
-  }).catch(function(e){ alert('Error saving semester name: ' + e.message); });
 };
 
 window.addNewModule = function(){
@@ -6158,31 +6074,6 @@ window.viewFullImage = function(src){
   document.body.appendChild(ov);
 };
 
-/* Preview: images open overlay, PDFs open in new tab, docs trigger download */
-window.previewContribFile = function(src, fileExt){
-  if(!src) return;
-  if(fileExt === 'img'){
-    viewFullImage(src);
-  } else if(fileExt === 'pdf'){
-    window.open(src, '_blank');
-  } else {
-    downloadContribFile(src, 'handout');
-  }
-};
-
-/* Force download any file */
-window.downloadContribFile = function(src, name){
-  if(!src) return;
-  var a = document.createElement('a');
-  a.href = src;
-  a.target = '_blank';
-  a.download = (name || 'file') + '_edupath';
-  a.rel = 'noopener';
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(function(){ document.body.removeChild(a); }, 200);
-};
-
 /* ── IMAGE COMPRESSION & FILE HANDLING ── */
 function compressAndReadFile(file, maxWidth, quality, callback){
   var reader = new FileReader();
@@ -6480,23 +6371,11 @@ window.loadContributions = function(){
     var html = '';
     items.forEach(function(d){
       var statusColor = d.status === 'pending' ? '#f9a825' : d.status === 'used' ? '#43e97b' : d.status === 'reviewed' ? '#56ccf2' : '#e05252';
-      var hasImage = (d.imageUrl && d.imageUrl.length > 10) || (d.imageData && d.imageData.length > 50);
-      var imgSrc = (d.imageUrl && d.imageUrl.length > 10) ? d.imageUrl : d.imageData;
+      var hasImage = d.imageData && d.imageData.length > 50;
       var hasDrive = d.driveLink && d.driveLink.length > 5;
-      var hasFile = hasImage || (d.imageUrl && d.imageUrl.length > 10);
       var date = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : '';
-      var fileExt = '';
-      if(d.imageUrl && d.imageUrl.length > 10){
-        var urlLower = d.imageUrl.toLowerCase();
-        if(urlLower.indexOf('.pdf') !== -1) fileExt = 'pdf';
-        else if(urlLower.indexOf('.doc') !== -1) fileExt = 'doc';
-        else if(urlLower.indexOf('.ppt') !== -1) fileExt = 'ppt';
-        else fileExt = 'img';
-      } else if(hasImage) { fileExt = 'img'; }
-      var thumbClick = hasFile ? 'onclick="previewContribFile(\'' + (imgSrc||'').replace(/'/g,"\\'") + '\',\'' + fileExt + '\')"' : '';
-      var fileIcon = fileExt === 'pdf' ? '📄' : fileExt === 'doc' ? '📝' : fileExt === 'ppt' ? '📊' : '🖼️';
       html += '<div style="display:flex;align-items:center;gap:10px;border-left:3px solid ' + statusColor + ';background:var(--card);border-radius:0 8px 8px 0;padding:8px 10px;margin-bottom:6px;">' +
-        (hasImage ? '<img src="' + imgSrc + '" style="width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;flex-shrink:0;" ' + thumbClick + '>' : '<div style="width:44px;height:44px;background:var(--bg5);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;cursor:' + (hasFile?'pointer':'default') + ';" ' + thumbClick + '>' + (hasFile ? fileIcon : (d.moduleIcon||'📄')) + '</div>') +
+        (hasImage ? '<img src="' + d.imageData + '" style="width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;flex-shrink:0;" onclick="viewFullImage(this.src)">' : '<div style="width:44px;height:44px;background:var(--bg5);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">' + (d.moduleIcon||'📄') + '</div>') +
         '<div style="flex:1;min-width:0;overflow:hidden;">' +
           '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
             '<span style="font-size:12px;font-weight:700;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (d.module||'') + '</span>' +
@@ -6504,8 +6383,7 @@ window.loadContributions = function(){
           '</div>' +
           '<div style="font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (d.name||'') + ' · ' + (d.universityName||d.university||'').split('—')[0].trim() + ' · ' + (d.semesterTitle||'') + ' · ' + (d.fileType||'') + ' · ' + date + (d.bookRef ? ' · 📖 ' + d.bookRef : '') + '</div>' +
         '</div>' +
-        '<div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">' +
-          (hasFile ? '<button style="border:none;background:none;cursor:pointer;font-size:14px;padding:2px;" onclick="downloadContribFile(\'' + (imgSrc||'').replace(/'/g,"\\'") + '\',\'' + (d.module||'file').replace(/'/g,'') + '\')" title="Download file">⬇️</button>' : '') +
+        '<div style="display:flex;gap:4px;flex-shrink:0;">' +
           (hasDrive ? '<a href="' + d.driveLink + '" target="_blank" style="font-size:14px;text-decoration:none;" title="Open Drive link">📎</a>' : '') +
           '<button style="border:none;background:none;cursor:pointer;font-size:14px;padding:2px;" onclick="updateContribStatus(\'' + d._id + '\',\'reviewed\')" title="Reviewed">✅</button>' +
           '<button style="border:none;background:none;cursor:pointer;font-size:14px;padding:2px;" onclick="updateContribStatus(\'' + d._id + '\',\'used\')" title="Used">📺</button>' +
@@ -6548,100 +6426,58 @@ window.submitContribution = function(){
 
   if(!fileInput.files.length && !driveLink){
     msg.className = 'admin-msg error';
-    msg.textContent = 'Please upload a file or paste a Google Drive link.';
+    msg.textContent = 'Please upload a photo or paste a Google Drive link.';
     return;
   }
 
-  var ALLOWED_TYPES = ['image/jpeg','image/png','application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-powerpoint','application/vnd.openxmlformats-officedocument.presentationml.presentation'];
-  var ALLOWED_EXT = ['.jpg','.jpeg','.png','.pdf','.doc','.docx','.ppt','.pptx'];
+  msg.className = 'admin-msg';
+  msg.textContent = 'Uploading...';
+
+  function saveToFirestore(imageData){
+    var docId = S.user.email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + Date.now();
+    db.collection('contributions').doc(docId).set({
+      email: S.user.email,
+      name: S.user.name || '',
+      university: S.uni.id,
+      universityName: S.uni.name,
+      semester: S.sem.id,
+      semesterTitle: S.sem.title,
+      module: S.mod.title,
+      moduleIcon: S.mod.icon,
+      fileType: fileType,
+      driveLink: driveLink,
+      notes: notes,
+      imageData: imageData || '',
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    }).then(function(){
+      msg.className = 'admin-msg success';
+      msg.textContent = '✅ Thank you! Your contribution has been submitted. Your upload will be reviewed within 24 hours. Check 🔔 Notifications for updates!';
+      setTimeout(function(){ el('contributeModal').classList.remove('open'); }, 3000);
+    }).catch(function(e){
+      msg.className = 'admin-msg error';
+      msg.textContent = 'Error: ' + e.message;
+    });
+  }
 
   if(fileInput.files.length > 0){
     var file = fileInput.files[0];
-    var ext = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
-    if(ALLOWED_TYPES.indexOf(file.type) === -1 && ALLOWED_EXT.indexOf(ext) === -1){
+    if(file.size > 10 * 1024 * 1024){
       msg.className = 'admin-msg error';
-      msg.textContent = 'Only JPG, PNG, PDF, Word (.doc/.docx), and PowerPoint (.ppt/.pptx) files are accepted.';
+      msg.textContent = 'File too large. Max 10MB.';
       return;
     }
-    if(file.size > 20 * 1024 * 1024){
-      msg.className = 'admin-msg error';
-      msg.textContent = 'File too large. Max 20MB.';
-      return;
-    }
-  }
-
-  msg.className = 'admin-msg';
-  msg.textContent = 'Checking upload limit...';
-
-  db.collection('contributions').where('email','==',S.user.email).where('status','==','pending').get().then(function(snap){
-    if(snap.size >= 5){
-      msg.className = 'admin-msg error';
-      msg.textContent = 'You have 5 pending uploads. Please wait for admin review before submitting more.';
-      return;
-    }
-    proceedContrib();
-  }).catch(function(){
-    proceedContrib();
-  });
-
-  function proceedContrib(){
-    msg.className = 'admin-msg';
-    msg.textContent = 'Uploading...';
-
-    function saveToFirestore(imageUrl){
-      var docId = S.user.email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + Date.now();
-      db.collection('contributions').doc(docId).set({
-        email: S.user.email,
-        name: S.user.name || '',
-        university: S.uni.id,
-        universityName: S.uni.name,
-        semester: S.sem.id,
-        semesterTitle: S.sem.title,
-        module: S.mod.title,
-        moduleIcon: S.mod.icon,
-        fileType: fileType,
-        driveLink: driveLink,
-        notes: notes,
-        imageUrl: imageUrl || '',
-        imageData: '',
-        status: 'pending',
-        createdAt: new Date().toISOString()
-      }).then(function(){
-        msg.className = 'admin-msg success';
-        msg.textContent = '✅ Thank you! Your contribution has been submitted. Your upload will be reviewed within 24 hours. Check 🔔 Notifications for updates!';
-        setTimeout(function(){ el('contributeModal').classList.remove('open'); }, 3000);
-      }).catch(function(e){
+    msg.textContent = 'Compressing & uploading...';
+    compressAndReadFile(file, 800, 0.6, function(compressed, err){
+      if(err){
         msg.className = 'admin-msg error';
-        msg.textContent = 'Error: ' + e.message;
-      });
-    }
-
-    if(fileInput.files.length > 0){
-      var file = fileInput.files[0];
-      msg.textContent = '';
-      el('contribProgress').style.display = 'block';
-      el('contribBar').style.width = '0%';
-      el('contribPct').textContent = '0%';
-      var fileName = S.user.email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g,'_');
-      var ref = storage.ref('contributions/' + fileName);
-      var uploadTask = ref.put(file);
-      uploadTask.on('state_changed', function(snapshot){
-        var pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-        el('contribBar').style.width = pct + '%';
-        el('contribPct').textContent = pct + '%';
-      }, function(e){
-        el('contribProgress').style.display = 'none';
-        msg.className = 'admin-msg error';
-        msg.textContent = 'Upload failed: ' + e.message;
-      }, function(){
-        uploadTask.snapshot.ref.getDownloadURL().then(function(url){
-          el('contribProgress').style.display = 'none';
-          saveToFirestore(url);
-        });
-      });
-    } else {
-      saveToFirestore('');
-    }
+        msg.textContent = err;
+        return;
+      }
+      saveToFirestore(compressed);
+    });
+  } else {
+    saveToFirestore('');
   }
 };
 
@@ -6672,33 +6508,10 @@ window.switchUploadTab = function(tab){
 
 window.uploadLoadSemesters = function(){
   var sel = el('uploadSem');
-  sel.innerHTML = '<option value="">— Loading semesters... —</option>';
+  sel.innerHTML = '<option value="">— Select semester —</option>';
   el('uploadMod').innerHTML = '<option value="">— Select module —</option>';
-  var uniId = el('uploadUni').value;
-  if(!uniId){
-    sel.innerHTML = '<option value="">— Select semester —</option>';
-    return;
-  }
-  var semIndices = UNI_SEM_CONFIG[uniId] || null;
-
-  /* Load custom semester names */
-  var namePrefix = uniId + '_sem';
-  db.collection('semesterNames').where('__name__', '>=', namePrefix).where('__name__', '<=', namePrefix + '\uf8ff').get().then(function(snap){
-    var customNames = {};
-    snap.forEach(function(doc){ customNames[doc.id] = doc.data(); });
-    sel.innerHTML = '<option value="">— Select semester —</option>';
-    SEMESTERS.forEach(function(s, i){
-      if(semIndices && semIndices.indexOf(i) === -1) return;
-      var docKey = uniId + '_' + s.id;
-      var displayTitle = (customNames[docKey] && customNames[docKey].title) ? customNames[docKey].title : s.title;
-      sel.innerHTML += '<option value="' + i + '">' + displayTitle + '</option>';
-    });
-  }).catch(function(){
-    sel.innerHTML = '<option value="">— Select semester —</option>';
-    SEMESTERS.forEach(function(s, i){
-      if(semIndices && semIndices.indexOf(i) === -1) return;
-      sel.innerHTML += '<option value="' + i + '">' + s.title + '</option>';
-    });
+  SEMESTERS.forEach(function(s, i){
+    sel.innerHTML += '<option value="' + i + '">' + s.title + '</option>';
   });
 };
 
@@ -6778,52 +6591,18 @@ window.submitUpload = function(){
   }
   if(!fileInput.files.length && !driveLink){
     msg.className = 'admin-msg error';
-    msg.textContent = 'Please upload a file or paste a Google Drive link.';
+    msg.textContent = 'Please upload a photo or paste a Google Drive link.';
     return;
   }
 
-  var ALLOWED_TYPES = ['image/jpeg','image/png','application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-powerpoint','application/vnd.openxmlformats-officedocument.presentationml.presentation'];
-  var ALLOWED_EXT = ['.jpg','.jpeg','.png','.pdf','.doc','.docx','.ppt','.pptx'];
-
-  if(fileInput.files.length > 0){
-    var file = fileInput.files[0];
-    var ext = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
-    if(ALLOWED_TYPES.indexOf(file.type) === -1 && ALLOWED_EXT.indexOf(ext) === -1){
-      msg.className = 'admin-msg error';
-      msg.textContent = 'Only JPG, PNG, PDF, Word (.doc/.docx), and PowerPoint (.ppt/.pptx) files are accepted.';
-      return;
-    }
-    if(file.size > 20 * 1024 * 1024){
-      msg.className = 'admin-msg error';
-      msg.textContent = 'File too large. Max 20MB.';
-      return;
-    }
-  }
-
   msg.className = 'admin-msg';
-  msg.textContent = 'Checking upload limit...';
+  msg.textContent = 'Uploading...';
   el('uploadSubmitBtn').disabled = true;
 
-  db.collection('contributions').where('email','==',S.user.email).where('status','==','pending').get().then(function(snap){
-    if(snap.size >= 5){
-      msg.className = 'admin-msg error';
-      msg.textContent = 'You have 5 pending uploads. Please wait for admin review before submitting more.';
-      el('uploadSubmitBtn').disabled = false;
-      return;
-    }
-    proceedWithUpload();
-  }).catch(function(){
-    proceedWithUpload();
-  });
+  var uniObj = UNIVERSITIES.find(function(u){ return u.id === uni; });
+  var semObj = SEMESTERS[parseInt(semIdx)];
 
-  function proceedWithUpload(){
-    msg.className = 'admin-msg';
-    msg.textContent = 'Uploading...';
-
-    var uniObj = UNIVERSITIES.find(function(u){ return u.id === uni; });
-    var semObj = SEMESTERS[parseInt(semIdx)];
-
-  function saveUpload(imageUrl){
+  function saveUpload(imageData){
     var docId = S.user.email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + Date.now();
     db.collection('contributions').doc(docId).set({
       email: S.user.email,
@@ -6837,8 +6616,7 @@ window.submitUpload = function(){
       fileType: 'lesson',
       driveLink: driveLink,
       notes: '',
-      imageUrl: imageUrl || '',
-      imageData: '',
+      imageData: imageData || '',
       status: 'pending',
       createdAt: new Date().toISOString()
     }).then(function(){
@@ -6861,32 +6639,40 @@ window.submitUpload = function(){
 
   if(fileInput.files.length > 0){
     var file = fileInput.files[0];
-    msg.textContent = '';
-    el('uploadProgress').style.display = 'block';
-    el('uploadBar').style.width = '0%';
-    el('uploadPct').textContent = '0%';
-    var fileName = S.user.email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g,'_');
-    var ref = storage.ref('contributions/' + fileName);
-    var uploadTask = ref.put(file);
-    uploadTask.on('state_changed', function(snapshot){
-      var pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-      el('uploadBar').style.width = pct + '%';
-      el('uploadPct').textContent = pct + '%';
-    }, function(e){
-      el('uploadProgress').style.display = 'none';
+    if(file.size > 10 * 1024 * 1024){
       msg.className = 'admin-msg error';
-      msg.textContent = 'Upload failed: ' + e.message;
+      msg.textContent = 'File too large. Max 10MB.';
       el('uploadSubmitBtn').disabled = false;
-    }, function(){
-      uploadTask.snapshot.ref.getDownloadURL().then(function(url){
-        el('uploadProgress').style.display = 'none';
-        saveUpload(url);
+      return;
+    }
+    msg.textContent = 'Uploading...';
+    var isImage = file.type.startsWith('image/');
+    if(isImage){
+      compressAndReadFile(file, 800, 0.6, function(compressed, err){
+        if(err){
+          msg.className = 'admin-msg error';
+          msg.textContent = err;
+          el('uploadSubmitBtn').disabled = false;
+          return;
+        }
+        saveUpload(compressed);
       });
-    });
+    } else if(file.size <= 900000){
+      // Small docs (under 900KB) - store as base64 in Firestore
+      var reader = new FileReader();
+      reader.onload = function(e){ saveUpload(e.target.result); };
+      reader.onerror = function(){ msg.className='admin-msg error'; msg.textContent='Could not read file.'; el('uploadSubmitBtn').disabled=false; };
+      reader.readAsDataURL(file);
+    } else {
+      // Large docs - store filename only, ask for Drive link
+      msg.className = 'admin-msg error';
+      msg.textContent = 'This file is too large to upload directly (' + Math.round(file.size/1024) + 'KB). Please use the Google Drive link option instead, or upload a photo/screenshot of the pages.';
+      el('uploadSubmitBtn').disabled = false;
+      return;
+    }
   } else {
     saveUpload('');
   }
-  } /* end proceedWithUpload */
 };
 
 /* ── PHASE 1 DASHBOARD RENDER ── */
@@ -6965,14 +6751,16 @@ window.renderPhase1Dashboard = function(){
 (function(){
   var twPhrases = [
     "Everyone",
-    "Every student",
-    "Busy students",
-    "Working students",
-    "Struggling students",
-    "Absent students",
-    "Distant students",
-    "Exam preppers",
-    "Self learners",
+    "Students",
+    "Students who are abroad",
+    "Students who missed class",
+    "Students who need extra help",
+    "Students who work",
+    "Students who live far away",
+    "Students with busy schedules",
+    "Students who struggle with exams",
+    "Students who want to revise",
+    "Students who learn at their own pace",
     "You"
   ];
   var twEl = document.getElementById('typewriterText');
@@ -6983,43 +6771,16 @@ window.renderPhase1Dashboard = function(){
     if(!twDel){
       twEl.textContent = cur.substring(0, twChar + 1);
       twChar++;
-      if(twChar === cur.length){
-        twDel = true;
-        setTimeout(twType, 1800);
-        return;
-      }
-      setTimeout(twType, 70);
+      if(twChar === cur.length){ twDel = true; setTimeout(twType, 1500); return; }
+      setTimeout(twType, 80);
     } else {
       twEl.textContent = cur.substring(0, twChar - 1);
       twChar--;
-      if(twChar === 0){
-        twDel = false;
-        twIdx = (twIdx + 1) % twPhrases.length;
-        setTimeout(twType, 400);
-        return;
-      }
-      setTimeout(twType, 40);
+      if(twChar === 0){ twDel = false; twIdx = (twIdx + 1) % twPhrases.length; setTimeout(twType, 400);       return; }
+      setTimeout(twType, 60);
     }
   }
   twType();
-})();
-
-/* Start login page countdown immediately */
-(function(){
-  function updateLoginCountdown(){
-    var launch = new Date('2026-04-20T09:00:00').getTime();
-    var diff = launch - Date.now();
-    var lc = document.getElementById('loginCountdown');
-    if(!lc) return;
-    if(diff <= 0){ lc.textContent = 'NOW LIVE!'; return; }
-    var d = Math.floor(diff / 86400000);
-    var h = Math.floor((diff % 86400000) / 3600000);
-    var m = Math.floor((diff % 3600000) / 60000);
-    var s = Math.floor((diff % 60000) / 1000);
-    lc.textContent = d + 'd ' + h + 'h ' + m + 'm ' + s + 's';
-  }
-  updateLoginCountdown();
-  setInterval(updateLoginCountdown, 1000);
 })();
 
 })();
