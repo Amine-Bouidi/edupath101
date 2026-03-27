@@ -3889,7 +3889,24 @@ window.renderDashboard = function renderDashboard(){
   el('statVids').textContent=totalVids;
   el('statMods').textContent=totalMods;
   el('statPts').textContent=totalPts;
-  var grid=el('uniGrid'); grid.innerHTML='';
+  var grid=el('uniGrid'); grid.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);">Loading...</div>';
+  db.collection('universityNames').get().then(function(snap){
+    snap.forEach(function(doc){
+      var u = UNIVERSITIES.find(function(x){ return x.id === doc.id; });
+      if(u) u.name = doc.data().name;
+    });
+    renderUniGrid(grid);
+  }).catch(function(){
+    renderUniGrid(grid);
+  });
+  setTopbar([],'Dashboard',false);
+  showView('dashboard');
+  ['nav-semesters','nav-modules','nav-player','nav-contact'].forEach(function(id){el(id).style.display='none';});
+}
+
+function renderUniGrid(grid){
+  var isAdminUser = isAdmin();
+  grid.innerHTML='';
   UNIVERSITIES.forEach(function(uni){
     var done=0,total=0;
     SEMESTERS.forEach(function(sem,si){var mods=getMods(si,uni.id);total+=mods.length*VIDEOS.length;mods.forEach(function(mod){done+=getP(uni.id,sem.id,mod.id).videos.length;});});
@@ -3897,13 +3914,10 @@ window.renderDashboard = function renderDashboard(){
     var card=document.createElement('div'); card.className='uni-card';
     card.style.setProperty('--uc',uni.c);
     var logoHtml = UNI_LOGOS[uni.id] ? '<img src="'+UNI_LOGOS[uni.id]+'" style="width:48px;height:48px;object-fit:contain;border-radius:8px;margin-bottom:8px;">' : '<div class="uc-emoji">'+uni.emoji+'</div>';
-    card.innerHTML=logoHtml+'<div class="uc-name">'+uni.name+'</div><div class="uc-country">'+uni.country+'</div><div class="uc-bar"><div class="uc-fill" style="width:'+pct+'%"></div></div><div class="uc-pct">'+pct+'% complete</div>';
-    card.onclick=(function(u){return function(){openSemesters(u);};})(uni);
+    card.innerHTML=logoHtml+'<div class="uc-name" id="utitle_'+uni.id+'">'+uni.name+(isAdminUser?' <span class="uni-edit-btn" data-uid="'+uni.id+'" style="cursor:pointer;font-size:13px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit name">✏️</span>':'')+'</div><div class="uc-country">'+uni.country+'</div><div class="uc-bar"><div class="uc-fill" style="width:'+pct+'%"></div></div><div class="uc-pct">'+pct+'% complete</div>';
+    card.onclick=(function(u){return function(e){if(e.target.closest('.uni-edit-btn'))return;openSemesters(u);};})(uni);
     grid.appendChild(card);
   });
-  setTopbar([],'Dashboard',false);
-  showView('dashboard');
-  ['nav-semesters','nav-modules','nav-player','nav-contact'].forEach(function(id){el(id).style.display='none';});
 }
 
 /* ── SEMESTERS ── */
@@ -4154,6 +4168,34 @@ window.saveModName = function(idx){
   var docId = S.uni.id + '_' + S.sem.id + '_' + idx;
   db.collection('moduleNames').doc(docId).set({ name: newName, updatedAt: new Date().toISOString() }).then(function(){
     openModules(S.sem, S.semIdx);
+  }).catch(function(e){ alert('Error saving: ' + e.message); });
+};
+
+/* ── UNIVERSITY NAME EDIT (admin only) ── */
+document.addEventListener('click', function(e){
+  var btn = e.target.closest('.uni-edit-btn');
+  if(!btn || !isAdmin()) return;
+  e.stopPropagation();
+  var uid = btn.getAttribute('data-uid');
+  var titleEl = el('utitle_' + uid);
+  if(!titleEl) return;
+  var currentName = titleEl.textContent.replace('✏️','').trim();
+  titleEl.innerHTML = '<input type="text" value="' + currentName.replace(/"/g,'&quot;') + '" id="uedit_' + uid + '" style="background:var(--bg3);border:1px solid var(--accent2);border-radius:6px;color:var(--text);font-size:12px;font-weight:600;padding:4px 8px;width:75%;font-family:inherit;" onclick="event.stopPropagation()"> <button onclick="event.stopPropagation();saveUniName(\'' + uid + '\')" style="background:var(--accent2);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;">Save</button>';
+  var input = el('uedit_' + uid);
+  input.focus();
+  input.select();
+  input.onkeydown = function(ev){ if(ev.key === 'Enter'){ ev.preventDefault(); saveUniName(uid); } };
+});
+
+window.saveUniName = function(uid){
+  var input = el('uedit_' + uid);
+  if(!input) return;
+  var newName = input.value.trim();
+  if(!newName) return;
+  db.collection('universityNames').doc(uid).set({ name: newName, updatedAt: new Date().toISOString() }).then(function(){
+    var uni = UNIVERSITIES.find(function(u){ return u.id === uid; });
+    if(uni) uni.name = newName;
+    renderDashboard();
   }).catch(function(e){ alert('Error saving: ' + e.message); });
 };
 
