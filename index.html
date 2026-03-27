@@ -3925,41 +3925,86 @@ function openSemesters(uni){
   S.uni=uni; S.sem=null; S.mod=null; updateCtx();
   var grid=el('semGrid'); grid.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);">Loading...</div>';
   var semIndices = UNI_SEM_CONFIG[uni.id] || null;
-  // Load custom semester names for this university
   var prefix = uni.id + '_sem_';
-  db.collection('semesterNames').where('__name__', '>=', prefix).where('__name__', '<=', prefix + '\uf8ff').get().then(function(snap){
-    snap.forEach(function(doc){
+  var p1 = db.collection('semesterNames').where('__name__', '>=', prefix).where('__name__', '<=', prefix + '\uf8ff').get();
+  var p2 = db.collection('hiddenSemesters').doc(uni.id).get();
+  var p3 = db.collection('customSemesters').where('university', '==', uni.id).get();
+
+  Promise.all([p1, p2, p3]).then(function(results){
+    results[0].forEach(function(doc){
       var sidx = parseInt(doc.id.replace(prefix, ''));
       if(!isNaN(sidx) && SEMESTERS[sidx]){
         if(doc.data().title) SEMESTERS[sidx].title = doc.data().title;
         if(doc.data().sub) SEMESTERS[sidx].sub = doc.data().sub;
       }
     });
-    renderSemGrid(grid, semIndices, uni);
+    var hidden = results[1].exists ? (results[1].data().indices || []) : [];
+    var customSems = [];
+    results[2].forEach(function(doc){
+      var d = doc.data();
+      customSems.push({id: d.semId || doc.id, firestoreId: doc.id, title: d.title || 'New Semester', sub: d.sub || 'Custom semester', c1: d.c1 || '#6c63ff', c2: d.c2 || '#9b59b6', isCustom: true, num: d.num || 0});
+    });
+    customSems.sort(function(a,b){ return a.id.localeCompare(b.id); });
+    renderSemGrid(grid, semIndices, uni, hidden, customSems);
   }).catch(function(){
-    renderSemGrid(grid, semIndices, uni);
+    renderSemGrid(grid, semIndices, uni, [], []);
   });
   setTopbar([uni.emoji+' '+uni.name],'Choose a Semester',false);
   el('nav-semesters').style.display='flex';
   showView('semesters');
 }
 
-function renderSemGrid(grid, semIndices, uni){
+function renderSemGrid(grid, semIndices, uni, hidden, customSems){
   grid.innerHTML='';
+  var isAdminUser = isAdmin();
   SEMESTERS.forEach(function(sem,idx){
     if(semIndices && semIndices.indexOf(idx) === -1) return;
+    if(hidden.indexOf(idx) !== -1 && !isAdminUser) return;
+    var isHidden = hidden.indexOf(idx) !== -1;
     var mods=getMods(idx,uni.id),done=0;
     mods.forEach(function(m){done+=getP(uni.id,sem.id,m.id).videos.length;});
     var total=mods.length*VIDEOS.length, pct=Math.round((done/total)*100);
     var isAll=done===total, isSome=done>0&&!isAll;
     var badge=isSome?'<span class="badge b-prog">'+pct+'%</span>':isAll?'<span class="badge b-done">✓ Done</span>':'<span class="badge b-new">New</span>';
     var card=document.createElement('div'); card.className='sem-card';
+    if(isHidden) card.style.opacity='0.4';
     card.style.setProperty('--sc1',sem.c1); card.style.setProperty('--sc2',sem.c2);
-    var isAdminUser = isAdmin();
-    card.innerHTML='<div class="sc-num" style="color:'+sem.c1+'" id="stitle_'+idx+'">'+sem.title+(isAdminUser?' <span class="sem-edit-btn" data-sidx="'+idx+'" style="cursor:pointer;font-size:13px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit name">✏️</span>':'')+'</div><div class="sc-title" id="ssub_'+idx+'">'+sem.sub+(isAdminUser?' <span class="sem-edit-sub-btn" data-sidx="'+idx+'" style="cursor:pointer;font-size:11px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit subtitle">✏️</span>':'')+'</div><div class="pbar"><div class="pfill" style="width:'+pct+'%;background:linear-gradient(90deg,'+sem.c1+','+sem.c2+');"></div></div><div class="sc-footer"><span style="font-size:12px;color:var(--text2);">'+mods.length+' modules</span>'+badge+'</div>';
-    card.onclick=(function(s,i){return function(e){if(e.target.closest('.sem-edit-btn')||e.target.closest('.sem-edit-sub-btn'))return;openModules(s,i);};})(sem,idx);
+    var adminBtns = '';
+    if(isAdminUser){
+      adminBtns = ' <span class="sem-edit-btn" data-sidx="'+idx+'" style="cursor:pointer;font-size:13px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit name">✏️</span>';
+      if(isHidden){
+        adminBtns += '<span class="sem-restore-btn" data-sidx="'+idx+'" style="cursor:pointer;font-size:12px;opacity:.6;margin-left:4px;vertical-align:middle;" title="Restore semester">👁️</span>';
+      } else {
+        adminBtns += '<span class="sem-hide-btn" data-sidx="'+idx+'" style="cursor:pointer;font-size:12px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Hide semester">🗑️</span>';
+      }
+    }
+    var subAdminBtn = isAdminUser ? ' <span class="sem-edit-sub-btn" data-sidx="'+idx+'" style="cursor:pointer;font-size:11px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit subtitle">✏️</span>' : '';
+    card.innerHTML='<div class="sc-num" style="color:'+sem.c1+'" id="stitle_'+idx+'">'+sem.title+adminBtns+'</div><div class="sc-title" id="ssub_'+idx+'">'+sem.sub+subAdminBtn+'</div><div class="pbar"><div class="pfill" style="width:'+pct+'%;background:linear-gradient(90deg,'+sem.c1+','+sem.c2+');"></div></div><div class="sc-footer"><span style="font-size:12px;color:var(--text2);">'+mods.length+' modules</span>'+badge+(isHidden?'<span style="font-size:10px;color:#e05252;margin-left:6px;">Hidden</span>':'')+'</div>';
+    card.onclick=(function(s,i){return function(e){if(e.target.closest('.sem-edit-btn')||e.target.closest('.sem-edit-sub-btn')||e.target.closest('.sem-hide-btn')||e.target.closest('.sem-restore-btn'))return;openModules(s,i);};})(sem,idx);
     grid.appendChild(card);
   });
+
+  // Render custom semesters
+  customSems.forEach(function(cs){
+    var card=document.createElement('div'); card.className='sem-card';
+    card.style.setProperty('--sc1',cs.c1); card.style.setProperty('--sc2',cs.c2);
+    var delBtn = isAdminUser ? ' <span class="sem-edit-btn" data-sidx="custom_'+cs.firestoreId+'" style="cursor:pointer;font-size:13px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit name">✏️</span><span class="sem-del-custom-btn" data-fid="'+cs.firestoreId+'" style="cursor:pointer;font-size:12px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Delete semester">🗑️</span>' : '';
+    card.innerHTML='<div class="sc-num" style="color:'+cs.c1+'">'+cs.title+delBtn+'</div><div class="sc-title">'+cs.sub+'</div><div class="pbar"><div class="pfill" style="width:0%;background:linear-gradient(90deg,'+cs.c1+','+cs.c2+');"></div></div><div class="sc-footer"><span style="font-size:12px;color:var(--text2);">0 modules</span><span class="badge b-new">New</span></div>';
+    card.onclick=function(e){if(e.target.closest('.sem-edit-btn')||e.target.closest('.sem-del-custom-btn'))return;/* custom semesters open modules when content is added */};
+    grid.appendChild(card);
+  });
+
+  // Add Semester card (admin only)
+  if(isAdminUser){
+    var addCard = document.createElement('div');
+    addCard.className = 'sem-card';
+    addCard.style.cssText = 'cursor:pointer;border:2px dashed var(--border2);background:rgba(108,99,255,.04);display:flex;align-items:center;justify-content:center;min-height:120px;transition:all .25s;';
+    addCard.innerHTML = '<div style="text-align:center;"><div style="width:48px;height:48px;border-radius:50%;background:rgba(108,99,255,.12);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:24px;color:var(--accent2);">+</div><div style="font-family:\'Sora\',sans-serif;font-size:14px;font-weight:700;color:var(--accent2);">Add Semester</div></div>';
+    addCard.onmouseover = function(){ this.style.borderColor='var(--accent2)'; this.style.background='rgba(108,99,255,.08)'; };
+    addCard.onmouseout = function(){ this.style.borderColor='var(--border2)'; this.style.background='rgba(108,99,255,.04)'; };
+    addCard.onclick = function(){ addNewSemester(); };
+    grid.appendChild(addCard);
+  }
 }
 el('nav-semesters').onclick=function(){closeMobileMenu();if(S.uni)openSemesters(S.uni);};
 
@@ -4252,6 +4297,71 @@ window.saveSemSub = function(sidx){
     SEMESTERS[sidx].sub = newSub;
     openSemesters(S.uni);
   }).catch(function(e){ alert('Error saving: ' + e.message); });
+};
+
+/* ── SEMESTER HIDE / RESTORE / ADD / DELETE ── */
+document.addEventListener('click', function(e){
+  var btn = e.target.closest('.sem-hide-btn');
+  if(!btn || !isAdmin()) return;
+  e.stopPropagation();
+  var sidx = parseInt(btn.getAttribute('data-sidx'));
+  if(isNaN(sidx)) return;
+  if(!confirm('Hide this semester from students? You can restore it later.')) return;
+  var ref = db.collection('hiddenSemesters').doc(S.uni.id);
+  ref.get().then(function(doc){
+    var indices = doc.exists ? (doc.data().indices || []) : [];
+    if(indices.indexOf(sidx) === -1) indices.push(sidx);
+    return ref.set({ indices: indices, updatedAt: new Date().toISOString() });
+  }).then(function(){
+    openSemesters(S.uni);
+  }).catch(function(e){ alert('Error: ' + e.message); });
+});
+
+document.addEventListener('click', function(e){
+  var btn = e.target.closest('.sem-restore-btn');
+  if(!btn || !isAdmin()) return;
+  e.stopPropagation();
+  var sidx = parseInt(btn.getAttribute('data-sidx'));
+  if(isNaN(sidx)) return;
+  var ref = db.collection('hiddenSemesters').doc(S.uni.id);
+  ref.get().then(function(doc){
+    var indices = doc.exists ? (doc.data().indices || []) : [];
+    indices = indices.filter(function(i){ return i !== sidx; });
+    return ref.set({ indices: indices, updatedAt: new Date().toISOString() });
+  }).then(function(){
+    openSemesters(S.uni);
+  }).catch(function(e){ alert('Error: ' + e.message); });
+});
+
+document.addEventListener('click', function(e){
+  var btn = e.target.closest('.sem-del-custom-btn');
+  if(!btn || !isAdmin()) return;
+  e.stopPropagation();
+  var fid = btn.getAttribute('data-fid');
+  if(!fid) return;
+  if(!confirm('Delete this custom semester? This cannot be undone.')) return;
+  db.collection('customSemesters').doc(fid).delete().then(function(){
+    openSemesters(S.uni);
+  }).catch(function(e){ alert('Error: ' + e.message); });
+});
+
+window.addNewSemester = function(){
+  if(!isAdmin() || !S.uni) return;
+  var title = prompt('Enter semester name:');
+  if(!title || !title.trim()) return;
+  var sub = prompt('Enter subtitle (e.g. "Major: Literature & Culture"):') || 'Custom semester';
+  var docId = S.uni.id + '_custom_sem_' + Date.now();
+  db.collection('customSemesters').doc(docId).set({
+    university: S.uni.id,
+    semId: docId,
+    title: title.trim(),
+    sub: sub.trim(),
+    c1: '#6c63ff',
+    c2: '#9b59b6',
+    createdAt: new Date().toISOString()
+  }).then(function(){
+    openSemesters(S.uni);
+  }).catch(function(e){ alert('Error adding semester: ' + e.message); });
 };
 
 window.addNewModule = function(){
