@@ -1401,6 +1401,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 <script>
   var firebaseConfig = {
     apiKey: "AIzaSyDDvXYqYyZV45UvxhE7f70P0JmJlKN5SLg",
@@ -1413,6 +1414,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
   };
   firebase.initializeApp(firebaseConfig);
   var db = firebase.firestore();
+  var storage = firebase.storage();
 </script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-DW1MT8LWDG"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-DW1MT8LWDG");</script>
 </head>
@@ -2069,7 +2071,7 @@ function openLoginFromLanding(){
             <h3 style="color:var(--accent2);margin:0 0 8px;">10. اتصل بنا 📞</h3>
             <p style="margin:0;"><strong>الاسم:</strong> أمين بويدي<br>
             <strong>WhatsApp:</strong> <span dir="ltr">+212 606-248409</span><br>
-            <strong>البريد الإلكتروني:</strong> <a href="mailto:aminebouidi000@gmail.com" style="color:var(--accent2);">aminebouidi000@gmail.com</a></p>
+            <strong>البريد الإلكتروني:</strong> <a href="/cdn-cgi/l/email-protection#2f4e4246414a4d405a464b461f1f1f6f48424e4643014c4042" style="color:var(--accent2);"><span class="__cf_email__" data-cfemail="6c0d010502090e03190508055c5c5c2c0b010d0500420f0301">[email&#160;protected]</span></a></p>
           </div>
           </div>
 
@@ -2133,7 +2135,7 @@ function openLoginFromLanding(){
             <h3 style="color:var(--accent2);margin:0 0 8px;">10. Contact 📞</h3>
             <p style="margin:0;"><strong>Name:</strong> Amine Bouidi<br>
             <strong>WhatsApp:</strong> +212 606-248409<br>
-            <strong>Email:</strong> <a href="mailto:aminebouidi000@gmail.com" style="color:var(--accent2);">aminebouidi000@gmail.com</a></p>
+            <strong>Email:</strong> <a href="/cdn-cgi/l/email-protection#95f4f8fcfbf0f7fae0fcf1fca5a5a5d5f2f8f4fcf9bbf6faf8" style="color:var(--accent2);"><span class="__cf_email__" data-cfemail="43222e2a2d26212c362a272a73737303242e222a2f6d202c2e">[email&#160;protected]</span></a></p>
           </div>
           </div>
 
@@ -2749,6 +2751,7 @@ function openLoginFromLanding(){
             <div class="res-tabs">
               <button class="res-tab active" id="resTabLessons" onclick="switchResTab('lessons')">Lessons</button>
               <button class="res-tab" id="resTabExams" onclick="switchResTab('exams')">Past Exams</button>
+              <button class="res-tab" id="resTabCommunity" onclick="switchResTab('community')">📤 Community</button>
             </div>
 
             <!-- LESSONS PANEL -->
@@ -2759,6 +2762,13 @@ function openLoginFromLanding(){
             <!-- EXAMS PANEL -->
             <div class="res-panel" id="resPanelExams">
               <div class="res-file-list" id="examFileList"></div>
+            </div>
+
+            <!-- COMMUNITY UPLOADS PANEL (approved contributions) -->
+            <div class="res-panel" id="resPanelCommunity">
+              <div class="res-file-list" id="communityFileList">
+                <div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">Loading community resources...</div>
+              </div>
             </div>
           </div>
 
@@ -2974,7 +2984,7 @@ function openLoginFromLanding(){
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 (function(){
 
 /* ── SIDEBAR TOGGLE ── */
@@ -4681,6 +4691,10 @@ function switchResTab(tab){
   el('resTabExams').classList.toggle('active',   tab==='exams');
   el('resPanelLessons').classList.toggle('active', tab==='lessons');
   el('resPanelExams').classList.toggle('active',   tab==='exams');
+  /* Community tab — added for approved contributions */
+  var cTab = el('resTabCommunity'); if(cTab) cTab.classList.toggle('active', tab==='community');
+  var cPanel = el('resPanelCommunity'); if(cPanel) cPanel.classList.toggle('active', tab==='community');
+  if(tab==='community') loadCommunityResources();
 }
 window.switchResTab = switchResTab;
 
@@ -6385,6 +6399,7 @@ window.loadContributions = function(){
         '</div>' +
         '<div style="display:flex;gap:4px;flex-shrink:0;">' +
           (hasDrive ? '<a href="' + d.driveLink + '" target="_blank" style="font-size:14px;text-decoration:none;" title="Open Drive link">📎</a>' : '') +
+          '<button style="border:none;background:rgba(67,233,123,.15);cursor:pointer;font-size:11px;padding:3px 8px;border-radius:6px;color:#43e97b;font-weight:700;" onclick="approveAndPublish(\'' + d._id + '\')" title="Approve & Publish to Learning Page">📤 Publish</button>' +
           '<button style="border:none;background:none;cursor:pointer;font-size:14px;padding:2px;" onclick="updateContribStatus(\'' + d._id + '\',\'reviewed\')" title="Reviewed">✅</button>' +
           '<button style="border:none;background:none;cursor:pointer;font-size:14px;padding:2px;" onclick="updateContribStatus(\'' + d._id + '\',\'used\')" title="Used">📺</button>' +
           '<button style="border:none;background:none;cursor:pointer;font-size:14px;padding:2px;" onclick="updateContribStatus(\'' + d._id + '\',\'rejected\')" title="Reject">❌</button>' +
@@ -6771,19 +6786,163 @@ window.renderPhase1Dashboard = function(){
     if(!twDel){
       twEl.textContent = cur.substring(0, twChar + 1);
       twChar++;
-      if(twChar === cur.length){ twDel = true; setTimeout(twType, 1500); return; }
-      setTimeout(twType, 80);
+      if(twChar === cur.length){
+        twDel = true;
+        setTimeout(twType, twIdx === twPhrases.length - 1 ? 2200 : 1600);
+        return;
+      }
     } else {
       twEl.textContent = cur.substring(0, twChar - 1);
       twChar--;
-      if(twChar === 0){ twDel = false; twIdx = (twIdx + 1) % twPhrases.length; setTimeout(twType, 400);       return; }
-      setTimeout(twType, 60);
+      if(twChar === 0){
+        twDel = false;
+        twIdx = (twIdx + 1) % twPhrases.length;
+      }
     }
+    setTimeout(twType, twDel ? 35 : 65);
   }
   twType();
 })();
 
-})();
+/* ══════════════════════════════════════════════════════════════
+   NEW FEATURE: Approve & Publish contributions to Learning Page
+   - approveAndPublish(): uploads file to Firebase Storage + creates resource doc
+   - loadCommunityResources(): displays approved resources in module view
+   These functions are NEW additions — no existing functions were modified.
+   ══════════════════════════════════════════════════════════════ */
+
+window.approveAndPublish = function(contribDocId){
+  if(!confirm('Approve this contribution and publish it to the learning page?')) return;
+
+  // 1. Get the contribution document from Firestore
+  db.collection('contributions').doc(contribDocId).get().then(function(doc){
+    if(!doc.exists){ alert('Contribution not found.'); return; }
+    var d = doc.data();
+
+    // Build a clean filename
+    var timestamp = Date.now();
+    var safeName = (d.module || 'resource').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 40);
+    var storagePath = 'resources/' + (d.university || 'unknown') + '/' + (d.semester || 'unknown') + '/' + safeName + '_' + timestamp;
+
+    // 2. Handle different file sources
+    var hasImage = d.imageData && d.imageData.length > 50;
+    var hasDrive = d.driveLink && d.driveLink.length > 5;
+
+    if(hasImage){
+      // Upload base64 image/file to Firebase Storage
+      var storageRef = storage.ref(storagePath);
+      storageRef.putString(d.imageData, 'data_url').then(function(snapshot){
+        return snapshot.ref.getDownloadURL();
+      }).then(function(downloadURL){
+        // 3. Create resource document in Firestore
+        return createPublishedResource(d, contribDocId, downloadURL, 'storage');
+      }).then(function(){
+        alert('✅ Published! The resource is now visible in the module learning page.');
+        loadContributions();
+      }).catch(function(err){
+        alert('Error uploading to Storage: ' + err.message);
+      });
+    } else if(hasDrive){
+      // Use Drive link directly — no Storage upload needed
+      createPublishedResource(d, contribDocId, d.driveLink, 'drive').then(function(){
+        alert('✅ Published! The Drive link is now visible in the module learning page.');
+        loadContributions();
+      }).catch(function(err){
+        alert('Error publishing: ' + err.message);
+      });
+    } else {
+      alert('This contribution has no file or link to publish.');
+    }
+  }).catch(function(err){
+    alert('Error reading contribution: ' + err.message);
+  });
+};
+
+function createPublishedResource(d, contribDocId, fileURL, source){
+  var resId = 'res_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+  // Determine file extension for display
+  var ext = 'PDF';
+  if(d.imageData && d.imageData.indexOf('image/') >= 0) ext = 'IMG';
+  if(d.fileType === 'exam' || d.fileType === 'past_exam') ext = 'EXAM';
+  if(d.driveLink) ext = 'PDF';
+
+  return db.collection('published_resources').doc(resId).set({
+    university: d.university || '',
+    universityName: d.universityName || '',
+    semester: d.semester || '',
+    semesterTitle: d.semesterTitle || '',
+    module: d.module || '',
+    moduleIcon: d.moduleIcon || '',
+    fileType: d.fileType || 'lesson',
+    fileExt: ext,
+    title: d.module + ' — ' + (d.fileType || 'Lesson') + ' (' + (d.name || 'Anonymous') + ')',
+    contributorName: d.name || 'Anonymous',
+    contributorEmail: d.email || '',
+    fileURL: fileURL,
+    source: source,
+    notes: d.notes || '',
+    contribDocId: contribDocId,
+    publishedAt: new Date().toISOString(),
+    status: 'published'
+  }).then(function(){
+    // Update the original contribution status to 'published'
+    return db.collection('contributions').doc(contribDocId).update({
+      status: 'published',
+      reviewedAt: new Date().toISOString(),
+      publishedResourceId: resId
+    });
+  });
+}
+
+window.loadCommunityResources = function(){
+  var list = el('communityFileList');
+  if(!list) return;
+  if(!S.uni || !S.sem || !S.mod){
+    list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">Select a module to see community resources.</div>';
+    return;
+  }
+  list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">Loading...</div>';
+
+  // Query published_resources for this specific university + semester + module
+  db.collection('published_resources')
+    .where('university', '==', S.uni.id)
+    .where('semester', '==', S.sem.id)
+    .where('module', '==', S.mod.title)
+    .where('status', '==', 'published')
+    .orderBy('publishedAt', 'desc')
+    .limit(50)
+    .get().then(function(snap){
+      if(snap.empty){
+        list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text3);font-size:12px;"><div style="font-size:24px;margin-bottom:8px;">📭</div>No community resources for this module yet.<br><span style="font-size:11px;">Be the first to contribute! Click the upload button below.</span></div>';
+        return;
+      }
+      list.innerHTML = '';
+      snap.forEach(function(doc){
+        var r = doc.data();
+        var extCls = r.fileExt === 'EXAM' ? 'exam' : r.fileExt === 'IMG' ? 'img' : 'pdf';
+        var extColor = r.fileExt === 'EXAM' ? 'rgba(255,101,132,.15)' : r.fileExt === 'IMG' ? 'rgba(56,249,215,.15)' : 'rgba(108,99,255,.15)';
+        var extTextColor = r.fileExt === 'EXAM' ? '#ff6584' : r.fileExt === 'IMG' ? '#38f9d7' : '#8b84ff';
+        var date = r.publishedAt ? new Date(r.publishedAt).toLocaleDateString() : '';
+
+        var item = document.createElement('a');
+        item.className = 'res-file';
+        item.href = r.fileURL;
+        item.target = '_blank';
+        item.rel = 'noopener';
+        item.innerHTML =
+          '<span class="res-file-ext" style="background:' + extColor + ';color:' + extTextColor + ';">' + r.fileExt + '</span>' +
+          '<div class="res-file-info">' +
+            '<span class="res-file-name">' + (r.title || 'Resource') + '</span>' +
+            '<span class="res-file-size">Shared by ' + (r.contributorName || 'Anonymous') + ' · ' + date + '</span>' +
+          '</div>' +
+          '<div class="res-file-dl"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>';
+        list.appendChild(item);
+      });
+    }).catch(function(err){
+      list.innerHTML = '<div style="text-align:center;padding:20px;color:#e05252;font-size:12px;">Error loading resources: ' + err.message + '</div>';
+    });
+};
+
 </script>
 </body>
 </html>
