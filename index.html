@@ -386,10 +386,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .res-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
 .res-hdr{display:flex;align-items:center;gap:9px;padding:14px 16px 0;}
 .res-hdr-title{font-family:'Sora',sans-serif;font-size:13px;font-weight:700;}
-.res-tabs{display:flex;gap:6px;padding:10px 16px 0;}
-.res-tab{flex:1;padding:7px 8px;font-size:12px;font-weight:600;color:var(--text3);cursor:pointer;background:var(--bg3);border:1px solid var(--border);border-radius:8px;transition:all .2s;}
-.res-tab:hover{color:var(--text2);border-color:var(--border2);}
-.res-tab.active{background:rgba(108,99,255,.15);color:var(--accent2);border-color:var(--border2);}
 .res-panel{display:none;padding:10px 14px 14px;}
 .res-panel.active{display:block;}
 .res-file-list{display:flex;flex-direction:column;gap:4px;}
@@ -785,8 +781,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
   .res-card{padding:0;position:relative;z-index:1;}
   .res-hdr{padding:12px 14px 0;}
   .res-hdr-title{font-size:12px;}
-  .res-tabs{padding:8px 14px 0;}
-  .res-tab{padding:6px;font-size:11px;}
   .res-panel{padding:8px 12px 12px;}
   .res-file{padding:7px 10px;}
   .res-file-name{font-size:11px;}
@@ -2774,19 +2768,11 @@ function openLoginFromLanding(){
             <div class="res-hdr">
               <div class="res-hdr-title">📁 Module Resources</div>
             </div>
-            <div class="res-tabs">
-              <button class="res-tab active" id="resTabLessons" onclick="switchResTab('lessons')">Lessons</button>
-              <button class="res-tab" id="resTabExams" onclick="switchResTab('exams')">Past Exams</button>
-            </div>
 
-            <!-- LESSONS PANEL -->
-            <div class="res-panel active" id="resPanelLessons">
-              <div class="res-file-list" id="lessonFileList"></div>
-            </div>
-
-            <!-- EXAMS PANEL -->
-            <div class="res-panel" id="resPanelExams">
-              <div class="res-file-list" id="examFileList"></div>
+            <div class="res-panel active" id="resPanelResources">
+              <div class="res-file-list" id="resourceFileList">
+                <div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">Loading resources...</div>
+              </div>
             </div>
 
           </div>
@@ -4681,95 +4667,56 @@ function toggleStudyAlone(){
 window.toggleStudyAlone = toggleStudyAlone;
 
 /* ── RESOURCES ── */
-var LESSON_FILES = [
-  {name:'Chapter 1 — Introduction & Foundations.pdf', type:'pdf',  size:'2.4 MB', badge:'new'},
-  {name:'Chapter 2 — Core Concepts.pdf',              type:'pdf',  size:'3.1 MB', badge:''},
-  {name:'Chapter 3 — Applied Methods.pdf',            type:'pdf',  size:'2.8 MB', badge:''},
-  {name:'Lecture Slides — Full Module.pptx',          type:'ppt',  size:'8.6 MB', badge:''},
-  {name:'Formula Sheet & Reference.docx',             type:'doc',  size:'540 KB', badge:'new'},
-  {name:'Practice Exercises.docx',                    type:'doc',  size:'780 KB', badge:''},
-  {name:'Supplementary Reading List.pdf',             type:'pdf',  size:'190 KB', badge:''},
-  {name:'Data Sets & Examples.xlsx',                  type:'xls',  size:'1.2 MB', badge:''}
-];
-var EXAM_FILES = [
-  {name:'Final Exam 2024 — With Answers.pdf',  type:'exam', size:'1.8 MB', badge:'new',  year:'2024'},
-  {name:'Final Exam 2023 — With Answers.pdf',  type:'exam', size:'1.6 MB', badge:'',     year:'2023'},
-  {name:'Midterm Exam 2024.pdf',               type:'exam', size:'980 KB', badge:'new',  year:'2024'},
-  {name:'Midterm Exam 2023.pdf',               type:'exam', size:'870 KB', badge:'',     year:'2023'},
-  {name:'Mock Exam Paper 1.pdf',               type:'exam', size:'1.1 MB', badge:'',     year:'Mock'},
-  {name:'Mock Exam Paper 2.pdf',               type:'exam', size:'1.0 MB', badge:'',     year:'Mock'},
-  {name:'Exam Marking Criteria.pdf',           type:'pdf',  size:'320 KB', badge:'',     year:'Guide'}
-];
-var FILE_ICONS = {
-  pdf: {icon:'📄', cls:'pdf'}, doc:{icon:'📝', cls:'doc'},
-  ppt: {icon:'📊', cls:'ppt'}, xls:{icon:'📈', cls:'xls'},
-  zip: {icon:'🗜️', cls:'zip'}, exam:{icon:'📋', cls:'exam'}
-};
-function switchResTab(tab){
-  el('resTabLessons').classList.toggle('active', tab==='lessons');
-  el('resTabExams').classList.toggle('active',   tab==='exams');
-  el('resPanelLessons').classList.toggle('active', tab==='lessons');
-  el('resPanelExams').classList.toggle('active',   tab==='exams');
-}
-window.switchResTab = switchResTab;
-
 function renderResources(){
-  /* Check for Firestore resources first */
-  var modIdx = S.mod.id.replace('m','');
-  var cacheKey = S.uni.id + '_' + S.sem.id + '_m' + (parseInt(modIdx)-1);
-  var fsRes = null;
-  if(CONTENT_CACHE[cacheKey] && CONTENT_CACHE[cacheKey][0] && CONTENT_CACHE[cacheKey][0]._resources){
-    fsRes = CONTENT_CACHE[cacheKey][0]._resources;
+  var list = el('resourceFileList');
+  if(!list) return;
+  if(!S.uni || !S.sem || !S.mod){
+    list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">Select a module to see resources.</div>';
+    return;
   }
+  list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">Loading resources...</div>';
 
-  if(fsRes && (fsRes.lessons.length > 0 || fsRes.exams.length > 0)){
-    /* Render Firestore resources */
-    var lc = el('lessonFileList'); if(lc){ lc.innerHTML='';
-      fsRes.lessons.forEach(function(f){
+  db.collection('published_resources')
+    .where('university', '==', S.uni.id)
+    .where('semester', '==', S.sem.id)
+    .where('module', '==', S.mod.title)
+    .where('status', '==', 'published')
+    .orderBy('publishedAt', 'desc')
+    .limit(50)
+    .get().then(function(snap){
+      if(snap.empty){
+        list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text3);font-size:12px;"><div style="font-size:24px;margin-bottom:8px;">📭</div>No resources available for this module yet.<br><span style="font-size:11px;">Be the first to contribute!</span></div>';
+        return;
+      }
+      list.innerHTML = '';
+      snap.forEach(function(doc){
+        var r = doc.data();
+        var extColor = r.fileExt === 'EXAM' ? 'rgba(255,101,132,.15)' : r.fileExt === 'IMG' ? 'rgba(56,249,215,.15)' : 'rgba(108,99,255,.15)';
+        var extTextColor = r.fileExt === 'EXAM' ? '#ff6584' : r.fileExt === 'IMG' ? '#38f9d7' : '#8b84ff';
+        var date = r.publishedAt ? new Date(r.publishedAt).toLocaleDateString() : '';
+
         var item = document.createElement('a');
-        item.className='res-file'; item.href=f.url; item.target='_blank'; item.rel='noopener';
-        item.innerHTML='<span class="res-file-ext pdf">PDF</span><div class="res-file-info"><span class="res-file-name">'+f.title+'</span><span class="res-file-size">Google Drive</span></div><div class="res-file-dl"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>';
-        lc.appendChild(item);
+        item.className = 'res-file';
+        if(r.fileURL){
+          item.href = r.fileURL;
+          item.target = '_blank';
+          item.rel = 'noopener';
+        } else {
+          item.href = '#';
+          item.onclick = function(e){ e.preventDefault(); };
+        }
+        item.innerHTML =
+          '<span class="res-file-ext" style="background:' + extColor + ';color:' + extTextColor + ';">' + (r.fileExt || 'PDF') + '</span>' +
+          '<div class="res-file-info">' +
+            '<span class="res-file-name">' + (r.title || 'Resource') + '</span>' +
+            '<span class="res-file-size">Shared by ' + (r.contributorName || 'Anonymous') + ' · ' + date + '</span>' +
+          '</div>' +
+          (r.fileURL ? '<div class="res-file-dl"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>' : '');
+        list.appendChild(item);
       });
-    }
-    var ec = el('examFileList'); if(ec){ ec.innerHTML='';
-      fsRes.exams.forEach(function(f){
-        var item = document.createElement('a');
-        item.className='res-file'; item.href=f.url; item.target='_blank'; item.rel='noopener';
-        item.innerHTML='<span class="res-file-ext pdf" style="background:rgba(255,101,132,.15);color:#ff6584;">EXAM</span><div class="res-file-info"><span class="res-file-name">'+f.title+'</span><span class="res-file-size">Google Drive</span></div><div class="res-file-dl"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>';
-        ec.appendChild(item);
-      });
-    }
-  } else {
-    /* Fallback to hardcoded data */
-    buildFileList('lessonFileList', LESSON_FILES, false);
-    buildFileList('examFileList',   EXAM_FILES,   true);
-  }
-}
-function buildFileList(cid, files, isExam){
-  var c = el(cid); if(!c) return; c.innerHTML='';
-  files.forEach(function(f){
-    var extCls = FILE_ICONS[f.type] ? FILE_ICONS[f.type].cls : 'pdf';
-    var extLabel = f.type==='exam' ? 'PDF' : f.type.toUpperCase();
-    var badgeHtml = f.badge==='new'
-      ? '<span class="res-badge res-badge-new">New</span>'
-      : (isExam && f.year ? '<span class="res-badge res-badge-exam">'+f.year+'</span>' : '');
-    var item = document.createElement('a');
-    item.className='res-file'; item.href='#';
-    item.onclick=function(e){
-      e.preventDefault();
-      alert('📥 Downloading: '+f.name+'\n\nIn the live version this triggers a real file download.');
-    };
-    item.innerHTML=
-      '<span class="res-file-ext '+extCls+'">'+extLabel+'</span>'+
-      '<div class="res-file-info">'+
-        '<span class="res-file-name">'+f.name.replace(/\.[^.]+$/,'')+'</span>'+
-        '<span class="res-file-size">'+f.size+'</span>'+
-        badgeHtml+
-      '</div>'+
-      '<div class="res-file-dl"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>';
-    c.appendChild(item);
-  });
+    }).catch(function(err){
+      list.innerHTML = '<div style="text-align:center;padding:20px;color:#e05252;font-size:12px;">Error loading resources: ' + err.message + '</div>';
+    });
 }
 
 var pendingMedia = []; /* [{type:'image'|'audio', url:..., name:...}] */
