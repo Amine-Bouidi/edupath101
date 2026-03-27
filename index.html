@@ -6855,8 +6855,17 @@ window.approveAndPublish = function(contribDocId){
 
     var hasImage = d.imageData && d.imageData.length > 50;
     var hasDrive = d.driveLink && d.driveLink.length > 5;
+    var hasFileURL = d.fileURL && d.fileURL.length > 10;
 
-    if(hasImage){
+    if(hasFileURL){
+      // File already in Firebase Storage — use the existing URL
+      createPublishedResource(d, contribDocId, d.fileURL, 'storage').then(function(){
+        alert('✅ Published! The resource is now visible in the module learning page.');
+        loadContributions();
+      }).catch(function(err){
+        alert('Error publishing: ' + err.message);
+      });
+    } else if(hasImage){
       // Upload base64 to Firebase Storage
       var storageRef = storage.ref(storagePath);
       storageRef.putString(d.imageData, 'data_url').then(function(snapshot){
