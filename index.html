@@ -6398,7 +6398,7 @@ window.loadContributions = function(){
         '</div>' +
         '<div style="display:flex;gap:4px;flex-shrink:0;">' +
           (hasDrive ? '<a href="' + d.driveLink + '" target="_blank" style="font-size:14px;text-decoration:none;" title="Open Drive link">📎</a>' : '') +
-          '<button style="border:none;background:rgba(67,233,123,.15);cursor:pointer;font-size:11px;padding:3px 8px;border-radius:6px;color:#43e97b;font-weight:700;" onclick="approveAndPublish(\'' + d._id + '\')" title="Approve & Publish to Learning Page">📤 Publish</button>' +
+          '<button style="border:none;background:rgba(67,233,123,.15);cursor:pointer;font-size:11px;padding:3px 8px;border-radius:6px;color:#43e97b;font-weight:700;" onclick="approveAndPublish(\'' + d._id + '\')" title="Approve & Publish to Learning Page' + (hasImage ? ' [has file]' : '') + (hasDrive ? ' [has Drive link]' : '') + (!hasImage && !hasDrive ? ' [no file attached]' : '') + '">📤 Publish</button>' +
           '<button style="border:none;background:none;cursor:pointer;font-size:14px;padding:2px;" onclick="updateContribStatus(\'' + d._id + '\',\'reviewed\')" title="Reviewed">✅</button>' +
           '<button style="border:none;background:none;cursor:pointer;font-size:14px;padding:2px;" onclick="updateContribStatus(\'' + d._id + '\',\'used\')" title="Used">📺</button>' +
           '<button style="border:none;background:none;cursor:pointer;font-size:14px;padding:2px;" onclick="updateContribStatus(\'' + d._id + '\',\'rejected\')" title="Reject">❌</button>' +
@@ -6816,6 +6816,7 @@ window.approveAndPublish = function(contribDocId){
     var hasDrive = d.driveLink && d.driveLink.length > 5;
 
     if(hasImage){
+      // Upload base64 to Firebase Storage
       var storageRef = storage.ref(storagePath);
       storageRef.putString(d.imageData, 'data_url').then(function(snapshot){
         return snapshot.ref.getDownloadURL();
@@ -6828,6 +6829,7 @@ window.approveAndPublish = function(contribDocId){
         alert('Error uploading to Storage: ' + err.message);
       });
     } else if(hasDrive){
+      // Use Drive link directly
       createPublishedResource(d, contribDocId, d.driveLink, 'drive').then(function(){
         alert('✅ Published! The Drive link is now visible in the module learning page.');
         loadContributions();
@@ -6835,7 +6837,14 @@ window.approveAndPublish = function(contribDocId){
         alert('Error publishing: ' + err.message);
       });
     } else {
-      alert('This contribution has no file or link to publish.');
+      // No file and no link — still publish as a record (module info only)
+      if(!confirm('This contribution has no file or Drive link attached. Publish it anyway as a module resource entry?')) return;
+      createPublishedResource(d, contribDocId, '', 'none').then(function(){
+        alert('✅ Published as a record (no file attached).');
+        loadContributions();
+      }).catch(function(err){
+        alert('Error publishing: ' + err.message);
+      });
     }
   }).catch(function(err){
     alert('Error reading contribution: ' + err.message);
