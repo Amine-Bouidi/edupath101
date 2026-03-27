@@ -3083,7 +3083,7 @@ var UNIVERSITIES = [
   {id:'usmba', name:'USMBA — FLSH Sais, Fez', country:'Morocco 🇲🇦', emoji:'🕌', c:'#f9a825', verified:true},
   {id:'usmba_dhar', name:'USMBA — FLDM Dhar El Mahraz, Fez', country:'Morocco 🇲🇦', emoji:'🏛️', c:'#e67e22', verified:true},
   {id:'ump', name:'University Mohammed I — FLSH Oujda', country:'Morocco 🇲🇦', emoji:'🏰', c:'#56ccf2'},
-  {id:'uit', name:'University Ibn Tofail — FLSH Kenitra', country:'Morocco 🇲🇦', emoji:'📖', c:'#a18cd1'},
+  {id:'uit', name:'University Ibn Tofail — FLSH Kenitra', country:'Morocco 🇲🇦', emoji:'📖', c:'#a18cd1', verified:true},
   {id:'umi', name:'University Moulay Ismail — FLSH Meknes', country:'Morocco 🇲🇦', emoji:'⚙️', c:'#38f9d7'},
   {id:'um5', name:'University Mohammed V — FLSH Rabat', country:'Morocco 🇲🇦', emoji:'🏛️', c:'#ff9a9e'},
   {id:'uae', name:'University Abdelmalek Essaadi — FLSH Tetouan', country:'Morocco 🇲🇦', emoji:'🌊', c:'#fc4a1a'},
@@ -3477,6 +3477,82 @@ var MOD_DATA_NATIONAL = [
 
 /* University-specific module lookup */
 
+/* Ibn Tofail — FLSH Kenitra module data */
+var MOD_DATA_UIT = [
+  /* S1 */ [
+    {icon:'📝',title:'Grammar 1',desc:'Foundations of English grammar: parts of speech, tenses, sentence structure.'},
+    {icon:'✍️',title:'Paragraph Writing',desc:'Learn paragraph structure, topic sentences, and coherence.'},
+    {icon:'📖',title:'Reading Comprehension & Precis 1',desc:'Master basic reading comprehension skills and summary writing.'},
+    {icon:'🗣️',title:'Spoken English',desc:'Practice and improve listening and oral communication skills.'},
+    {icon:'📚',title:'Guided Reading 1',desc:'Overcome lexical and structural difficulties through guided reading.'},
+    {icon:'🌐',title:'Foreign Languages',desc:'Consolidate competence in foreign languages for academic purposes.'},
+    {icon:'🎯',title:'Soft Skills (Méthodologie du Travail Universitaire)',desc:'University work methods: research, organization, and academic practice.'}
+  ],
+  /* S2 */ [
+    {icon:'📝',title:'Grammar 2',desc:'Intermediate grammar: complex sentences, conditionals, passive voice.'},
+    {icon:'✍️',title:'Composition',desc:'Essay writing: thesis statements, argumentation, and structure.'},
+    {icon:'📖',title:'Reading Comprehension & Precis 2',desc:'Advanced reading strategies and summary writing techniques.'},
+    {icon:'🗣️',title:'Oral Communication',desc:'Develop fluency, pronunciation, and conversational confidence.'},
+    {icon:'📚',title:'Guided Reading 2',desc:'Develop reading fluency and comprehension through guided texts.'},
+    {icon:'🇫🇷',title:'Foreign Languages (Français)',desc:'French language skills for academic and professional purposes.'},
+    {icon:'💻',title:'Digital Skills (Culture Digitale)',desc:'Digital literacy, online tools, and the role of technology in education.'}
+  ],
+  /* S3 */ [
+    {icon:'📝',title:'Advanced Grammar',desc:'Advanced grammar: relative clauses, reported speech, advanced tenses.'},
+    {icon:'✍️',title:'Advanced Composition',desc:'Advanced essay writing: analytical and argumentative compositions.'},
+    {icon:'📖',title:'Extensive Reading',desc:'Read widely to build vocabulary, fluency, and literary appreciation.'},
+    {icon:'🗣️',title:'Public Speaking',desc:'Learn the rules of public speaking and oral presentations.'},
+    {icon:'🌐',title:'Readings in Global Cultures',desc:'Explore cultural texts and develop cross-cultural reading competence.'},
+    {icon:'🇫🇷',title:'Foreign Languages (Français)',desc:'French language skills for academic and professional purposes.'},
+    {icon:'🎨',title:'Culture & Art Skills (Histoire, art et Patrimoine du Maroc)',desc:'Moroccan history, art, and cultural heritage studies.'}
+  ],
+  /* S4 */ [
+    {icon:'🧠',title:'Introduction to Linguistics',desc:'Introduction to general linguistics: phonology, morphology, syntax, semantics.'},
+    {icon:'🔬',title:'Introduction to Research',desc:'Research methodology: formulating questions, gathering data, and writing.'},
+    {icon:'💬',title:'Introduction to Discourse Analysis',desc:'Study how language functions in context and shapes communication.'},
+    {icon:'🔄',title:'Introduction to Translation',desc:'Introduction to translation theory: English–Arabic and Arabic–English.'},
+    {icon:'🌐',title:'Introduction to Cultural Studies',desc:'Basics in the theory and practice of cultural studies and critical theory.'},
+    {icon:'🇫🇷',title:'Foreign Languages (Français)',desc:'French language skills for academic and professional purposes.'},
+    {icon:'🎯',title:'Soft Skills (Développement Personnel)',desc:'Personal development: communication, leadership, and career skills.'}
+  ],
+  /* S5 Literature */ [
+    {icon:'📕',title:'19th Century Novel',desc:'Study major 19th century British and American novels and narrative techniques.'},
+    {icon:'🎭',title:'Classical Drama',desc:'Explore classical dramatic works: Greek tragedy, Shakespeare, and Renaissance drama.'},
+    {icon:'🌐',title:'Cultural Studies 1',desc:'Foundations of cultural studies: theory, identity, and representation.'},
+    {icon:'🔄',title:'Translation 1',desc:'Translation theory and practice: English to Arabic and vice versa.'},
+    {icon:'📖',title:'Literary Criticism 1',desc:'Introduction to major critical approaches and literary analysis.'},
+    {icon:'💻',title:'Digital Skills (Excel avancé)',desc:'Advanced Excel skills for academic and professional use.'},
+    {icon:'🇫🇷',title:'Foreign Languages (Français)',desc:'French language skills for academic and professional purposes.'}
+  ],
+  /* S5 Linguistics */ [
+    {icon:'🧩',title:'Morphology',desc:'Analyse word structure: roots, affixes, derivation, and inflection.'},
+    {icon:'🔊',title:'Phonology',desc:'Study sound systems and patterns: phonemes, allophones, and phonological rules.'},
+    {icon:'💬',title:'Semantics',desc:'Study meaning in language: word meaning, sentence meaning, and interpretation.'},
+    {icon:'🧩',title:'Syntax',desc:'Analyse sentence structure: phrase structure rules and transformations.'},
+    {icon:'🎓',title:'Teaching Theories & Approaches',desc:'Language teaching methodologies, approaches, and classroom practices.'},
+    {icon:'🌐',title:'Foreign Languages',desc:'Foreign language competence for academic and professional purposes.'},
+    {icon:'💻',title:'Digital Skills II: Excel Avancé',desc:'Advanced Excel skills for data analysis and academic use.'}
+  ],
+  /* S6 Literature */ [
+    {icon:'🎭',title:'Modern Drama',desc:'Explore 20th century drama: absurdism, expressionism, and contemporary theatre.'},
+    {icon:'📖',title:'Literary Criticism 2',desc:'Advanced critical approaches: structuralism, feminism, deconstruction.'},
+    {icon:'📗',title:'Modern Novel',desc:'Study modern and contemporary fiction: narrative innovation and themes.'},
+    {icon:'🔄',title:'Translation 2',desc:'Advanced translation practice and professional techniques.'},
+    {icon:'🌐',title:'Cultural Studies 2',desc:'Advanced cultural studies: media, identity, and global perspectives.'},
+    {icon:'🇫🇷',title:'Foreign Languages (Français)',desc:'French language skills for academic and professional purposes.'},
+    {icon:'⚖️',title:'Droit, Civisme et Citoyenneté',desc:'Law, civic education, and citizenship studies.'}
+  ],
+  /* S6 Linguistics */ [
+    {icon:'🎓',title:'Applied Linguistics',desc:'Apply linguistic theory to language teaching, learning, and communication.'},
+    {icon:'💬',title:'Discourse Studies',desc:'Analyse discourse structures, pragmatics, and language in context.'},
+    {icon:'🧠',title:'Psycholinguistics',desc:'Study how the brain processes and acquires language.'},
+    {icon:'👥',title:'Sociolinguistics',desc:'Explore the relationship between language and society: dialects, identity.'},
+    {icon:'🎓',title:'Teaching the Four Skills',desc:'Methods for teaching reading, writing, listening, and speaking.'},
+    {icon:'🌐',title:'Foreign Languages',desc:'Foreign language competence for academic and professional purposes.'},
+    {icon:'🏛️',title:'Civic Skills',desc:'Civic engagement, citizenship, and community participation.'}
+  ]
+];
+
 /* Dhar El Mahraz - Fez modules */
 var MOD_DATA_DHAR = [
   /* S1 */ [
@@ -3595,7 +3671,7 @@ var UNI_MOD_DATA = {
   'uca': MOD_DATA_UCA,
   'usmba': MOD_DATA_USMBA,
   'ump': MOD_DATA_NATIONAL,
-  'uit': MOD_DATA_NATIONAL,
+  'uit': MOD_DATA_UIT,
   'umi': MOD_DATA_NATIONAL,
   'um5': MOD_DATA_NATIONAL,
   'uae': MOD_DATA_NATIONAL,
