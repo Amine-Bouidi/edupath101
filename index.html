@@ -2777,7 +2777,6 @@ function openLoginFromLanding(){
             <div class="res-tabs">
               <button class="res-tab active" id="resTabLessons" onclick="switchResTab('lessons')">Lessons</button>
               <button class="res-tab" id="resTabExams" onclick="switchResTab('exams')">Past Exams</button>
-              <button class="res-tab" id="resTabCommunity" onclick="switchResTab('community')">📤 Community</button>
             </div>
 
             <!-- LESSONS PANEL -->
@@ -2790,12 +2789,6 @@ function openLoginFromLanding(){
               <div class="res-file-list" id="examFileList"></div>
             </div>
 
-            <!-- COMMUNITY UPLOADS PANEL (approved contributions) -->
-            <div class="res-panel" id="resPanelCommunity">
-              <div class="res-file-list" id="communityFileList">
-                <div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">Loading community resources...</div>
-              </div>
-            </div>
           </div>
 
           <!-- CONTRIBUTE BANNER -->
@@ -4717,9 +4710,6 @@ function switchResTab(tab){
   el('resTabExams').classList.toggle('active',   tab==='exams');
   el('resPanelLessons').classList.toggle('active', tab==='lessons');
   el('resPanelExams').classList.toggle('active',   tab==='exams');
-  var cTab = el('resTabCommunity'); if(cTab) cTab.classList.toggle('active', tab==='community');
-  var cPanel = el('resPanelCommunity'); if(cPanel) cPanel.classList.toggle('active', tab==='community');
-  if(tab==='community') loadCommunityResources();
 }
 window.switchResTab = switchResTab;
 
@@ -6955,52 +6945,6 @@ function createPublishedResource(d, contribDocId, fileURL, source){
   });
 }
 
-window.loadCommunityResources = function(){
-  var list = el('communityFileList');
-  if(!list) return;
-  if(!S.uni || !S.sem || !S.mod){
-    list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">Select a module to see community resources.</div>';
-    return;
-  }
-  list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">Loading...</div>';
-
-  db.collection('published_resources')
-    .where('university', '==', S.uni.id)
-    .where('semester', '==', S.sem.id)
-    .where('module', '==', S.mod.title)
-    .where('status', '==', 'published')
-    .orderBy('publishedAt', 'desc')
-    .limit(50)
-    .get().then(function(snap){
-      if(snap.empty){
-        list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text3);font-size:12px;"><div style="font-size:24px;margin-bottom:8px;">📭</div>No community resources for this module yet.<br><span style="font-size:11px;">Be the first to contribute!</span></div>';
-        return;
-      }
-      list.innerHTML = '';
-      snap.forEach(function(doc){
-        var r = doc.data();
-        var extColor = r.fileExt === 'EXAM' ? 'rgba(255,101,132,.15)' : r.fileExt === 'IMG' ? 'rgba(56,249,215,.15)' : 'rgba(108,99,255,.15)';
-        var extTextColor = r.fileExt === 'EXAM' ? '#ff6584' : r.fileExt === 'IMG' ? '#38f9d7' : '#8b84ff';
-        var date = r.publishedAt ? new Date(r.publishedAt).toLocaleDateString() : '';
-
-        var item = document.createElement('a');
-        item.className = 'res-file';
-        item.href = r.fileURL;
-        item.target = '_blank';
-        item.rel = 'noopener';
-        item.innerHTML =
-          '<span class="res-file-ext" style="background:' + extColor + ';color:' + extTextColor + ';">' + r.fileExt + '</span>' +
-          '<div class="res-file-info">' +
-            '<span class="res-file-name">' + (r.title || 'Resource') + '</span>' +
-            '<span class="res-file-size">Shared by ' + (r.contributorName || 'Anonymous') + ' · ' + date + '</span>' +
-          '</div>' +
-          '<div class="res-file-dl"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>';
-        list.appendChild(item);
-      });
-    }).catch(function(err){
-      list.innerHTML = '<div style="text-align:center;padding:20px;color:#e05252;font-size:12px;">Error loading resources: ' + err.message + '</div>';
-    });
-};
 
 })();
   </script>
