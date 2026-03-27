@@ -4677,20 +4677,24 @@ function renderResources(){
   list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">Loading resources...</div>';
 
   db.collection('published_resources')
-    .where('university', '==', S.uni.id)
-    .where('semester', '==', S.sem.id)
-    .where('module', '==', S.mod.title)
     .where('status', '==', 'published')
-    .orderBy('publishedAt', 'desc')
-    .limit(50)
     .get().then(function(snap){
-      if(snap.empty){
+      var results = [];
+      snap.forEach(function(doc){
+        var r = doc.data();
+        if(r.university === S.uni.id && r.semester === S.sem.id && r.module === S.mod.title){
+          results.push(r);
+        }
+      });
+      results.sort(function(a, b){
+        return (b.publishedAt || '').localeCompare(a.publishedAt || '');
+      });
+      if(results.length === 0){
         list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text3);font-size:12px;"><div style="font-size:24px;margin-bottom:8px;">📭</div>No resources available for this module yet.<br><span style="font-size:11px;">Be the first to contribute!</span></div>';
         return;
       }
       list.innerHTML = '';
-      snap.forEach(function(doc){
-        var r = doc.data();
+      results.forEach(function(r){
         var extColor = r.fileExt === 'EXAM' ? 'rgba(255,101,132,.15)' : r.fileExt === 'IMG' ? 'rgba(56,249,215,.15)' : 'rgba(108,99,255,.15)';
         var extTextColor = r.fileExt === 'EXAM' ? '#ff6584' : r.fileExt === 'IMG' ? '#38f9d7' : '#8b84ff';
         var date = r.publishedAt ? new Date(r.publishedAt).toLocaleDateString() : '';
@@ -6628,9 +6632,9 @@ window.submitUpload = function(){
   // Check how many pending uploads this student has
   db.collection('contributions')
     .where('email', '==', S.user.email)
-    .where('status', '==', 'pending')
     .get().then(function(snap){
-      var pendingCount = snap.size;
+      var pendingCount = 0;
+      snap.forEach(function(doc){ if(doc.data().status === 'pending') pendingCount++; });
       if(pendingCount >= UPLOAD_PENDING_LIMIT){
         msg.className = 'admin-msg error';
         msg.textContent = 'You already have ' + pendingCount + ' pending uploads. Please wait for the admin to review them before uploading more.';
