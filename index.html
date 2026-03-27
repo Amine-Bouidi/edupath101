@@ -6581,36 +6581,27 @@ window.loadContributions = function(){
       var hasDrive = d.driveLink && d.driveLink.length > 5;
       var hasImage = d.imageData && d.imageData.length > 50;
       if(hasFileURL || hasDrive) return Promise.resolve();
-      // Try to find the file in Storage using the doc ID as prefix
+      // Try to find the file in Storage — search all levels under contributions/
       var ref = storage.ref('contributions');
-      return ref.listAll().then(function(result){
-        for(var i = 0; i < result.items.length; i++){
-          if(result.items[i].name.indexOf(d._id) === 0){
-            return result.items[i].getDownloadURL().then(function(url){
-              d.fileURL = url;
-              // Also save back to Firestore so we don't have to do this again
-              db.collection('contributions').doc(d._id).update({fileURL: url}).catch(function(){});
-            });
-          }
-        }
-        // Also check subfolders
-        return Promise.all(result.prefixes.map(function(folderRef){
-          return folderRef.listAll().then(function(subResult){
-            return Promise.all(subResult.prefixes.map(function(subFolder){
-              return subFolder.listAll().then(function(deepResult){
-                for(var j = 0; j < deepResult.items.length; j++){
-                  if(deepResult.items[j].name.indexOf(d._id) === 0){
-                    return deepResult.items[j].getDownloadURL().then(function(url){
-                      d.fileURL = url;
-                      db.collection('contributions').doc(d._id).update({fileURL: url}).catch(function(){});
-                    });
-                  }
-                }
+      function searchFolder(folderRef){
+        return folderRef.listAll().then(function(result){
+          // Check items in this folder
+          for(var i = 0; i < result.items.length; i++){
+            var name = result.items[i].name;
+            if(name.indexOf(d._id) === 0 || (d.email && name.indexOf(d.email.replace(/[^a-zA-Z0-9]/g,'_')) !== -1 && d.createdAt && name.indexOf(new Date(d.createdAt).getTime().toString().substring(0,8)) !== -1)){
+              return result.items[i].getDownloadURL().then(function(url){
+                d.fileURL = url;
+                db.collection('contributions').doc(d._id).update({fileURL: url}).catch(function(){});
               });
-            }));
-          });
-        }));
-      }).catch(function(){ /* ignore storage errors */ });
+            }
+          }
+          // Recurse into subfolders
+          if(result.prefixes.length > 0){
+            return Promise.all(result.prefixes.map(function(sub){ return searchFolder(sub); }));
+          }
+        });
+      }
+      return searchFolder(ref).catch(function(){ /* ignore storage errors */ });
     });
 
     Promise.all(resolvePromises).then(function(){
@@ -6622,6 +6613,7 @@ window.loadContributions = function(){
 };
 
 function renderContribList(items, list){
+    window._contribItems = items;
     var html = '';
     items.forEach(function(d, idx){
       var statusColor = d.status === 'pending' ? '#f9a825' : d.status === 'published' ? '#43e97b' : d.status === 'reviewed' ? '#56ccf2' : '#e05252';
@@ -6629,19 +6621,24 @@ function renderContribList(items, list){
       var hasDrive = d.driveLink && d.driveLink.length > 5;
       var hasImage = d.imageData && d.imageData.length > 50;
       var hasAnyFile = hasFileURL || hasDrive || hasImage;
+      var fileIcon = hasFileURL ? '📎' : hasDrive ? '🔗' : hasImage ? '🖼️' : '📄';
+      var fileLabel = hasFileURL ? 'File ready' : hasDrive ? 'Drive link' : hasImage ? 'Image/data' : 'No file';
+      var fileLabelColor = hasAnyFile ? '#43e97b' : '#e05252';
       var date = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : '';
-      html += '<div style="display:flex;align-items:center;gap:10px;border-left:3px solid ' + statusColor + ';background:var(--card);border-radius:0 8px 8px 0;padding:8px 10px;margin-bottom:6px;">' +
-        '<div onclick="previewContrib(' + idx + ')" style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;cursor:' + (hasAnyFile ? 'pointer' : 'default') + ';">' +
-          '<div style="width:44px;height:44px;background:var(--bg5);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">📄</div>' +
+      html += '<div style="display:flex;align-items:center;gap:10px;border-left:3px solid ' + statusColor + ';background:var(--card);border-radius:0 8px 8px 0;padding:10px 12px;margin-bottom:6px;">' +
+        '<div onclick="previewContrib(' + idx + ')" style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;cursor:pointer;" title="Click to preview/download">' +
+          '<div style="width:44px;height:44px;background:' + (hasAnyFile ? 'rgba(67,233,123,.12)' : 'var(--bg5)') + ';border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">' + fileIcon + '</div>' +
           '<div style="flex:1;min-width:0;overflow:hidden;">' +
             '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
               '<span style="font-size:12px;font-weight:700;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (d.module||'') + '</span>' +
               '<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:' + statusColor + '22;color:' + statusColor + ';font-weight:600;flex-shrink:0;">' + (d.status||'pending') + '</span>' +
+              '<span style="font-size:9px;padding:2px 6px;border-radius:10px;background:' + fileLabelColor + '22;color:' + fileLabelColor + ';font-weight:600;flex-shrink:0;">' + fileLabel + '</span>' +
             '</div>' +
             '<div style="font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (d.name||'') + ' · ' + (d.universityName||d.university||'').split('—')[0].trim() + ' · ' + (d.semesterTitle||'') + ' · ' + (d.fileType||'') + ' · ' + date + '</div>' +
           '</div>' +
         '</div>' +
         '<div style="display:flex;gap:6px;flex-shrink:0;">' +
+          '<button style="border:none;background:rgba(67,233,123,.15);cursor:pointer;font-size:11px;padding:5px 12px;border-radius:6px;color:#43e97b;font-weight:700;" onclick="previewContrib(' + idx + ')" title="Preview or download file">👁 View</button>' +
           '<button style="border:none;background:rgba(108,99,255,.15);cursor:pointer;font-size:11px;padding:5px 12px;border-radius:6px;color:var(--accent2);font-weight:700;" onclick="approveAndPublish(\'' + d._id + '\')">📤 Publish</button>' +
           '<button style="border:none;background:rgba(224,82,82,.15);cursor:pointer;font-size:11px;padding:5px 12px;border-radius:6px;color:#e05252;font-weight:700;" onclick="deleteContribution(\'' + d._id + '\')">🗑 Delete</button>' +
         '</div>' +
@@ -6707,7 +6704,34 @@ window.previewContrib = function(idx){
       }
     }
   } else {
-    alert('No file attached to this contribution.');
+    // Last resort: try to find the file in Storage now
+    var ref = storage.ref('contributions');
+    function deepSearch(folderRef){
+      return folderRef.listAll().then(function(result){
+        for(var i = 0; i < result.items.length; i++){
+          var name = result.items[i].name;
+          if(name.indexOf(d._id) !== -1){
+            return result.items[i];
+          }
+        }
+        return result.prefixes.reduce(function(chain, sub){
+          return chain.then(function(found){ return found || deepSearch(sub); });
+        }, Promise.resolve(null));
+      });
+    }
+    deepSearch(ref).then(function(item){
+      if(item){
+        item.getDownloadURL().then(function(url){
+          d.fileURL = url;
+          db.collection('contributions').doc(d._id).update({fileURL: url}).catch(function(){});
+          window.open(url, '_blank');
+        });
+      } else {
+        alert('No file found for this contribution. The file may not have been uploaded to Storage.');
+      }
+    }).catch(function(){
+      alert('No file found for this contribution.');
+    });
   }
 };
 
