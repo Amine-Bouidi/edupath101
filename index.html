@@ -6339,7 +6339,53 @@ window.loadContributions = function(){
       return;
     }
 
-    window._contribItems = items;
+    // Try to resolve Storage URLs for items missing fileURL
+    var resolvePromises = items.map(function(d){
+      var hasFileURL = d.fileURL && d.fileURL.length > 10;
+      var hasDrive = d.driveLink && d.driveLink.length > 5;
+      var hasImage = d.imageData && d.imageData.length > 50;
+      if(hasFileURL || hasDrive) return Promise.resolve();
+      // Try to find the file in Storage using the doc ID as prefix
+      var ref = storage.ref('contributions');
+      return ref.listAll().then(function(result){
+        for(var i = 0; i < result.items.length; i++){
+          if(result.items[i].name.indexOf(d._id) === 0){
+            return result.items[i].getDownloadURL().then(function(url){
+              d.fileURL = url;
+              // Also save back to Firestore so we don't have to do this again
+              db.collection('contributions').doc(d._id).update({fileURL: url}).catch(function(){});
+            });
+          }
+        }
+        // Also check subfolders
+        return Promise.all(result.prefixes.map(function(folderRef){
+          return folderRef.listAll().then(function(subResult){
+            return Promise.all(subResult.prefixes.map(function(subFolder){
+              return subFolder.listAll().then(function(deepResult){
+                for(var j = 0; j < deepResult.items.length; j++){
+                  if(deepResult.items[j].name.indexOf(d._id) === 0){
+                    return deepResult.items[j].getDownloadURL().then(function(url){
+                      d.fileURL = url;
+                      db.collection('contributions').doc(d._id).update({fileURL: url}).catch(function(){});
+                    });
+                  }
+                }
+              });
+            }));
+          });
+        }));
+      }).catch(function(){ /* ignore storage errors */ });
+    });
+
+    Promise.all(resolvePromises).then(function(){
+      renderContribList(items, list);
+    });
+  }).catch(function(e){
+    list.innerHTML = '<div style="text-align:center;padding:20px;color:#e05252;font-size:13px;">Error: ' + e.message + '</div>';
+  });
+};
+
+function renderContribList(items, list){
     var html = '';
     items.forEach(function(d, idx){
       var statusColor = d.status === 'pending' ? '#f9a825' : d.status === 'published' ? '#43e97b' : d.status === 'reviewed' ? '#56ccf2' : '#e05252';
@@ -6366,10 +6412,7 @@ window.loadContributions = function(){
       '</div>';
     });
     list.innerHTML = html;
-  }).catch(function(e){
-    list.innerHTML = '<div style="text-align:center;padding:20px;color:#e05252;font-size:13px;">Error: ' + e.message + '</div>';
-  });
-};
+}
 
 window.updateContribStatus = function(docId, status){
   db.collection('contributions').doc(docId).update({status: status, reviewedAt: new Date().toISOString()}).then(function(){
