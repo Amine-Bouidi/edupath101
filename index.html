@@ -6345,11 +6345,15 @@ window.loadContributions = function(){
       var hasImage = d.imageData && d.imageData.length > 50;
       var hasDrive = d.driveLink && d.driveLink.length > 5;
       var hasFileURL = d.fileURL && d.fileURL.length > 10;
-      var previewURL = hasFileURL ? d.fileURL : hasDrive ? d.driveLink : hasImage ? d.imageData : '';
+      var linkURL = hasFileURL ? d.fileURL : hasDrive ? d.driveLink : '';
+      var isBase64Only = !linkURL && hasImage;
+      var contribIdx = 'contrib_' + d._id;
       var date = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : '';
       html += '<div style="display:flex;align-items:center;gap:10px;border-left:3px solid ' + statusColor + ';background:var(--card);border-radius:0 8px 8px 0;padding:8px 10px;margin-bottom:6px;">' +
-        '<a href="' + (previewURL || '#') + '" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;text-decoration:none;color:inherit;cursor:' + (previewURL ? 'pointer' : 'default') + ';">' +
-          (hasImage ? '<img src="' + d.imageData + '" style="width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--border);flex-shrink:0;">' : '<div style="width:44px;height:44px;background:var(--bg5);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">📄</div>') +
+        (linkURL
+          ? '<a href="' + linkURL + '" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;text-decoration:none;color:inherit;cursor:pointer;">'
+          : '<a href="#" onclick="event.preventDefault();' + (isBase64Only ? 'previewBase64Doc(\'' + contribIdx + '\')' : '') + '" style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;text-decoration:none;color:inherit;cursor:' + (isBase64Only ? 'pointer' : 'default') + ';">') +
+          (hasImage ? '<img src="' + d.imageData + '" style="width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--border);flex-shrink:0;" id="' + contribIdx + '">' : '<div style="width:44px;height:44px;background:var(--bg5);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">📄</div>') +
           '<div style="flex:1;min-width:0;overflow:hidden;">' +
             '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
               '<span style="font-size:12px;font-weight:700;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (d.module||'') + '</span>' +
@@ -6374,6 +6378,20 @@ window.updateContribStatus = function(docId, status){
   db.collection('contributions').doc(docId).update({status: status, reviewedAt: new Date().toISOString()}).then(function(){
     loadContributions();
   }).catch(function(e){ alert('Error: ' + e.message); });
+};
+
+window.previewBase64Doc = function(imgId){
+  var img = document.getElementById(imgId);
+  if(!img || !img.src) return;
+  var w = window.open('', '_blank');
+  if(!w) return;
+  var isImage = img.src.indexOf('data:image/') === 0;
+  if(isImage){
+    w.document.write('<html><head><title>Preview</title><style>body{margin:0;background:#1a1a2e;display:flex;align-items:center;justify-content:center;min-height:100vh;}img{max-width:100%;max-height:100vh;object-fit:contain;}</style></head><body><img src="' + img.src + '"></body></html>');
+  } else {
+    w.document.write('<html><head><title>Preview</title></head><body><iframe src="' + img.src + '" style="width:100%;height:100vh;border:none;"></iframe></body></html>');
+  }
+  w.document.close();
 };
 
 window.deleteContribution = function(docId){
