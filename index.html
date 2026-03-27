@@ -491,6 +491,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .admin-msg{padding:10px 14px;border-radius:8px;margin-top:10px;font-size:13px;display:none;}
 .admin-msg.success{display:block;background:rgba(67,233,123,.15);color:#43e97b;border:1px solid rgba(67,233,123,.3);}
 .admin-msg.error{display:block;background:rgba(224,82,82,.15);color:#e05252;border:1px solid rgba(224,82,82,.3);}
+/* Upload progress bar */
+.upload-progress-wrap{display:none;margin-top:14px;padding:16px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;}
+.upload-progress-wrap.active{display:block;}
+.upload-progress-bar-track{width:100%;height:8px;background:var(--bg);border-radius:8px;overflow:hidden;margin:10px 0 8px;}
+.upload-progress-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),#9b59b6);border-radius:8px;transition:width .4s ease;}
+.upload-progress-status{font-size:12px;color:var(--text2);text-align:center;}
+.upload-progress-percent{font-size:13px;font-weight:700;color:var(--accent2);text-align:center;}
+.upload-progress-steps{display:flex;justify-content:space-between;margin-top:10px;gap:4px;}
+.upload-progress-step{flex:1;text-align:center;font-size:10px;color:var(--text3);padding:6px 2px;border-radius:6px;background:var(--bg);border:1px solid var(--border);transition:all .3s;}
+.upload-progress-step.done{background:rgba(67,233,123,.1);color:#43e97b;border-color:rgba(67,233,123,.3);}
+.upload-progress-step.current{background:rgba(108,99,255,.12);color:var(--accent2);border-color:var(--accent2);}
 /* User table row */
 .au-row{display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr 80px;gap:8px;padding:12px;align-items:center;border-bottom:1px solid var(--border);font-size:13px;cursor:pointer;transition:background .15s;}
 .au-row:hover{background:rgba(108,99,255,.06);}
@@ -1982,6 +1993,21 @@ function openLoginFromLanding(){
             <!-- Submit -->
             <button id="uploadSubmitBtn" onclick="submitUpload()" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),#9b59b6);border:none;border-radius:12px;color:#fff;font-family:'Sora',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;margin-top:4px;">📤 Submit Handout</button>
             <div id="uploadMsg" class="admin-msg" style="margin-top:10px;"></div>
+
+            <!-- Upload Progress -->
+            <div id="uploadProgressWrap" class="upload-progress-wrap">
+              <div class="upload-progress-percent" id="uploadPercent">0%</div>
+              <div class="upload-progress-bar-track">
+                <div class="upload-progress-bar-fill" id="uploadProgressBar"></div>
+              </div>
+              <div class="upload-progress-status" id="uploadStatus">Preparing...</div>
+              <div class="upload-progress-steps">
+                <div class="upload-progress-step" id="upStep1">📄 Reading</div>
+                <div class="upload-progress-step" id="upStep2">📦 Processing</div>
+                <div class="upload-progress-step" id="upStep3">☁️ Uploading</div>
+                <div class="upload-progress-step" id="upStep4">✅ Done</div>
+              </div>
+            </div>
 
             <!-- Back -->
             <button onclick="showView('dashboard');renderPhase1Dashboard();" style="width:100%;padding:10px;margin-top:10px;background:none;border:1px solid var(--border);border-radius:10px;color:var(--text2);font-size:13px;cursor:pointer;font-family:inherit;transition:all .2s;">← Back to Dashboard</button>
@@ -6590,6 +6616,32 @@ window.initUploadPage = function(){
   }
 };
 
+/* Upload progress helpers */
+function uploadProgress(percent, status, step){
+  var wrap = el('uploadProgressWrap');
+  var bar = el('uploadProgressBar');
+  var pct = el('uploadPercent');
+  var stat = el('uploadStatus');
+  wrap.classList.add('active');
+  bar.style.width = percent + '%';
+  pct.textContent = percent + '%';
+  stat.textContent = status;
+  for(var i = 1; i <= 4; i++){
+    var s = el('upStep' + i);
+    s.classList.remove('done','current');
+    if(i < step) s.classList.add('done');
+    else if(i === step) s.classList.add('current');
+  }
+}
+function uploadProgressReset(){
+  var wrap = el('uploadProgressWrap');
+  wrap.classList.remove('active');
+  el('uploadProgressBar').style.width = '0%';
+  el('uploadPercent').textContent = '0%';
+  el('uploadStatus').textContent = 'Preparing...';
+  for(var i = 1; i <= 4; i++) el('upStep'+i).classList.remove('done','current');
+}
+
 window.submitUpload = function(){
   var msg = el('uploadMsg');
   var uni = el('uploadUni').value;
@@ -6610,13 +6662,16 @@ window.submitUpload = function(){
   }
 
   msg.className = 'admin-msg';
-  msg.textContent = 'Uploading...';
+  msg.textContent = '';
   el('uploadSubmitBtn').disabled = true;
+  uploadProgressReset();
+  uploadProgress(10, 'Preparing your handout...', 1);
 
   var uniObj = UNIVERSITIES.find(function(u){ return u.id === uni; });
   var semObj = SEMESTERS[parseInt(semIdx)];
 
   function saveUpload(imageData){
+    uploadProgress(60, 'Uploading to server...', 3);
     var docId = S.user.email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + Date.now();
     db.collection('contributions').doc(docId).set({
       email: S.user.email,
@@ -6634,17 +6689,19 @@ window.submitUpload = function(){
       status: 'pending',
       createdAt: new Date().toISOString()
     }).then(function(){
+      uploadProgress(100, 'Handout submitted successfully!', 4);
       msg.className = 'admin-msg success';
       msg.textContent = '✅ Handout submitted! We will review it within 24 hours.';
       el('uploadSubmitBtn').disabled = false;
       el('uploadFile').value = '';
       if(el('uploadDriveLink')) el('uploadDriveLink').value = '';
-      // Refresh dashboard after 2 sec
       setTimeout(function(){
+        uploadProgressReset();
         showView('dashboard');
         renderPhase1Dashboard();
       }, 2500);
     }).catch(function(e){
+      uploadProgressReset();
       msg.className = 'admin-msg error';
       msg.textContent = 'Error: ' + e.message;
       el('uploadSubmitBtn').disabled = false;
@@ -6656,35 +6713,48 @@ window.submitUpload = function(){
     if(file.size > 10 * 1024 * 1024){
       msg.className = 'admin-msg error';
       msg.textContent = 'File too large. Max 10MB.';
+      uploadProgressReset();
       el('uploadSubmitBtn').disabled = false;
       return;
     }
-    msg.textContent = 'Uploading...';
+    uploadProgress(20, 'Reading file...', 1);
     var isImage = file.type.startsWith('image/');
     if(isImage){
+      uploadProgress(30, 'Compressing image...', 2);
       compressAndReadFile(file, 800, 0.6, function(compressed, err){
         if(err){
+          uploadProgressReset();
           msg.className = 'admin-msg error';
           msg.textContent = err;
           el('uploadSubmitBtn').disabled = false;
           return;
         }
+        uploadProgress(50, 'Image ready, uploading...', 2);
         saveUpload(compressed);
       });
     } else if(file.size <= 900000){
-      // Small docs (under 900KB) - store as base64 in Firestore
+      uploadProgress(30, 'Processing document...', 2);
       var reader = new FileReader();
-      reader.onload = function(e){ saveUpload(e.target.result); };
-      reader.onerror = function(){ msg.className='admin-msg error'; msg.textContent='Could not read file.'; el('uploadSubmitBtn').disabled=false; };
+      reader.onload = function(e){
+        uploadProgress(50, 'Document ready, uploading...', 2);
+        saveUpload(e.target.result);
+      };
+      reader.onerror = function(){
+        uploadProgressReset();
+        msg.className='admin-msg error';
+        msg.textContent='Could not read file.';
+        el('uploadSubmitBtn').disabled=false;
+      };
       reader.readAsDataURL(file);
     } else {
-      // Large docs - store filename only, ask for Drive link
+      uploadProgressReset();
       msg.className = 'admin-msg error';
       msg.textContent = 'This file is too large to upload directly (' + Math.round(file.size/1024) + 'KB). Please use the Google Drive link option instead, or upload a photo/screenshot of the pages.';
       el('uploadSubmitBtn').disabled = false;
       return;
     }
   } else {
+    uploadProgress(40, 'Sending Drive link...', 2);
     saveUpload('');
   }
 };
