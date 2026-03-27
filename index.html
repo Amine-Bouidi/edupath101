@@ -3077,9 +3077,9 @@ function getVideoField(uniId, semId, modId, vidIdx, field){
 
 /* ── DATA ── */
 var UNIVERSITIES = [
-  {id:'uiz', name:'University Ibn Zohr — FLSH Agadir', country:'Morocco 🇲🇦', emoji:'🏛️', c:'#6c63ff'},
-  {id:'uh2c', name:'University Hassan II — Casablanca (Ain Chock & Ben M\'sik)', country:'Morocco 🇲🇦', emoji:'🎓', c:'#ff6584'},
-  {id:'uca', name:'University Cadi Ayyad — FLSH Marrakech', country:'Morocco 🇲🇦', emoji:'📚', c:'#43e97b'},
+  {id:'uiz', name:'University Ibn Zohr — FLSH Agadir', country:'Morocco 🇲🇦', emoji:'🏛️', c:'#6c63ff', verified:true},
+  {id:'uh2c', name:'University Hassan II — Casablanca (Ain Chock & Ben M\'sik)', country:'Morocco 🇲🇦', emoji:'🎓', c:'#ff6584', verified:true},
+  {id:'uca', name:'University Cadi Ayyad — FLSH Marrakech', country:'Morocco 🇲🇦', emoji:'📚', c:'#43e97b', verified:true},
   {id:'usmba', name:'USMBA — FLSH Sais, Fez', country:'Morocco 🇲🇦', emoji:'🕌', c:'#f9a825'},
   {id:'usmba_dhar', name:'USMBA — FLDM Dhar El Mahraz, Fez', country:'Morocco 🇲🇦', emoji:'🏛️', c:'#e67e22'},
   {id:'ump', name:'University Mohammed I — FLSH Oujda', country:'Morocco 🇲🇦', emoji:'🏰', c:'#56ccf2'},
@@ -3915,14 +3915,16 @@ window.renderDashboard = function renderDashboard(){
 function renderUniGrid(grid){
   var isAdminUser = isAdmin();
   grid.innerHTML='';
-  UNIVERSITIES.forEach(function(uni){
+  var sorted = UNIVERSITIES.slice().sort(function(a,b){return (b.verified?1:0)-(a.verified?1:0);});
+  sorted.forEach(function(uni){
     var done=0,total=0;
     SEMESTERS.forEach(function(sem,si){var mods=getMods(si,uni.id);total+=mods.length*VIDEOS.length;mods.forEach(function(mod){done+=getP(uni.id,sem.id,mod.id).videos.length;});});
     var pct=total>0?Math.round((done/total)*100):0;
     var card=document.createElement('div'); card.className='uni-card';
     card.style.setProperty('--uc',uni.c);
     var logoHtml = UNI_LOGOS[uni.id] ? '<img src="'+UNI_LOGOS[uni.id]+'" style="width:48px;height:48px;object-fit:contain;border-radius:8px;margin-bottom:8px;">' : '<div class="uc-emoji">'+uni.emoji+'</div>';
-    card.innerHTML=logoHtml+'<div class="uc-name" id="utitle_'+uni.id+'">'+uni.name+(isAdminUser?' <span class="uni-edit-btn" data-uid="'+uni.id+'" style="cursor:pointer;font-size:13px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit name">✏️</span>':'')+'</div><div class="uc-country">'+uni.country+'</div><div class="uc-bar"><div class="uc-fill" style="width:'+pct+'%"></div></div><div class="uc-pct">'+pct+'% complete</div>';
+    var verifiedBadge = uni.verified ? '<span style="display:inline-block;background:linear-gradient(135deg,#43e97b,#38f9d7);color:#111;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;vertical-align:middle;">✓ Verified</span>' : '';
+    card.innerHTML=logoHtml+'<div class="uc-name" id="utitle_'+uni.id+'">'+uni.name+verifiedBadge+(isAdminUser?' <span class="uni-edit-btn" data-uid="'+uni.id+'" style="cursor:pointer;font-size:13px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit name">✏️</span>':'')+'</div><div class="uc-country">'+uni.country+'</div><div class="uc-bar"><div class="uc-fill" style="width:'+pct+'%"></div></div><div class="uc-pct">'+pct+'% complete</div>';
     card.onclick=(function(u){return function(e){if(e.target.closest('.uni-edit-btn'))return;openSemesters(u);};})(uni);
     grid.appendChild(card);
   });
