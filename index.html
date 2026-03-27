@@ -4299,6 +4299,71 @@ window.saveSemSub = function(sidx){
   }).catch(function(e){ alert('Error saving: ' + e.message); });
 };
 
+/* ── SEMESTER HIDE / RESTORE / ADD / DELETE ── */
+document.addEventListener('click', function(e){
+  var btn = e.target.closest('.sem-hide-btn');
+  if(!btn || !isAdmin()) return;
+  e.stopPropagation();
+  var sidx = parseInt(btn.getAttribute('data-sidx'));
+  if(isNaN(sidx)) return;
+  if(!confirm('Hide this semester from students? You can restore it later.')) return;
+  var ref = db.collection('hiddenSemesters').doc(S.uni.id);
+  ref.get().then(function(doc){
+    var indices = doc.exists ? (doc.data().indices || []) : [];
+    if(indices.indexOf(sidx) === -1) indices.push(sidx);
+    return ref.set({ indices: indices, updatedAt: new Date().toISOString() });
+  }).then(function(){
+    openSemesters(S.uni);
+  }).catch(function(e){ alert('Error: ' + e.message); });
+});
+
+document.addEventListener('click', function(e){
+  var btn = e.target.closest('.sem-restore-btn');
+  if(!btn || !isAdmin()) return;
+  e.stopPropagation();
+  var sidx = parseInt(btn.getAttribute('data-sidx'));
+  if(isNaN(sidx)) return;
+  var ref = db.collection('hiddenSemesters').doc(S.uni.id);
+  ref.get().then(function(doc){
+    var indices = doc.exists ? (doc.data().indices || []) : [];
+    indices = indices.filter(function(i){ return i !== sidx; });
+    return ref.set({ indices: indices, updatedAt: new Date().toISOString() });
+  }).then(function(){
+    openSemesters(S.uni);
+  }).catch(function(e){ alert('Error: ' + e.message); });
+});
+
+document.addEventListener('click', function(e){
+  var btn = e.target.closest('.sem-del-custom-btn');
+  if(!btn || !isAdmin()) return;
+  e.stopPropagation();
+  var fid = btn.getAttribute('data-fid');
+  if(!fid) return;
+  if(!confirm('Delete this custom semester? This cannot be undone.')) return;
+  db.collection('customSemesters').doc(fid).delete().then(function(){
+    openSemesters(S.uni);
+  }).catch(function(e){ alert('Error: ' + e.message); });
+});
+
+window.addNewSemester = function(){
+  if(!isAdmin() || !S.uni) return;
+  var title = prompt('Enter semester name:');
+  if(!title || !title.trim()) return;
+  var sub = prompt('Enter subtitle (e.g. "Major: Literature & Culture"):') || 'Custom semester';
+  var docId = S.uni.id + '_custom_sem_' + Date.now();
+  db.collection('customSemesters').doc(docId).set({
+    university: S.uni.id,
+    semId: docId,
+    title: title.trim(),
+    sub: sub.trim(),
+    c1: '#6c63ff',
+    c2: '#9b59b6',
+    createdAt: new Date().toISOString()
+  }).then(function(){
+    openSemesters(S.uni);
+  }).catch(function(e){ alert('Error adding semester: ' + e.message); });
+};
+
 window.addNewModule = function(){
   if(!isAdmin() || !S.uni || !S.sem) return;
   var name = prompt('Enter module name:');
