@@ -1976,7 +1976,7 @@ function openLoginFromLanding(){
               </div>
               <div id="uploadTabPhoto">
                 <input type="file" id="uploadFile" accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png" style="font-size:13px;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;width:100%;box-sizing:border-box;color:var(--text);">
-                <div style="font-size:11px;color:var(--text3);margin-top:4px;">PDF, Word, PowerPoint, JPEG, or PNG only. Max 15MB. Limit: 5 uploads per session.</div>
+                <div style="font-size:11px;color:var(--text3);margin-top:4px;">PDF, Word, PowerPoint, JPEG, or PNG only. Max 15MB. Up to 5 pending uploads at a time.</div>
               </div>
               <div id="uploadTabDrive" style="display:none;">
                 <input type="text" id="uploadDriveLink" placeholder="https://drive.google.com/file/d/..." style="width:100%;padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;font-family:inherit;box-sizing:border-box;">
@@ -6553,9 +6553,8 @@ window.initUploadPage = function(){
   }
 };
 
-/* Upload session limit */
-var uploadSessionCount = 0;
-var UPLOAD_SESSION_LIMIT = 5;
+/* Upload pending limit */
+var UPLOAD_PENDING_LIMIT = 5;
 var ALLOWED_FILE_TYPES = [
   'application/pdf',
   'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -6609,12 +6608,6 @@ window.submitUpload = function(){
     return;
   }
 
-  if(uploadSessionCount >= UPLOAD_SESSION_LIMIT){
-    msg.className = 'admin-msg error';
-    msg.textContent = 'You have reached the limit of ' + UPLOAD_SESSION_LIMIT + ' uploads per session. Please come back later.';
-    return;
-  }
-
   if(fileInput.files.length > 0){
     var f = fileInput.files[0];
     var ext = f.name.split('.').pop().toLowerCase();
@@ -6626,53 +6619,74 @@ window.submitUpload = function(){
   }
 
   msg.className = 'admin-msg';
-  msg.textContent = '';
+  msg.textContent = 'Checking pending uploads...';
   el('uploadSubmitBtn').disabled = true;
-  uploadProgressReset();
-  uploadProgress(10, 'Preparing your handout...', 1);
 
   var uniObj = UNIVERSITIES.find(function(u){ return u.id === uni; });
   var semObj = SEMESTERS[parseInt(semIdx)];
 
-  function saveUpload(imageData){
-    uploadProgress(60, 'Uploading to server...', 3);
-    var docId = S.user.email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + Date.now();
-    db.collection('contributions').doc(docId).set({
-      email: S.user.email,
-      name: S.user.name || '',
-      university: uni,
-      universityName: uniObj ? uniObj.name : uni,
-      semester: semObj ? semObj.id : '',
-      semesterTitle: semObj ? semObj.title : '',
-      module: mod,
-      moduleIcon: '',
-      fileType: 'lesson',
-      driveLink: driveLink,
-      fileURL: imageData || '',
-      notes: '',
-      imageData: '',
-      status: 'pending',
-      createdAt: new Date().toISOString()
-    }).then(function(){
-      uploadSessionCount++;
-      uploadProgress(100, 'Handout submitted successfully!', 4);
-      msg.className = 'admin-msg success';
-      msg.textContent = '✅ Handout submitted! We will review it within 24 hours. (' + uploadSessionCount + '/' + UPLOAD_SESSION_LIMIT + ' uploads used)';
-      el('uploadSubmitBtn').disabled = false;
-      el('uploadFile').value = '';
-      if(el('uploadDriveLink')) el('uploadDriveLink').value = '';
-      setTimeout(function(){
-        uploadProgressReset();
-        showView('dashboard');
-        renderPhase1Dashboard();
-      }, 2500);
-    }).catch(function(e){
+  // Check how many pending uploads this student has
+  db.collection('contributions')
+    .where('email', '==', S.user.email)
+    .where('status', '==', 'pending')
+    .get().then(function(snap){
+      var pendingCount = snap.size;
+      if(pendingCount >= UPLOAD_PENDING_LIMIT){
+        msg.className = 'admin-msg error';
+        msg.textContent = 'You already have ' + pendingCount + ' pending uploads. Please wait for the admin to review them before uploading more.';
+        el('uploadSubmitBtn').disabled = false;
+        return;
+      }
+      // OK to proceed
       uploadProgressReset();
+      uploadProgress(10, 'Preparing your handout...', 1);
+      proceedWithUpload(pendingCount);
+    }).catch(function(err){
       msg.className = 'admin-msg error';
-      msg.textContent = 'Error: ' + e.message;
+      msg.textContent = 'Could not check pending uploads: ' + err.message;
       el('uploadSubmitBtn').disabled = false;
     });
-  }
+
+  function proceedWithUpload(pendingCount){
+    function saveUpload(imageData){
+      uploadProgress(60, 'Uploading to server...', 3);
+      var docId = S.user.email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + Date.now();
+      db.collection('contributions').doc(docId).set({
+        email: S.user.email,
+        name: S.user.name || '',
+        university: uni,
+        universityName: uniObj ? uniObj.name : uni,
+        semester: semObj ? semObj.id : '',
+        semesterTitle: semObj ? semObj.title : '',
+        module: mod,
+        moduleIcon: '',
+        fileType: 'lesson',
+        driveLink: driveLink,
+        fileURL: imageData || '',
+        notes: '',
+        imageData: '',
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      }).then(function(){
+        var remaining = UPLOAD_PENDING_LIMIT - pendingCount - 1;
+        uploadProgress(100, 'Handout submitted successfully!', 4);
+        msg.className = 'admin-msg success';
+        msg.textContent = '✅ Handout submitted! We will review it within 24 hours. (' + remaining + ' upload' + (remaining !== 1 ? 's' : '') + ' remaining)';
+        el('uploadSubmitBtn').disabled = false;
+        el('uploadFile').value = '';
+        if(el('uploadDriveLink')) el('uploadDriveLink').value = '';
+        setTimeout(function(){
+          uploadProgressReset();
+          showView('dashboard');
+          renderPhase1Dashboard();
+        }, 2500);
+      }).catch(function(e){
+        uploadProgressReset();
+        msg.className = 'admin-msg error';
+        msg.textContent = 'Error: ' + e.message;
+        el('uploadSubmitBtn').disabled = false;
+      });
+    }
 
   if(fileInput.files.length > 0){
     var file = fileInput.files[0];
@@ -6709,6 +6723,7 @@ window.submitUpload = function(){
     uploadProgress(40, 'Sending Drive link...', 2);
     saveUpload('');
   }
+  } // end proceedWithUpload
 };
 
 /* ── PHASE 1 DASHBOARD RENDER ── */
