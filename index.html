@@ -1975,8 +1975,8 @@ function openLoginFromLanding(){
                 <button id="tabDrive" onclick="switchUploadTab('drive')" style="flex:1;padding:9px;font-size:12px;font-weight:600;border-radius:8px;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-family:inherit;transition:all .2s;">🔗 Google Drive Link</button>
               </div>
               <div id="uploadTabPhoto">
-                <input type="file" id="uploadFile" accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.rtf,.odt,.odp,.pages,.key" style="font-size:13px;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;width:100%;box-sizing:border-box;color:var(--text);">
-                <div style="font-size:11px;color:var(--text3);margin-top:4px;">Photos, PDFs, Word, PowerPoint, Excel, or any document. Max 15MB.</div>
+                <input type="file" id="uploadFile" accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png" style="font-size:13px;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;width:100%;box-sizing:border-box;color:var(--text);">
+                <div style="font-size:11px;color:var(--text3);margin-top:4px;">PDF, Word, PowerPoint, JPEG, or PNG only. Max 15MB. Limit: 5 uploads per session.</div>
               </div>
               <div id="uploadTabDrive" style="display:none;">
                 <input type="text" id="uploadDriveLink" placeholder="https://drive.google.com/file/d/..." style="width:100%;padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;font-family:inherit;box-sizing:border-box;">
@@ -6553,6 +6553,17 @@ window.initUploadPage = function(){
   }
 };
 
+/* Upload session limit */
+var uploadSessionCount = 0;
+var UPLOAD_SESSION_LIMIT = 5;
+var ALLOWED_FILE_TYPES = [
+  'application/pdf',
+  'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'image/jpeg', 'image/png'
+];
+var ALLOWED_EXTENSIONS = ['pdf','doc','docx','ppt','pptx','jpg','jpeg','png'];
+
 /* Upload progress helpers */
 function uploadProgress(percent, status, step){
   var wrap = el('uploadProgressWrap');
@@ -6594,8 +6605,24 @@ window.submitUpload = function(){
   }
   if(!fileInput.files.length && !driveLink){
     msg.className = 'admin-msg error';
-    msg.textContent = 'Please upload a photo or paste a Google Drive link.';
+    msg.textContent = 'Please upload a file or paste a Google Drive link.';
     return;
+  }
+
+  if(uploadSessionCount >= UPLOAD_SESSION_LIMIT){
+    msg.className = 'admin-msg error';
+    msg.textContent = 'You have reached the limit of ' + UPLOAD_SESSION_LIMIT + ' uploads per session. Please come back later.';
+    return;
+  }
+
+  if(fileInput.files.length > 0){
+    var f = fileInput.files[0];
+    var ext = f.name.split('.').pop().toLowerCase();
+    if(ALLOWED_EXTENSIONS.indexOf(ext) === -1){
+      msg.className = 'admin-msg error';
+      msg.textContent = 'Only PDF, Word (.doc/.docx), PowerPoint (.ppt/.pptx), JPEG, and PNG files are allowed.';
+      return;
+    }
   }
 
   msg.className = 'admin-msg';
@@ -6627,9 +6654,10 @@ window.submitUpload = function(){
       status: 'pending',
       createdAt: new Date().toISOString()
     }).then(function(){
+      uploadSessionCount++;
       uploadProgress(100, 'Handout submitted successfully!', 4);
       msg.className = 'admin-msg success';
-      msg.textContent = '✅ Handout submitted! We will review it within 24 hours.';
+      msg.textContent = '✅ Handout submitted! We will review it within 24 hours. (' + uploadSessionCount + '/' + UPLOAD_SESSION_LIMIT + ' uploads used)';
       el('uploadSubmitBtn').disabled = false;
       el('uploadFile').value = '';
       if(el('uploadDriveLink')) el('uploadDriveLink').value = '';
