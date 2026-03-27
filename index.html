@@ -3909,8 +3909,29 @@ window.renderDashboard = function renderDashboard(){
 /* ── SEMESTERS ── */
 function openSemesters(uni){
   S.uni=uni; S.sem=null; S.mod=null; updateCtx();
-  var grid=el('semGrid'); grid.innerHTML='';
+  var grid=el('semGrid'); grid.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);">Loading...</div>';
   var semIndices = UNI_SEM_CONFIG[uni.id] || null;
+  // Load custom semester names for this university
+  var prefix = uni.id + '_sem_';
+  db.collection('semesterNames').where('__name__', '>=', prefix).where('__name__', '<=', prefix + '\uf8ff').get().then(function(snap){
+    snap.forEach(function(doc){
+      var sidx = parseInt(doc.id.replace(prefix, ''));
+      if(!isNaN(sidx) && SEMESTERS[sidx]){
+        if(doc.data().title) SEMESTERS[sidx].title = doc.data().title;
+        if(doc.data().sub) SEMESTERS[sidx].sub = doc.data().sub;
+      }
+    });
+    renderSemGrid(grid, semIndices, uni);
+  }).catch(function(){
+    renderSemGrid(grid, semIndices, uni);
+  });
+  setTopbar([uni.emoji+' '+uni.name],'Choose a Semester',false);
+  el('nav-semesters').style.display='flex';
+  showView('semesters');
+}
+
+function renderSemGrid(grid, semIndices, uni){
+  grid.innerHTML='';
   SEMESTERS.forEach(function(sem,idx){
     if(semIndices && semIndices.indexOf(idx) === -1) return;
     var mods=getMods(idx,uni.id),done=0;
@@ -3920,13 +3941,11 @@ function openSemesters(uni){
     var badge=isSome?'<span class="badge b-prog">'+pct+'%</span>':isAll?'<span class="badge b-done">✓ Done</span>':'<span class="badge b-new">New</span>';
     var card=document.createElement('div'); card.className='sem-card';
     card.style.setProperty('--sc1',sem.c1); card.style.setProperty('--sc2',sem.c2);
-    card.innerHTML='<div class="sc-num" style="color:'+sem.c1+'">'+sem.title+'</div><div class="sc-title">'+sem.sub+'</div><div class="pbar"><div class="pfill" style="width:'+pct+'%;background:linear-gradient(90deg,'+sem.c1+','+sem.c2+');"></div></div><div class="sc-footer"><span style="font-size:12px;color:var(--text2);">'+mods.length+' modules</span>'+badge+'</div>';
-    card.onclick=(function(s,i){return function(){openModules(s,i);};})(sem,idx);
+    var isAdminUser = isAdmin();
+    card.innerHTML='<div class="sc-num" style="color:'+sem.c1+'" id="stitle_'+idx+'">'+sem.title+(isAdminUser?' <span class="sem-edit-btn" data-sidx="'+idx+'" style="cursor:pointer;font-size:13px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit name">✏️</span>':'')+'</div><div class="sc-title" id="ssub_'+idx+'">'+sem.sub+(isAdminUser?' <span class="sem-edit-sub-btn" data-sidx="'+idx+'" style="cursor:pointer;font-size:11px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit subtitle">✏️</span>':'')+'</div><div class="pbar"><div class="pfill" style="width:'+pct+'%;background:linear-gradient(90deg,'+sem.c1+','+sem.c2+');"></div></div><div class="sc-footer"><span style="font-size:12px;color:var(--text2);">'+mods.length+' modules</span>'+badge+'</div>';
+    card.onclick=(function(s,i){return function(e){if(e.target.closest('.sem-edit-btn')||e.target.closest('.sem-edit-sub-btn'))return;openModules(s,i);};})(sem,idx);
     grid.appendChild(card);
   });
-  setTopbar([uni.emoji+' '+uni.name],'Choose a Semester',false);
-  el('nav-semesters').style.display='flex';
-  showView('semesters');
 }
 el('nav-semesters').onclick=function(){closeMobileMenu();if(S.uni)openSemesters(S.uni);};
 
@@ -4135,6 +4154,61 @@ window.saveModName = function(idx){
   var docId = S.uni.id + '_' + S.sem.id + '_' + idx;
   db.collection('moduleNames').doc(docId).set({ name: newName, updatedAt: new Date().toISOString() }).then(function(){
     openModules(S.sem, S.semIdx);
+  }).catch(function(e){ alert('Error saving: ' + e.message); });
+};
+
+/* ── SEMESTER NAME EDIT (admin only) ── */
+document.addEventListener('click', function(e){
+  var btn = e.target.closest('.sem-edit-btn');
+  if(!btn || !isAdmin()) return;
+  e.stopPropagation();
+  var sidx = btn.getAttribute('data-sidx');
+  var titleEl = el('stitle_' + sidx);
+  if(!titleEl) return;
+  var currentName = titleEl.textContent.replace('✏️','').trim();
+  titleEl.innerHTML = '<input type="text" value="' + currentName.replace(/"/g,'&quot;') + '" id="sedit_' + sidx + '" style="background:var(--bg3);border:1px solid var(--accent2);border-radius:6px;color:var(--text);font-size:12px;font-weight:600;padding:4px 8px;width:70%;font-family:inherit;" onclick="event.stopPropagation()"> <button onclick="event.stopPropagation();saveSemName(' + sidx + ')" style="background:var(--accent2);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;">Save</button>';
+  var input = el('sedit_' + sidx);
+  input.focus();
+  input.select();
+  input.onkeydown = function(ev){ if(ev.key === 'Enter'){ ev.preventDefault(); saveSemName(parseInt(sidx)); } };
+});
+
+document.addEventListener('click', function(e){
+  var btn = e.target.closest('.sem-edit-sub-btn');
+  if(!btn || !isAdmin()) return;
+  e.stopPropagation();
+  var sidx = btn.getAttribute('data-sidx');
+  var subEl = el('ssub_' + sidx);
+  if(!subEl) return;
+  var currentSub = subEl.textContent.replace('✏️','').trim();
+  subEl.innerHTML = '<input type="text" value="' + currentSub.replace(/"/g,'&quot;') + '" id="ssubedit_' + sidx + '" style="background:var(--bg3);border:1px solid var(--accent2);border-radius:6px;color:var(--text);font-size:11px;font-weight:600;padding:4px 8px;width:70%;font-family:inherit;" onclick="event.stopPropagation()"> <button onclick="event.stopPropagation();saveSemSub(' + sidx + ')" style="background:var(--accent2);color:#fff;border:none;border-radius:6px;padding:4px 8px;font-size:10px;font-weight:600;cursor:pointer;">Save</button>';
+  var input = el('ssubedit_' + sidx);
+  input.focus();
+  input.select();
+  input.onkeydown = function(ev){ if(ev.key === 'Enter'){ ev.preventDefault(); saveSemSub(parseInt(sidx)); } };
+});
+
+window.saveSemName = function(sidx){
+  var input = el('sedit_' + sidx);
+  if(!input) return;
+  var newName = input.value.trim();
+  if(!newName) return;
+  var docId = S.uni.id + '_sem_' + sidx;
+  db.collection('semesterNames').doc(docId).set({ title: newName, updatedAt: new Date().toISOString() }, {merge: true}).then(function(){
+    SEMESTERS[sidx].title = newName;
+    openSemesters(S.uni);
+  }).catch(function(e){ alert('Error saving: ' + e.message); });
+};
+
+window.saveSemSub = function(sidx){
+  var input = el('ssubedit_' + sidx);
+  if(!input) return;
+  var newSub = input.value.trim();
+  if(!newSub) return;
+  var docId = S.uni.id + '_sem_' + sidx;
+  db.collection('semesterNames').doc(docId).set({ sub: newSub, updatedAt: new Date().toISOString() }, {merge: true}).then(function(){
+    SEMESTERS[sidx].sub = newSub;
+    openSemesters(S.uni);
   }).catch(function(e){ alert('Error saving: ' + e.message); });
 };
 
