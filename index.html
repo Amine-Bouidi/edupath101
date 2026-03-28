@@ -3085,7 +3085,7 @@ var UNIVERSITIES = [
   {id:'usmba_dhar', name:'USMBA — FLDM Dhar El Mahraz, Fez', country:'Morocco 🇲🇦', emoji:'🏛️', c:'#e67e22', verified:true},
   {id:'ump', name:'University Mohammed I — FLSH Oujda', country:'Morocco 🇲🇦', emoji:'🏰', c:'#56ccf2'},
   {id:'uit', name:'University Ibn Tofail — FLSH Kenitra', country:'Morocco 🇲🇦', emoji:'📖', c:'#a18cd1', verified:true},
-  {id:'umi', name:'University Moulay Ismail — FLSH Meknes', country:'Morocco 🇲🇦', emoji:'⚙️', c:'#38f9d7'},
+  {id:'umi', name:'University Moulay Ismail — FLSH Meknes', country:'Morocco 🇲🇦', emoji:'⚙️', c:'#38f9d7', verified:true},
   {id:'um5', name:'University Mohammed V — FLSH Rabat', country:'Morocco 🇲🇦', emoji:'🏛️', c:'#ff9a9e'},
   {id:'uae', name:'University Abdelmalek Essaadi — FLSH Tetouan', country:'Morocco 🇲🇦', emoji:'🌊', c:'#fc4a1a'},
   {id:'ucd', name:'University Chouaib Doukkali — FLSH El Jadida', country:'Morocco 🇲🇦', emoji:'📘', c:'#2f80ed'},
@@ -3554,6 +3554,76 @@ var MOD_DATA_UIT = [
   ]
 ];
 
+/* Moulay Ismail — FLSH Meknes module data */
+var MOD_DATA_UMI = [
+  /* S1 */ [
+    {icon:'📖',title:'Reading Comprehension and Précis 1',desc:'Master basic reading comprehension skills and summary writing.'},
+    {icon:'✍️',title:'Paragraph Writing',desc:'Learn paragraph structure, topic sentences, and coherence.'},
+    {icon:'📝',title:'Grammar 1',desc:'Foundations of English grammar: parts of speech, tenses, sentence structure.'},
+    {icon:'🗣️',title:'Spoken English',desc:'Practice and improve listening and oral communication skills.'},
+    {icon:'📚',title:'Guided Reading',desc:'Overcome lexical and structural difficulties through guided reading.'},
+    {icon:'🎯',title:'Study Skills',desc:'Academic skills: note-taking, time management, exam preparation.'},
+    {icon:'🌐',title:'Langues 1',desc:'Consolidate competence in French or Arabic as a working language.'}
+  ],
+  /* S2 */ [
+    {icon:'📖',title:'Reading Comprehension and Précis 2',desc:'Advanced reading strategies and summary writing techniques.'},
+    {icon:'✍️',title:'Composition 1',desc:'Essay writing: thesis statements, argumentation, and structure.'},
+    {icon:'📝',title:'Grammar 2',desc:'Intermediate grammar: complex sentences, conditionals, passive voice.'},
+    {icon:'🗣️',title:'Oral Communication',desc:'Develop fluency, pronunciation, and conversational confidence.'},
+    {icon:'📚',title:'Reading in Culture',desc:'Explore cultural texts and develop cross-cultural reading competence.'},
+    {icon:'💼',title:'Business Communication',desc:'Introduction to business English: emails, reports, and professional writing.'},
+    {icon:'🌐',title:'Langue 2',desc:'Continue developing skills in French or Arabic for academic purposes.'}
+  ],
+  /* S3 */ [
+    {icon:'📖',title:'Extensive Reading',desc:'Read widely to build vocabulary, fluency, and literary appreciation.'},
+    {icon:'✍️',title:'Composition 2',desc:'Advanced essay writing: analytical and argumentative compositions.'},
+    {icon:'📝',title:'Grammar 3',desc:'Advanced grammar: relative clauses, reported speech, advanced tenses.'},
+    {icon:'🗣️',title:'Public Speaking & Debating',desc:'Master public speaking, debate techniques, and oral presentations.'},
+    {icon:'🌍',title:'American/British Cultures',desc:'Study American and British civilization, history, and cultural institutions.'},
+    {icon:'🔄',title:'Initiation to Translation',desc:'Introduction to translation theory: English–Arabic and Arabic–English.'}
+  ],
+  /* S4 */ [
+    {icon:'📚',title:'Introduction to Literature',desc:'Basics of reading and writing about English literature: genres and analysis.'},
+    {icon:'✍️',title:'Adv.Comp & Intro.to Research',desc:'Advanced composition and introduction to research methodology.'},
+    {icon:'🧠',title:'Introduction to Linguistics',desc:'Introduction to general linguistics: phonology, morphology, syntax, semantics.'},
+    {icon:'📺',title:'Intro to Media Studies',desc:'Analyse media texts, discourse, effects, and the role of media in society.'},
+    {icon:'🌐',title:'Intro to Cultural Studies',desc:'Basics in the theory and practice of cultural studies and critical theory.'},
+    {icon:'🔄',title:'Translation (Arabic – English – Arabic)',desc:'Develop translation skills between Arabic and English.'}
+  ],
+  /* S5 Literature */ [
+    {icon:'📗',title:'20th Century Novel',desc:'Study modern and contemporary fiction: narrative innovation and themes.'},
+    {icon:'🔬',title:'Study Skills & Res.Methods',desc:'Research methodology, academic writing, and study strategies.'},
+    {icon:'🎓',title:'Applied Linguistics',desc:'Apply linguistic theory to language teaching, learning, and communication.'},
+    {icon:'📺',title:'Media Visual Studies',desc:'Analyse visual media, film, and digital communication.'},
+    {icon:'💬',title:'Sociopragmatics',desc:'Study the social dimensions of language use and pragmatic meaning.'},
+    {icon:'🧠',title:'Critical Thinking & Analysis',desc:'Develop critical thinking, analytical reasoning, and argumentation skills.'}
+  ],
+  /* S5 Linguistics */ [
+    {icon:'📗',title:'20th Century Novel',desc:'Study modern and contemporary fiction: narrative innovation and themes.'},
+    {icon:'🔬',title:'Study Skills & Res.Methods',desc:'Research methodology, academic writing, and study strategies.'},
+    {icon:'🎓',title:'Applied Linguistics',desc:'Apply linguistic theory to language teaching, learning, and communication.'},
+    {icon:'📺',title:'Media Visual Studies',desc:'Analyse visual media, film, and digital communication.'},
+    {icon:'💬',title:'Sociopragmatics',desc:'Study the social dimensions of language use and pragmatic meaning.'},
+    {icon:'🧠',title:'Critical Thinking & Analysis',desc:'Develop critical thinking, analytical reasoning, and argumentation skills.'}
+  ],
+  /* S6 Literature */ [
+    {icon:'🎭',title:'Classical & Modern Drama',desc:'Explore classical and modern dramatic works and theatre traditions.'},
+    {icon:'🌍',title:'Intercultural Communication',desc:'Study communication across cultures, identity, and global perspectives.'},
+    {icon:'💼',title:'Language & Professional Life',desc:'Professional English skills for the workplace and career development.'},
+    {icon:'📖',title:'Modern & Postmodern Thought',desc:'Survey modern and postmodern intellectual and literary movements.'},
+    {icon:'🔬',title:'Projet Tutoré',desc:'Guided research project: methodology, data collection, and presentation.'},
+    {icon:'🔬',title:'Projet Tutoré 2',desc:'Complete your guided research project and final presentation.'}
+  ],
+  /* S6 Linguistics */ [
+    {icon:'🎭',title:'Classical & Modern Drama',desc:'Explore classical and modern dramatic works and theatre traditions.'},
+    {icon:'🌍',title:'Intercultural Communication',desc:'Study communication across cultures, identity, and global perspectives.'},
+    {icon:'💼',title:'Language & Professional Life',desc:'Professional English skills for the workplace and career development.'},
+    {icon:'📖',title:'Modern & Postmodern Thought',desc:'Survey modern and postmodern intellectual and literary movements.'},
+    {icon:'🔬',title:'Projet Tutoré',desc:'Guided research project: methodology, data collection, and presentation.'},
+    {icon:'🔬',title:'Projet Tutoré 2',desc:'Complete your guided research project and final presentation.'}
+  ]
+];
+
 /* Dhar El Mahraz - Fez modules */
 var MOD_DATA_DHAR = [
   /* S1 */ [
@@ -3673,7 +3743,7 @@ var UNI_MOD_DATA = {
   'usmba': MOD_DATA_USMBA,
   'ump': MOD_DATA_NATIONAL,
   'uit': MOD_DATA_UIT,
-  'umi': MOD_DATA_NATIONAL,
+  'umi': MOD_DATA_UMI,
   'um5': MOD_DATA_NATIONAL,
   'uae': MOD_DATA_NATIONAL,
   'ucd': MOD_DATA_NATIONAL,
