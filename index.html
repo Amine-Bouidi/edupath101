@@ -5448,7 +5448,10 @@ function checkProfileSetup(email, name){
   if(isAdmin()) return;
   var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
   db.collection('users').doc(docId).get().then(function(doc){
-    if(doc.exists && doc.data().profileComplete) return;
+    if(doc.exists){
+      var d = doc.data();
+      if(d.profileComplete && d.university && d.semester) return;
+    }
     showProfilePopup(name, email);
   }).catch(function(){ showProfilePopup(name, email); });
 }
