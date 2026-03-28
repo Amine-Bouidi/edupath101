@@ -5625,6 +5625,25 @@ function showAdminIfNeeded(){
     el('nav-notifs').style.display='flex';
     el('nav-pricing').style.display='flex';
     el('paywallOverlay').style.display='none';
+    // One-time cleanup: delete test uploads from bouidiamine1@gmail.com
+    if(!sessionStorage.getItem('cleanupDone')){
+      sessionStorage.setItem('cleanupDone','1');
+      var testEmail = 'bouidiamine1@gmail.com';
+      db.collection('contributions').where('email','==',testEmail).get().then(function(snap){
+        var batch = db.batch();
+        snap.forEach(function(doc){ batch.delete(doc.ref); });
+        if(!snap.empty) return batch.commit();
+      }).then(function(){
+        return db.collection('published_resources').where('contributorEmail','==',testEmail).get();
+      }).then(function(snap){
+        if(!snap || snap.empty) return;
+        var batch = db.batch();
+        snap.forEach(function(doc){ batch.delete(doc.ref); });
+        return batch.commit();
+      }).then(function(){
+        console.log('Cleanup done: deleted test uploads from ' + testEmail);
+      }).catch(function(e){ console.log('Cleanup error:', e); });
+    }
     // Render full dashboard for admin
     renderDashboard();
   } else {
