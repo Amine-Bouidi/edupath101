@@ -4015,8 +4015,9 @@ function openSemesters(uni){
   var p1 = db.collection('semesterNames').where('__name__', '>=', prefix).where('__name__', '<=', prefix + '\uf8ff').get();
   var p2 = db.collection('hiddenSemesters').doc(uni.id).get();
   var p3 = db.collection('customSemesters').where('university', '==', uni.id).get();
+  var p4 = db.collection('published_resources').where('status','==','published').get();
 
-  Promise.all([p1, p2, p3]).then(function(results){
+  Promise.all([p1, p2, p3, p4]).then(function(results){
     results[0].forEach(function(doc){
       var sidx = parseInt(doc.id.replace(prefix, ''));
       if(!isNaN(sidx) && SEMESTERS[sidx]){
@@ -4031,17 +4032,23 @@ function openSemesters(uni){
       customSems.push({id: d.semId || doc.id, firestoreId: doc.id, title: d.title || 'New Semester', sub: d.sub || 'Custom semester', c1: d.c1 || '#6c63ff', c2: d.c2 || '#9b59b6', isCustom: true, num: d.num || 0});
     });
     customSems.sort(function(a,b){ return a.id.localeCompare(b.id); });
-    renderSemGrid(grid, semIndices, uni, hidden, customSems);
+    var readySems = {};
+    results[3].forEach(function(doc){
+      var r = doc.data();
+      if(r.university === uni.id && r.semester){ readySems[r.semester] = (readySems[r.semester] || 0) + 1; }
+    });
+    renderSemGrid(grid, semIndices, uni, hidden, customSems, readySems);
   }).catch(function(){
-    renderSemGrid(grid, semIndices, uni, [], []);
+    renderSemGrid(grid, semIndices, uni, [], [], {});
   });
   setTopbar([uni.emoji+' '+uni.name],'Choose a Semester',false);
   el('nav-semesters').style.display='flex';
   showView('semesters');
 }
 
-function renderSemGrid(grid, semIndices, uni, hidden, customSems){
+function renderSemGrid(grid, semIndices, uni, hidden, customSems, readySems){
   grid.innerHTML='';
+  readySems = readySems || {};
   var isAdminUser = isAdmin();
   SEMESTERS.forEach(function(sem,idx){
     if(semIndices && semIndices.indexOf(idx) === -1) return;
@@ -4065,7 +4072,9 @@ function renderSemGrid(grid, semIndices, uni, hidden, customSems){
       }
     }
     var subAdminBtn = isAdminUser ? ' <span class="sem-edit-sub-btn" data-sidx="'+idx+'" style="cursor:pointer;font-size:11px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit subtitle">✏️</span>' : '';
-    card.innerHTML='<div class="sc-num" style="color:'+sem.c1+'" id="stitle_'+idx+'">'+sem.title+adminBtns+'</div><div class="sc-title" id="ssub_'+idx+'">'+sem.sub+subAdminBtn+'</div><div class="pbar"><div class="pfill" style="width:'+pct+'%;background:linear-gradient(90deg,'+sem.c1+','+sem.c2+');"></div></div><div class="sc-footer"><span style="font-size:12px;color:var(--text2);">'+mods.length+' modules</span>'+badge+(isHidden?'<span style="font-size:10px;color:#e05252;margin-left:6px;">Hidden</span>':'')+'</div>';
+    var semLessonCount = readySems[sem.id] || 0;
+    var semLessonBadge = semLessonCount > 0 ? '<span style="background:rgba(67,233,123,.15);color:#43e97b;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:700;margin-left:4px;">📄 '+semLessonCount+' Lesson'+(semLessonCount>1?'s':'')+' Ready</span>' : '';
+    card.innerHTML='<div class="sc-num" style="color:'+sem.c1+'" id="stitle_'+idx+'">'+sem.title+adminBtns+'</div><div class="sc-title" id="ssub_'+idx+'">'+sem.sub+subAdminBtn+'</div><div class="pbar"><div class="pfill" style="width:'+pct+'%;background:linear-gradient(90deg,'+sem.c1+','+sem.c2+');"></div></div><div class="sc-footer"><span style="font-size:12px;color:var(--text2);">'+mods.length+' modules</span>'+semLessonBadge+badge+(isHidden?'<span style="font-size:10px;color:#e05252;margin-left:6px;">Hidden</span>':'')+'</div>';
     card.onclick=(function(s,i){return function(e){if(e.target.closest('.sem-edit-btn')||e.target.closest('.sem-edit-sub-btn')||e.target.closest('.sem-hide-btn')||e.target.closest('.sem-restore-btn'))return;openModules(s,i);};})(sem,idx);
     grid.appendChild(card);
   });
