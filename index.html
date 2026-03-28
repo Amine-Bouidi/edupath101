@@ -5768,13 +5768,10 @@ function loadAdminUsers(){
         var userSemId = u.semester || '';
         var safeRowId = 'auRow' + total;
 
-        var uniCell = uniText ? uniDisplay : '<select id="'+safeRowId+'_uniSel" onclick="event.stopPropagation()" onchange="adminSetUserField(\''+u.email+'\',\'university\',this.value,\''+safeRowId+'\')" style="background:var(--bg3);border:1px solid var(--accent2);color:var(--text);font-size:11px;padding:3px 6px;border-radius:6px;max-width:140px;cursor:pointer;"><option value="">— Select —</option>'+buildUniOptions('')+'</select>';
-        var semCell = semText ? semDisplay : '<select id="'+safeRowId+'_semSel" onclick="event.stopPropagation()" onchange="adminSetUserField(\''+u.email+'\',\'semester\',this.value,\''+safeRowId+'\')" style="background:var(--bg3);border:1px solid var(--accent2);color:var(--text);font-size:11px;padding:3px 6px;border-radius:6px;max-width:120px;cursor:pointer;"><option value="">— Select —</option>'+buildSemOptions('')+'</select>';
-
         html += '<div class="au-row" onclick="toggleAdminExpand(\''+safeRowId+'\')">' +
           '<div><div class="au-name">'+(u.name||'Unknown')+'</div><div class="au-email">'+u.email+(u.whatsapp?' · 📱'+u.whatsapp:'')+'</div></div>' +
-          '<div class="au-uni">'+uniCell+'</div>' +
-          '<div class="au-sem">'+semCell+'</div>' +
+          '<div class="au-uni">'+uniDisplay+'</div>' +
+          '<div class="au-sem">'+semDisplay+'</div>' +
           '<div><span class="au-status '+statusClass+'">'+statusText+'</span></div>' +
           '<div style="text-align:center;"><button class="au-actions-btn" onclick="event.stopPropagation();toggleAdminExpand(\''+safeRowId+'\')">Manage</button></div>' +
         '</div>' +
@@ -5847,30 +5844,6 @@ function buildSemOptions(selected){
   });
   return h;
 }
-
-window.adminSetUserField = function(email, field, value, rowId){
-  if(!value) return;
-  var update = {};
-  update[field] = value;
-  db.collection('users').doc(email).set(update, {merge:true}).then(function(){
-    var label = '';
-    if(field === 'university'){
-      var u = UNIVERSITIES.find(function(x){return x.id===value;});
-      label = u ? u.name.split('—')[0].trim() : value;
-      var uniEl = el(rowId+'_uniSel');
-      if(uniEl) uniEl.parentElement.innerHTML = label;
-      var expand = el(rowId);
-      if(expand) expand.dataset.uni = value;
-    } else if(field === 'semester'){
-      var s = SEMESTERS.find(function(x){return x.id===value;});
-      label = s ? s.title : value;
-      var semEl = el(rowId+'_semSel');
-      if(semEl) semEl.parentElement.innerHTML = label;
-      var expand = el(rowId);
-      if(expand) expand.dataset.sem = value;
-    }
-  }).catch(function(e){ alert('Error saving: '+e.message); });
-};
 
 window.toggleAdminExpand = function(id){
   var e = el(id);
