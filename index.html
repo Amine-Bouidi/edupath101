@@ -6350,16 +6350,17 @@ function loadNotifications(){
 
         // Status update notification (if reviewed/used/rejected)
         if(d.status && d.status !== 'pending'){
-          var statusIcon = d.status === 'reviewed' ? '✅' : d.status === 'used' ? '🎬' : '❌';
+          var statusIcon = d.status === 'reviewed' ? '✅' : d.status === 'used' ? '🎬' : d.status === 'published' ? '✅' : '❌';
           var statusMsg = d.status === 'reviewed' ? 'Your lesson has been reviewed and accepted! We will use it to create a video summary.' :
                           d.status === 'used' ? 'Your lesson was used to create a video summary! You now qualify for free tutoring on this module.' :
+                          d.status === 'published' ? 'Your lesson has been accepted and published to the learning page! Other students can now access it.' :
                           'Your upload was not accepted. Please try uploading a clearer screenshot.';
-          var statusColor = d.status === 'reviewed' ? '#56ccf2' : d.status === 'used' ? '#43e97b' : '#e05252';
+          var statusColor = d.status === 'reviewed' ? '#56ccf2' : d.status === 'used' ? '#43e97b' : d.status === 'published' ? '#43e97b' : '#e05252';
 
           html += '<div style="display:flex;gap:10px;padding:12px;border-radius:10px;background:var(--card);border:1px solid ' + statusColor + '44;margin-bottom:8px;">' +
             '<div style="font-size:20px;flex-shrink:0;">' + statusIcon + '</div>' +
             '<div style="flex:1;">' +
-              '<div style="font-size:13px;font-weight:600;color:' + statusColor + ';">' + (d.status === 'used' ? 'Video summary created!' : d.status === 'reviewed' ? 'Lesson accepted!' : 'Upload declined') + '</div>' +
+              '<div style="font-size:13px;font-weight:600;color:' + statusColor + ';">' + (d.status === 'used' ? 'Video summary created!' : d.status === 'reviewed' ? 'Lesson accepted!' : d.status === 'published' ? 'Lesson published!' : 'Upload declined') + '</div>' +
               '<div style="font-size:12px;color:var(--text2);margin-top:2px;">' + (d.moduleIcon||'') + ' ' + (d.module||'') + '</div>' +
               '<div style="font-size:12px;color:var(--text2);margin-top:4px;">' + statusMsg + '</div>' +
               (reviewDate ? '<div style="font-size:11px;color:var(--text3);margin-top:2px;">' + reviewDate + '</div>' : '') +
@@ -6653,13 +6654,14 @@ function loadMyContributions(){
       snap.forEach(function(doc){
         var d = doc.data();
         var date = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : '';
-        var statusColor = d.status === 'pending' ? '#f9a825' : d.status === 'used' ? '#43e97b' : '#56ccf2';
+        var statusColor = d.status === 'pending' ? '#f9a825' : d.status === 'used' ? '#43e97b' : d.status === 'published' ? '#43e97b' : '#56ccf2';
+        var statusLabel = d.status === 'published' ? '✅ Accepted' : d.status === 'pending' ? '⏳ Pending' : d.status === 'used' ? '🎬 Used' : '✅ Reviewed';
         html += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">' +
           '<div>' +
             '<div style="font-size:12px;font-weight:600;color:var(--text1);">' + (d.fileType||'lesson') + '</div>' +
             '<div style="font-size:11px;color:var(--text3);">' + date + (d.notes ? ' · ' + d.notes : '') + '</div>' +
           '</div>' +
-          '<span style="font-size:11px;padding:3px 10px;border-radius:12px;background:' + statusColor + '22;color:' + statusColor + ';font-weight:600;">' + (d.status||'pending') + '</span>' +
+          '<span style="font-size:11px;padding:3px 10px;border-radius:12px;background:' + statusColor + '22;color:' + statusColor + ';font-weight:600;">' + statusLabel + '</span>' +
         '</div>';
       });
       container.innerHTML = html;
@@ -7277,9 +7279,9 @@ window.renderPhase1Dashboard = function(){
       docs.forEach(function(doc){
         var d = doc.data();
         var date = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : '';
-        var statusIcon = d.status === 'pending' ? '⏳' : d.status === 'reviewed' ? '✅' : d.status === 'used' ? '🎬' : '❌';
-        var statusText = d.status === 'pending' ? 'Pending review' : d.status === 'reviewed' ? 'Reviewed' : d.status === 'used' ? 'Used in video!' : 'Rejected';
-        var statusColor = d.status === 'pending' ? '#f9a825' : d.status === 'reviewed' ? '#56ccf2' : d.status === 'used' ? '#43e97b' : '#e05252';
+        var statusIcon = d.status === 'pending' ? '⏳' : d.status === 'reviewed' ? '✅' : d.status === 'used' ? '🎬' : d.status === 'published' ? '✅' : '❌';
+        var statusText = d.status === 'pending' ? 'Pending review' : d.status === 'reviewed' ? 'Reviewed' : d.status === 'used' ? 'Used in video!' : d.status === 'published' ? 'Accepted & Published' : 'Rejected';
+        var statusColor = d.status === 'pending' ? '#f9a825' : d.status === 'reviewed' ? '#56ccf2' : d.status === 'used' ? '#43e97b' : d.status === 'published' ? '#43e97b' : '#e05252';
         html += '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;">' +
           '<div style="font-size:20px;flex-shrink:0;">📄</div>' +
           '<div style="flex:1;min-width:0;">' +
