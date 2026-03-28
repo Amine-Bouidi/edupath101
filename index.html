@@ -3088,7 +3088,7 @@ var UNIVERSITIES = [
   {id:'umi', name:'University Moulay Ismail — FLSH Meknes', country:'Morocco 🇲🇦', emoji:'⚙️', c:'#38f9d7', verified:true},
   {id:'um5', name:'University Mohammed V — FLSH Rabat', country:'Morocco 🇲🇦', emoji:'🏛️', c:'#ff9a9e'},
   {id:'uae', name:'University Abdelmalek Essaadi — FLSH Tetouan', country:'Morocco 🇲🇦', emoji:'🌊', c:'#fc4a1a'},
-  {id:'ucd', name:'University Chouaib Doukkali — FLSH El Jadida', country:'Morocco 🇲🇦', emoji:'📘', c:'#2f80ed'},
+  {id:'ucd', name:'University Chouaib Doukkali — FLSH El Jadida', country:'Morocco 🇲🇦', emoji:'📘', c:'#2f80ed', verified:true},
   {id:'usms', name:'University Sultan Moulay Slimane — FLSH Beni Mellal', country:'Morocco 🇲🇦', emoji:'🏔️', c:'#fbc2eb'},
   {id:'uh1', name:'University Hassan I — FLSH Settat', country:'Morocco 🇲🇦', emoji:'🎯', c:'#e05252'}
 ];
@@ -3624,6 +3624,82 @@ var MOD_DATA_UMI = [
   ]
 ];
 
+/* Chouaib Doukkali — FLSH El Jadida module data */
+var MOD_DATA_UCD = [
+  /* S1 */ [
+    {icon:'📝',title:'Grammar 1',desc:'Foundations of English grammar: parts of speech, tenses, sentence structure.'},
+    {icon:'✍️',title:'Paragraph Writing',desc:'Learn paragraph structure, topic sentences, and coherence.'},
+    {icon:'📖',title:'Reading Comprehension & Precis 1',desc:'Master basic reading comprehension skills and summary writing.'},
+    {icon:'🗣️',title:'Spoken English',desc:'Practice and improve listening and oral communication skills.'},
+    {icon:'📚',title:'Guided Reading 1',desc:'Overcome lexical and structural difficulties through guided reading.'},
+    {icon:'🔤',title:'Academic Vocabulary',desc:'Build academic word knowledge for reading, writing, and research.'},
+    {icon:'🎓',title:'Méthodologie du travail universitaire',desc:'University work methods: research, organization, and academic practice.'}
+  ],
+  /* S2 */ [
+    {icon:'📝',title:'Grammar 2',desc:'Intermediate grammar: complex sentences, conditionals, passive voice.'},
+    {icon:'✍️',title:'Composition',desc:'Essay writing: thesis statements, argumentation, and structure.'},
+    {icon:'📖',title:'Reading Comprehension & Precis 2',desc:'Advanced reading strategies and summary writing techniques.'},
+    {icon:'🗣️',title:'Oral Communication',desc:'Develop fluency, pronunciation, and conversational confidence.'},
+    {icon:'📚',title:'Guided Reading 2',desc:'Develop reading fluency and comprehension through guided texts.'},
+    {icon:'🌍',title:'British/American Civilization',desc:'Study British and American civilization, history, and cultural institutions.'},
+    {icon:'💻',title:'Compétence Digitale',desc:'Digital literacy, online tools, and the role of technology in education.'}
+  ],
+  /* S3 */ [
+    {icon:'📝',title:'Advanced Grammar',desc:'Advanced grammar: relative clauses, reported speech, advanced tenses.'},
+    {icon:'✍️',title:'Advanced Composition',desc:'Advanced essay writing: analytical and argumentative compositions.'},
+    {icon:'📖',title:'Extensive Reading',desc:'Read widely to build vocabulary, fluency, and literary appreciation.'},
+    {icon:'🗣️',title:'Public Speaking',desc:'Learn the rules of public speaking and oral presentations.'},
+    {icon:'🌐',title:'Readings in Global Cultures',desc:'Explore cultural texts and develop cross-cultural reading competence.'},
+    {icon:'🧠',title:'Introduction to Linguistics',desc:'Introduction to general linguistics: phonology, morphology, and syntax.'},
+    {icon:'🌐',title:'Langue étrangère 1',desc:'Foreign language competence for academic purposes.'}
+  ],
+  /* S4 */ [
+    {icon:'🧠',title:'Introduction to Linguistics',desc:'Advanced linguistics: syntax, semantics, and language analysis.'},
+    {icon:'🔬',title:'Introduction to Research',desc:'Research methodology: formulating questions, gathering data, and writing.'},
+    {icon:'💬',title:'Introduction to Discourse Analysis',desc:'Study how language functions in context and shapes communication.'},
+    {icon:'🔄',title:'Introduction to Translation',desc:'Introduction to translation theory: English–Arabic and Arabic–English.'},
+    {icon:'🌐',title:'Introduction to Cultural Studies',desc:'Basics in the theory and practice of cultural studies and critical theory.'},
+    {icon:'🌍',title:'Introduction to African Literature and Culture',desc:'Explore African literary traditions, postcolonial voices, and cultural narratives.'},
+    {icon:'🌐',title:'Langue étrangère 1',desc:'Foreign language competence for academic purposes.'}
+  ],
+  /* S5 Literature */ [
+    {icon:'🎓',title:'Applied Linguistics',desc:'Apply linguistic theory to language teaching, learning, and communication.'},
+    {icon:'✒️',title:'Critical Stylistics',desc:'Analyse texts using critical stylistic approaches and linguistic tools.'},
+    {icon:'🌐',title:'Cultural Studies',desc:'Study culture, identity, and representation through critical theory.'},
+    {icon:'🌍',title:'British and American Survey',desc:'Survey of British and American literature, history, and culture.'},
+    {icon:'🔄',title:'Translation Eng/Ar/Eng',desc:'Translation practice between English and Arabic.'},
+    {icon:'🎯',title:'Développement Personnel',desc:'Personal development: communication, leadership, and career skills.'},
+    {icon:'🌐',title:'Langue étrangère 2',desc:'Advanced foreign language competence for academic purposes.'}
+  ],
+  /* S5 Linguistics */ [
+    {icon:'🎓',title:'Applied Linguistics',desc:'Apply linguistic theory to language teaching, learning, and communication.'},
+    {icon:'✒️',title:'Critical Stylistics',desc:'Analyse texts using critical stylistic approaches and linguistic tools.'},
+    {icon:'🌐',title:'Cultural Studies',desc:'Study culture, identity, and representation through critical theory.'},
+    {icon:'🌍',title:'British and American Survey',desc:'Survey of British and American literature, history, and culture.'},
+    {icon:'🔄',title:'Translation Eng/Ar/Eng',desc:'Translation practice between English and Arabic.'},
+    {icon:'🎯',title:'Développement Personnel',desc:'Personal development: communication, leadership, and career skills.'},
+    {icon:'🌐',title:'Langue étrangère 2',desc:'Advanced foreign language competence for academic purposes.'}
+  ],
+  /* S6 Literature */ [
+    {icon:'📗',title:'Modern Novel',desc:'Study modern and contemporary fiction: narrative innovation and themes.'},
+    {icon:'🎭',title:'Drama and Poetry',desc:'Explore dramatic works and poetic forms from classical to contemporary.'},
+    {icon:'📺',title:'Media Studies',desc:'Analyse media texts, discourse, effects, and the role of media in society.'},
+    {icon:'📖',title:'Literary and Cultural Theory',desc:'Survey major literary and cultural critical approaches.'},
+    {icon:'🔄',title:'Translation FR/ENG/FR',desc:'Translation practice between French and English.'},
+    {icon:'💼',title:'Culture Entrepreneuriale',desc:'Entrepreneurship culture, project management, and professional skills.'},
+    {icon:'🌐',title:'Langue étrangère 2',desc:'Advanced foreign language competence for academic purposes.'}
+  ],
+  /* S6 Linguistics */ [
+    {icon:'🔊',title:'Phonetics and Phonology',desc:'Study speech sounds, sound systems, and phonological patterns.'},
+    {icon:'💬',title:'Semantics and Pragmatics',desc:'Study meaning in language: word meaning, sentence meaning, and context.'},
+    {icon:'🧩',title:'Morphology and Syntax',desc:'Analyse word structure and sentence structure rules.'},
+    {icon:'📖',title:'Literary and Cultural Theory',desc:'Survey major literary and cultural critical approaches.'},
+    {icon:'🔄',title:'Translation FR/ENG/FR',desc:'Translation practice between French and English.'},
+    {icon:'💼',title:'Culture Entrepreneuriale',desc:'Entrepreneurship culture, project management, and professional skills.'},
+    {icon:'🌐',title:'Langue étrangère 2',desc:'Advanced foreign language competence for academic purposes.'}
+  ]
+];
+
 /* Dhar El Mahraz - Fez modules */
 var MOD_DATA_DHAR = [
   /* S1 */ [
@@ -3746,7 +3822,7 @@ var UNI_MOD_DATA = {
   'umi': MOD_DATA_UMI,
   'um5': MOD_DATA_NATIONAL,
   'uae': MOD_DATA_NATIONAL,
-  'ucd': MOD_DATA_NATIONAL,
+  'ucd': MOD_DATA_UCD,
   'usms': MOD_DATA_NATIONAL,
   'uh1': MOD_DATA_NATIONAL,
   'usmba_dhar': MOD_DATA_DHAR
