@@ -3939,9 +3939,9 @@ function enterApp(name, email){
   }
   cacheUserSubscription();
   setTimeout(updateNotifBadge, 2000);
-  // Check if profile setup needed (first login)
+  // Check if profile setup needed — runs immediately, blocks app if incomplete
   if(email && email !== ''){
-    setTimeout(function(){ checkProfileSetup(email, name); }, 500);
+    checkProfileSetup(email, name);
   }
 }
 function googleSignIn(){
@@ -5491,13 +5491,13 @@ function populateProfileDropdowns(uniElId, semElId, selUni, selSem){
 function checkProfileSetup(email, name){
   if(!email || email === '') return;
   if(isAdmin()) return;
-  if(sessionStorage.getItem('profileDone')) return;
   var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
   db.collection('users').doc(docId).get().then(function(doc){
     if(doc.exists){
       var d = doc.data();
       if(d.profileComplete && d.university && d.semester){
-        sessionStorage.setItem('profileDone','1');
+        S.user.university = d.university;
+        S.user.semester = d.semester;
         return;
       }
     }
@@ -5544,7 +5544,6 @@ el('ppSaveBtn').onclick = function(){
   };
   var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
   db.collection('users').doc(docId).set(profileData, {merge: true}).then(function(){
-    sessionStorage.setItem('profileDone','1');
     el('profilePopup').classList.remove('open');
     S.user.name = profileData.name;
     S.user.university = profileData.university;
@@ -7088,6 +7087,12 @@ function uploadProgressReset(){
 
 window.submitUpload = function(){
   var msg = el('uploadMsg');
+  if(!isAdmin() && (!S.user.university || !S.user.semester)){
+    msg.className = 'admin-msg error';
+    msg.textContent = 'Please complete your profile first (set university and semester).';
+    setTimeout(function(){ checkProfileSetup(S.user.email, S.user.name); }, 300);
+    return;
+  }
   var uni = el('uploadUni').value;
   var semIdx = el('uploadSem').value;
   var mod = el('uploadMod').value;
