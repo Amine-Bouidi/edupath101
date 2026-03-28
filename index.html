@@ -1971,16 +1971,16 @@ function openLoginFromLanding(){
             <div style="margin-bottom:14px;">
               <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:8px;">Upload your file</label>
               <div style="display:flex;gap:6px;margin-bottom:10px;">
-                <button id="tabPhoto" onclick="switchUploadTab('photo')" style="flex:1;padding:9px;font-size:12px;font-weight:600;border-radius:8px;cursor:pointer;border:1px solid var(--border2);background:rgba(108,99,255,.15);color:var(--accent2);font-family:inherit;transition:all .2s;">📷 Photo / Image</button>
-                <button id="tabDrive" onclick="switchUploadTab('drive')" style="flex:1;padding:9px;font-size:12px;font-weight:600;border-radius:8px;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-family:inherit;transition:all .2s;">🔗 Google Drive Link</button>
+                <button id="tabPhoto" onclick="switchUploadTab('photo')" style="flex:1;padding:9px;font-size:12px;font-weight:600;border-radius:8px;cursor:pointer;border:1px solid var(--border2);background:rgba(108,99,255,.15);color:var(--accent2);font-family:inherit;transition:all .2s;">📄 Lesson</button>
+                <button id="tabDrive" onclick="switchUploadTab('drive')" style="flex:1;padding:9px;font-size:12px;font-weight:600;border-radius:8px;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-family:inherit;transition:all .2s;">📝 Exam</button>
               </div>
               <div id="uploadTabPhoto">
                 <input type="file" id="uploadFile" accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png" style="font-size:13px;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;width:100%;box-sizing:border-box;color:var(--text);">
-                <div style="font-size:11px;color:var(--text3);margin-top:4px;">PDF, Word, PowerPoint, JPEG, or PNG only. Max 15MB. Up to 5 pending uploads at a time.</div>
+                <div style="font-size:11px;color:var(--text3);margin-top:4px;">Upload your lesson materials. PDF, Word, PowerPoint, JPEG, or PNG. Max 15MB.</div>
               </div>
               <div id="uploadTabDrive" style="display:none;">
-                <input type="text" id="uploadDriveLink" placeholder="https://drive.google.com/file/d/..." style="width:100%;padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;font-family:inherit;box-sizing:border-box;">
-                <div style="font-size:11px;color:var(--text3);margin-top:4px;">Paste a Google Drive link to your PDF or document.</div>
+                <input type="file" id="uploadFileExam" accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png" style="font-size:13px;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;width:100%;box-sizing:border-box;color:var(--text);">
+                <div style="font-size:11px;color:var(--text3);margin-top:4px;">Upload past exams. PDF, Word, PowerPoint, JPEG, or PNG. Max 15MB.</div>
               </div>
             </div>
 
@@ -6966,8 +6966,10 @@ window.submitContribution = function(){
 
 
 /* ── PHASE 1 UPLOAD PAGE ── */
+window._uploadFileType = 'lesson';
 window.switchUploadTab = function(tab){
   if(tab === 'photo'){
+    window._uploadFileType = 'lesson';
     el('uploadTabPhoto').style.display = 'block';
     el('uploadTabDrive').style.display = 'none';
     el('tabPhoto').style.background = 'rgba(108,99,255,.15)';
@@ -6977,6 +6979,7 @@ window.switchUploadTab = function(tab){
     el('tabDrive').style.color = 'var(--text2)';
     el('tabDrive').style.borderColor = 'var(--border)';
   } else {
+    window._uploadFileType = 'exam';
     el('uploadTabPhoto').style.display = 'none';
     el('uploadTabDrive').style.display = 'block';
     el('tabDrive').style.background = 'rgba(108,99,255,.15)';
@@ -7099,8 +7102,10 @@ window.submitUpload = function(){
   var uni = el('uploadUni').value;
   var semIdx = el('uploadSem').value;
   var mod = el('uploadMod').value;
-  var fileInput = el('uploadFile');
-  var driveLink = el('uploadDriveLink') ? el('uploadDriveLink').value.trim() : '';
+  var lessonInput = el('uploadFile');
+  var examInput = el('uploadFileExam');
+  var fileInput = window._uploadFileType === 'exam' ? examInput : lessonInput;
+  var driveLink = '';
 
   if(!uni || semIdx === '' || !mod){
     msg.className = 'admin-msg error';
@@ -7109,7 +7114,7 @@ window.submitUpload = function(){
   }
   if(!fileInput.files.length && !driveLink){
     msg.className = 'admin-msg error';
-    msg.textContent = 'Please upload a file or paste a Google Drive link.';
+    msg.textContent = 'Please upload a file.';
     return;
   }
 
@@ -7165,7 +7170,7 @@ window.submitUpload = function(){
         semesterTitle: semObj ? semObj.title : '',
         module: mod,
         moduleIcon: '',
-        fileType: 'lesson',
+        fileType: window._uploadFileType || 'lesson',
         driveLink: driveLink,
         fileURL: imageData || '',
         notes: '',
@@ -7179,7 +7184,7 @@ window.submitUpload = function(){
         msg.textContent = '✅ Handout submitted! We will review it within 24 hours. (' + remaining + ' upload' + (remaining !== 1 ? 's' : '') + ' remaining)';
         el('uploadSubmitBtn').disabled = false;
         el('uploadFile').value = '';
-        if(el('uploadDriveLink')) el('uploadDriveLink').value = '';
+        if(el('uploadFileExam')) el('uploadFileExam').value = '';
         setTimeout(function(){
           uploadProgressReset();
           showView('dashboard');
