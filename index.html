@@ -4144,32 +4144,50 @@ function proceedWithModules(mods, sem, idx, grid){
   var isAdminUser = email && ADMIN_EMAILS.indexOf(email.toLowerCase()) !== -1;
   var isDemoUser = S.user && S.user.name === 'Demo Student';
 
+  // Fetch published resources for this university+semester to show "Lessons Ready" badges
+  var readyPromise = db.collection('published_resources').where('status','==','published').get().then(function(snap){
+    var readyMods = {};
+    snap.forEach(function(doc){
+      var r = doc.data();
+      if(r.university === S.uni.id && r.semester === S.sem.id){
+        readyMods[r.module] = (readyMods[r.module] || 0) + 1;
+      }
+    });
+    return readyMods;
+  }).catch(function(){ return {}; });
+
   if(isAdminUser || isDemoUser){
-    renderModuleGrid(grid, mods, sem, idx, null);
+    readyPromise.then(function(readyMods){ renderModuleGrid(grid, mods, sem, idx, null, readyMods); });
   } else if(email){
     var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
-    db.collection('subscriptions').doc(docId).get().then(function(doc){
+    Promise.all([
+      db.collection('subscriptions').doc(docId).get(),
+      readyPromise
+    ]).then(function(results){
+      var doc = results[0];
+      var readyMods = results[1];
       if(doc.exists && doc.data().active){
         var subData = doc.data();
         var isExpired = subData.expiresAt && new Date(subData.expiresAt) < new Date();
         if(!isExpired){
-          renderModuleGrid(grid, mods, sem, idx, subData);
+          renderModuleGrid(grid, mods, sem, idx, subData, readyMods);
         } else {
-          renderModuleGrid(grid, mods, sem, idx, null);
+          renderModuleGrid(grid, mods, sem, idx, null, readyMods);
         }
       } else {
-        renderModuleGrid(grid, mods, sem, idx, null);
+        renderModuleGrid(grid, mods, sem, idx, null, readyMods);
       }
     }).catch(function(){
-      renderModuleGrid(grid, mods, sem, idx, null);
+      renderModuleGrid(grid, mods, sem, idx, null, {});
     });
   } else {
-    renderModuleGrid(grid, mods, sem, idx, null);
+    readyPromise.then(function(readyMods){ renderModuleGrid(grid, mods, sem, idx, null, readyMods); });
   }
 }
 
-function renderModuleGrid(grid, mods, sem, idx, subData){
+function renderModuleGrid(grid, mods, sem, idx, subData, readyMods){
   grid.innerHTML='';
+  readyMods = readyMods || {};
   // Determine which modules are unlocked
   var enabledIndices = [];
   var hasSubscription = false;
@@ -4196,11 +4214,13 @@ function renderModuleGrid(grid, mods, sem, idx, subData){
     var badge=isSome?'<span class="badge b-prog">'+pct+'%</span>':isAll?'<span class="badge b-done">✓ Done</span>':'<span class="badge b-new">New</span>';
 
     var isUnlocked = allUnlocked || enabledIndices.indexOf(modIdx) !== -1;
+    var lessonCount = readyMods[mod.title] || 0;
+    var lessonBadge = lessonCount > 0 ? '<span style="background:rgba(67,233,123,.15);color:#43e97b;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:700;margin-left:4px;">📄 '+lessonCount+' Lesson'+(lessonCount>1?'s':'')+' Ready</span>' : '';
 
     var card=document.createElement('div');
     if(isAdminUser){
       card.className = 'mod-card' + (isUnlocked ? '' : ' locked');
-      card.innerHTML='<div class="mc-head"><div class="mc-icon">'+mod.icon+'</div><div><div class="mc-title" id="mtitle_'+modIdx+'">'+mod.title+' <span class="mod-edit-btn" data-idx="'+modIdx+'" style="cursor:pointer;font-size:13px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit name">✏️</span>'+(mod.isCustom?'<span class="mod-del-btn" data-fid="'+mod.firestoreId+'" style="cursor:pointer;font-size:13px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Delete module">🗑️</span>':'')+'</div><div class="mc-desc">'+mod.desc+'</div></div></div><div class="pbar"><div class="pfill" style="width:'+pct+'%"></div></div><div class="mc-footer"><span class="mc-vids">5 videos'+(dv>0?' · '+dv+' done':'')+'</span>'+badge+'</div>';
+      card.innerHTML='<div class="mc-head"><div class="mc-icon">'+mod.icon+'</div><div><div class="mc-title" id="mtitle_'+modIdx+'">'+mod.title+' <span class="mod-edit-btn" data-idx="'+modIdx+'" style="cursor:pointer;font-size:13px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit name">✏️</span>'+(mod.isCustom?'<span class="mod-del-btn" data-fid="'+mod.firestoreId+'" style="cursor:pointer;font-size:13px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Delete module">🗑️</span>':'')+'</div><div class="mc-desc">'+mod.desc+'</div></div></div><div class="pbar"><div class="pfill" style="width:'+pct+'%"></div></div><div class="mc-footer"><span class="mc-vids">5 videos'+(dv>0?' · '+dv+' done':'')+'</span>'+lessonBadge+badge+'</div>';
       if(isUnlocked){
         card.onclick=(function(m){return function(e){if(e.target.closest('.mod-edit-btn')||e.target.closest('.mod-del-btn'))return;openPlayer(m);};})(mod);
       } else {
@@ -4210,7 +4230,7 @@ function renderModuleGrid(grid, mods, sem, idx, subData){
     } else {
       card.className = 'mod-card';
       card.setAttribute('data-mod-title', mod.title);
-      card.innerHTML='<div class="mc-head"><div class="mc-icon">'+mod.icon+'</div><div><div class="mc-title">'+mod.title+'</div><div class="mc-desc">'+mod.desc+'</div></div></div><div class="pbar"><div class="pfill" style="width:0%;background:var(--accent2);transition:width .5s;" id="cpbar_'+modIdx+'"></div></div><div class="mc-footer"><span class="mc-vids" id="cpstat_'+modIdx+'" style="font-size:11px;color:var(--text3);">Loading...</span><span style="background:rgba(108,99,255,.12);color:var(--accent2);padding:4px 10px;border-radius:16px;font-size:11px;font-weight:700;">📤 Upload</span></div>';
+      card.innerHTML='<div class="mc-head"><div class="mc-icon">'+mod.icon+'</div><div><div class="mc-title">'+mod.title+'</div><div class="mc-desc">'+mod.desc+'</div></div></div><div class="pbar"><div class="pfill" style="width:0%;background:var(--accent2);transition:width .5s;" id="cpbar_'+modIdx+'"></div></div><div class="mc-footer"><span class="mc-vids" id="cpstat_'+modIdx+'" style="font-size:11px;color:var(--text3);">Loading...</span>'+lessonBadge+'<span style="background:rgba(108,99,255,.12);color:var(--accent2);padding:4px 10px;border-radius:16px;font-size:11px;font-weight:700;">📤 Upload</span></div>';
       card.onclick=(function(m){return function(){openContributePage(m);};})(mod);
     }
     grid.appendChild(card);
