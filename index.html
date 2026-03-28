@@ -1427,6 +1427,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 
 <!-- LANDING PAGE OVERLAY -->
 <div id="landingPage" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:99998;overflow-y:auto;display:block;">
+<script>if(sessionStorage.getItem('loggedIn')){document.getElementById('landingPage').style.display='none';}</script>
 
 <div class="glow-blob one"></div>
 <div class="glow-blob two"></div>
@@ -3775,6 +3776,7 @@ function getP(u,s,m){var k=u+'_'+s+'_'+m;return S.progress[k]||{videos:[],quizze
 function el(id){return document.getElementById(id);}
 window.showView = function showView(id){
   if(id === 'upload'){ setTimeout(initUploadPage, 50); }
+  sessionStorage.setItem('lastView', id);
   ['dashboard','semesters','modules','contact','pricing','admin','profile','privacy','contribute','notifs','upload'].forEach(function(v){
     var e=el('view-'+v); if(e){e.style.display='none';e.classList.remove('active');}
   });
@@ -3898,6 +3900,7 @@ function startTrialTimer(){
 function enterApp(name, email){
   var initials = name.split(' ').map(function(w){return w[0];}).join('').substring(0,2).toUpperCase();
   S.user = { name: name, email: email||'', initials: initials };
+  sessionStorage.setItem('loggedIn','1');
   var lp = document.getElementById('landingPage'); if(lp) lp.style.display = 'none';
   el('login').style.display='none'; el('login').classList.remove('active');
   el('app').style.display='flex'; el('app').classList.add('active');
@@ -3924,6 +3927,16 @@ function enterApp(name, email){
   }
   startTrialTimer();
   showAdminIfNeeded();
+  // Restore last view if returning from refresh
+  var lastView = sessionStorage.getItem('lastView');
+  if(lastView && lastView !== 'dashboard'){
+    setTimeout(function(){
+      showView(lastView);
+      if(lastView === 'admin') loadAdminUsers();
+      if(lastView === 'profile') openProfile();
+      if(lastView === 'notifs') loadNotifications();
+    }, 100);
+  }
   cacheUserSubscription();
   setTimeout(updateNotifBadge, 2000);
   // Check if profile setup needed (first login)
@@ -3945,6 +3958,9 @@ function googleSignIn(){
 el('btnGoogleSignIn').onclick=googleSignIn;
 el('btnSignOut').onclick=function(){
   firebase.auth().signOut().catch(function(){});
+  sessionStorage.removeItem('loggedIn');
+  sessionStorage.removeItem('lastView');
+  sessionStorage.removeItem('profileDone');
   if(trialInterval) clearInterval(trialInterval);
   el('trialBanner').style.display='none';
   el('paywallOverlay').style.display='none';
