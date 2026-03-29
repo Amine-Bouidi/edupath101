@@ -499,12 +499,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .upload-progress-step.done{background:rgba(67,233,123,.1);color:#43e97b;border-color:rgba(67,233,123,.3);}
 .upload-progress-step.current{background:rgba(108,99,255,.12);color:var(--accent2);border-color:var(--accent2);}
 /* User table row */
-.au-row{display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr 80px;gap:8px;padding:12px;align-items:center;border-bottom:1px solid var(--border);font-size:13px;cursor:pointer;transition:background .15s;}
+.au-row{display:grid;grid-template-columns:2fr 1.2fr 1fr 80px 80px;gap:8px;padding:12px;align-items:center;border-bottom:1px solid var(--border);font-size:13px;cursor:pointer;transition:background .15s;}
 .au-row:hover{background:rgba(108,99,255,.06);}
 .au-row:last-child{border-bottom:none;}
-.au-name{font-weight:600;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.au-email{font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.au-uni,.au-sem{font-size:12px;color:var(--text2);}
+.au-name{font-weight:600;color:var(--text1);word-break:break-word;}
+.au-email{font-size:11px;color:var(--text3);word-break:break-all;}
+.au-uni,.au-sem{font-size:12px;color:var(--text2);word-break:break-word;}
 .au-status{font-size:11px;padding:3px 10px;border-radius:12px;display:inline-block;font-weight:600;}
 .au-status.paid{background:rgba(67,233,123,.15);color:#43e97b;}
 .au-status.trial{background:rgba(249,168,37,.15);color:#f9a825;}
@@ -2422,11 +2422,14 @@ function openLoginFromLanding(){
         <!-- ALL USERS TABLE -->
         <div class="admin-section">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
-            <h3 style="margin:0;">👥 All Users</h3>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <h3 style="margin:0;">👥 All Users</h3>
+              <button onclick="loadAdminUsers()" style="background:var(--accent2);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">🔄 Refresh</button>
+            </div>
             <input type="text" id="adminSearch" class="admin-input" placeholder="🔍 Search by name or email..." style="margin:0;max-width:280px;flex:1;">
           </div>
           <!-- Table header -->
-          <div style="display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr 80px;gap:8px;padding:8px 12px;background:var(--bg);border-radius:8px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">
+          <div style="display:grid;grid-template-columns:2fr 1.2fr 1fr 80px 80px;gap:8px;padding:8px 12px;background:var(--bg);border-radius:8px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">
             <div>Student</div>
             <div>University</div>
             <div>Semester</div>
@@ -2434,7 +2437,7 @@ function openLoginFromLanding(){
             <div style="text-align:center;">Actions</div>
           </div>
           <!-- User rows container -->
-          <div id="adminUserList" style="max-height:500px;overflow-y:auto;">
+          <div id="adminUserList">
             <div style="color:var(--text3);font-size:13px;padding:20px 0;text-align:center;">Loading users...</div>
           </div>
         </div>
