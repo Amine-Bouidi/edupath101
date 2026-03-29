@@ -4206,33 +4206,62 @@ window.renderDashboard = function renderDashboard(){
   el('statMods').textContent=totalMods;
   el('statPts').textContent=totalPts;
   var grid=el('uniGrid'); grid.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);">Loading...</div>';
-  db.collection('universityNames').get().then(function(snap){
-    snap.forEach(function(doc){
+  Promise.all([
+    db.collection('universityNames').get(),
+    db.collection('published_resources').where('status','==','published').get()
+  ]).then(function(results){
+    results[0].forEach(function(doc){
       var u = UNIVERSITIES.find(function(x){ return x.id === doc.id; });
       if(u) u.name = doc.data().name;
     });
-    renderUniGrid(grid);
+    var resCounts = {};
+    results[1].forEach(function(doc){
+      var r = doc.data();
+      if(!r.university || !r.semester || !r.module) return;
+      if(!resCounts[r.university]) resCounts[r.university] = {};
+      if(!resCounts[r.university][r.semester]) resCounts[r.university][r.semester] = {};
+      resCounts[r.university][r.semester][r.module] = (resCounts[r.university][r.semester][r.module] || 0) + 1;
+    });
+    renderUniGrid(grid, resCounts);
   }).catch(function(){
-    renderUniGrid(grid);
+    renderUniGrid(grid, {});
   });
   setTopbar([],'Dashboard',false);
   showView('dashboard');
   ['nav-semesters','nav-modules','nav-player','nav-contact'].forEach(function(id){el(id).style.display='none';});
 }
 
-function renderUniGrid(grid){
+function renderUniGrid(grid, resCounts){
   var isAdminUser = isAdmin();
+  resCounts = resCounts || {};
   grid.innerHTML='';
   var sorted = UNIVERSITIES.slice().sort(function(a,b){return (b.verified?1:0)-(a.verified?1:0);});
   sorted.forEach(function(uni){
-    var done=0,total=0;
-    SEMESTERS.forEach(function(sem,si){var mods=getMods(si,uni.id);total+=mods.length*VIDEOS.length;mods.forEach(function(mod){done+=getP(uni.id,sem.id,mod.id).videos.length;});});
-    var pct=total>0?Math.round((done/total)*100):0;
+    var pct = 0;
+    var pctLabel = '0% complete';
+    if(isAdminUser){
+      var covered=0, totalMods=0;
+      SEMESTERS.forEach(function(sem,si){
+        var mods=getMods(si,uni.id);
+        mods.forEach(function(mod){
+          totalMods++;
+          var rc = resCounts[uni.id] && resCounts[uni.id][sem.id] && resCounts[uni.id][sem.id][mod.title];
+          if(rc && rc >= 2) covered++;
+        });
+      });
+      pct = totalMods > 0 ? Math.round((covered/totalMods)*100) : 0;
+      pctLabel = pct + '% covered (' + covered + '/' + totalMods + ' modules)';
+    } else {
+      var done=0,total=0;
+      SEMESTERS.forEach(function(sem,si){var mods=getMods(si,uni.id);total+=mods.length*VIDEOS.length;mods.forEach(function(mod){done+=getP(uni.id,sem.id,mod.id).videos.length;});});
+      pct=total>0?Math.round((done/total)*100):0;
+      pctLabel = pct + '% complete';
+    }
     var card=document.createElement('div'); card.className='uni-card';
     card.style.setProperty('--uc',uni.c);
     var logoHtml = UNI_LOGOS[uni.id] ? '<img src="'+UNI_LOGOS[uni.id]+'" style="width:48px;height:48px;object-fit:contain;border-radius:8px;margin-bottom:8px;">' : '<div class="uc-emoji">'+uni.emoji+'</div>';
     var verifiedBadge = uni.verified ? '<span style="display:inline-block;background:linear-gradient(135deg,#43e97b,#38f9d7);color:#111;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;vertical-align:middle;">✓ Verified</span>' : '';
-    card.innerHTML=logoHtml+'<div class="uc-name" id="utitle_'+uni.id+'">'+uni.name+verifiedBadge+(isAdminUser?' <span class="uni-edit-btn" data-uid="'+uni.id+'" style="cursor:pointer;font-size:13px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit name">✏️</span>':'')+'</div><div class="uc-country">'+uni.country+'</div><div class="uc-bar"><div class="uc-fill" style="width:'+pct+'%"></div></div><div class="uc-pct">'+pct+'% complete</div>';
+    card.innerHTML=logoHtml+'<div class="uc-name" id="utitle_'+uni.id+'">'+uni.name+verifiedBadge+(isAdminUser?' <span class="uni-edit-btn" data-uid="'+uni.id+'" style="cursor:pointer;font-size:13px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit name">✏️</span>':'')+'</div><div class="uc-country">'+uni.country+'</div><div class="uc-bar"><div class="uc-fill" style="width:'+pct+'%"></div></div><div class="uc-pct">'+pctLabel+'</div>';
     card.onclick=(function(u){return function(e){if(e.target.closest('.uni-edit-btn'))return;openSemesters(u);};})(uni);
     grid.appendChild(card);
   });
@@ -4267,7 +4296,11 @@ function openSemesters(uni){
     var readySems = {};
     results[3].forEach(function(doc){
       var r = doc.data();
-      if(r.university === uni.id && r.semester){ readySems[r.semester] = (readySems[r.semester] || 0) + 1; }
+      if(r.university === uni.id && r.semester){
+        if(!readySems[r.semester]) readySems[r.semester] = {_total: 0};
+        readySems[r.semester]._total = (readySems[r.semester]._total || 0) + 1;
+        if(r.module) readySems[r.semester][r.module] = (readySems[r.semester][r.module] || 0) + 1;
+      }
     });
     renderSemGrid(grid, semIndices, uni, hidden, customSems, readySems);
   }).catch(function(){
@@ -4291,11 +4324,22 @@ function renderSemGrid(grid, semIndices, uni, hidden, customSems, readySems){
       if(isAdminUser) hiddenCards.push({sem:sem, idx:idx});
       return;
     }
-    var mods=getMods(idx,uni.id),done=0;
-    mods.forEach(function(m){done+=getP(uni.id,sem.id,m.id).videos.length;});
-    var total=mods.length*VIDEOS.length, pct=Math.round((done/total)*100);
-    var isAll=done===total, isSome=done>0&&!isAll;
-    var badge=isSome?'<span class="badge b-prog">'+pct+'%</span>':isAll?'<span class="badge b-done">✓ Done</span>':'<span class="badge b-new">New</span>';
+    var mods=getMods(idx,uni.id);
+    var pct = 0, badge = '';
+    if(isAdminUser){
+      var semData = readySems[sem.id] || {};
+      var coveredMods = 0;
+      mods.forEach(function(m){ if((semData[m.title] || 0) >= 2) coveredMods++; });
+      pct = mods.length > 0 ? Math.round((coveredMods / mods.length) * 100) : 0;
+      badge = pct === 100 ? '<span class="badge b-done">✓ Covered</span>' : pct > 0 ? '<span class="badge b-prog">' + coveredMods + '/' + mods.length + '</span>' : '<span class="badge b-new">New</span>';
+    } else {
+      var done=0;
+      mods.forEach(function(m){done+=getP(uni.id,sem.id,m.id).videos.length;});
+      var total=mods.length*VIDEOS.length;
+      pct=total>0?Math.round((done/total)*100):0;
+      var isAll=done===total, isSome=done>0&&!isAll;
+      badge=isSome?'<span class="badge b-prog">'+pct+'%</span>':isAll?'<span class="badge b-done">✓ Done</span>':'<span class="badge b-new">New</span>';
+    }
     var card=document.createElement('div'); card.className='sem-card';
     card.style.setProperty('--sc1',sem.c1); card.style.setProperty('--sc2',sem.c2);
     var adminBtns = '';
@@ -4304,7 +4348,7 @@ function renderSemGrid(grid, semIndices, uni, hidden, customSems, readySems){
       adminBtns += '<span class="sem-hide-btn" data-sidx="'+idx+'" style="cursor:pointer;font-size:12px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Hide semester">🗑️</span>';
     }
     var subAdminBtn = isAdminUser ? ' <span class="sem-edit-sub-btn" data-sidx="'+idx+'" style="cursor:pointer;font-size:11px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit subtitle">✏️</span>' : '';
-    var semLessonCount = readySems[sem.id] || 0;
+    var semLessonCount = readySems[sem.id] ? (readySems[sem.id]._total || 0) : 0;
     var semLessonBadge = semLessonCount > 0 ? '<span style="background:rgba(67,233,123,.15);color:#43e97b;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:700;margin-left:4px;">📄 '+semLessonCount+' Lesson'+(semLessonCount>1?'s':'')+' Ready</span>' : '';
     card.innerHTML='<div class="sc-num" style="color:'+sem.c1+'" id="stitle_'+idx+'">'+sem.title+adminBtns+'</div><div class="sc-title" id="ssub_'+idx+'">'+sem.sub+subAdminBtn+'</div><div class="pbar"><div class="pfill" style="width:'+pct+'%;background:linear-gradient(90deg,'+sem.c1+','+sem.c2+');"></div></div><div class="sc-footer"><span style="font-size:12px;color:var(--text2);">'+mods.length+' modules</span>'+semLessonBadge+badge+'</div>';
     card.onclick=(function(s,i){return function(e){if(e.target.closest('.sem-edit-btn')||e.target.closest('.sem-edit-sub-btn')||e.target.closest('.sem-hide-btn')||e.target.closest('.sem-restore-btn'))return;openModules(s,i);};})(sem,idx);
