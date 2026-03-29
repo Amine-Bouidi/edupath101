@@ -4125,24 +4125,14 @@ function enterApp(name, email){
   el('app').style.display='flex'; el('app').classList.add('active');
   el('sbName').textContent = name;
   el('sbAvatar').textContent = initials;
-  // Track user in Firestore
+  // Track user in Firestore — write immediately, no async get first
   if(email && email !== ''){
     var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
-    db.collection('users').doc(docId).get().then(function(doc){
-      var updateData = {
-        email: email,
-        name: name,
-        lastLogin: new Date().toISOString()
-      };
-      // Only set trialStartedAt if it doesn't already exist
-      if(!doc.exists || !doc.data().trialStartedAt){
-        updateData.trialStartedAt = new Date().toISOString();
-      }
-      if(!doc.exists){
-        updateData.firstSeen = firebase.firestore.FieldValue.serverTimestamp();
-      }
-      db.collection('users').doc(docId).set(updateData, {merge: true}).catch(function(e){ console.log('User track error:', e); });
-    }).catch(function(e){ console.log('User track error:', e); });
+    db.collection('users').doc(docId).set({
+      email: email,
+      name: name,
+      lastLogin: new Date().toISOString()
+    }, {merge: true}).catch(function(e){ console.log('User track error:', e); });
   }
   startTrialTimer();
   showAdminIfNeeded();
