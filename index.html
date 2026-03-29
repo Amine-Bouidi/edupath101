@@ -4282,31 +4282,31 @@ function renderSemGrid(grid, semIndices, uni, hidden, customSems, readySems){
   grid.innerHTML='';
   readySems = readySems || {};
   var isAdminUser = isAdmin();
+  var hiddenCards = [];
   SEMESTERS.forEach(function(sem,idx){
     if(semIndices && semIndices.indexOf(idx) === -1) return;
-    if(hidden.indexOf(idx) !== -1 && !isAdminUser) return;
     var isHidden = hidden.indexOf(idx) !== -1;
+    if(isHidden){
+      // Collect hidden semesters for admin toggle section
+      if(isAdminUser) hiddenCards.push({sem:sem, idx:idx});
+      return;
+    }
     var mods=getMods(idx,uni.id),done=0;
     mods.forEach(function(m){done+=getP(uni.id,sem.id,m.id).videos.length;});
     var total=mods.length*VIDEOS.length, pct=Math.round((done/total)*100);
     var isAll=done===total, isSome=done>0&&!isAll;
     var badge=isSome?'<span class="badge b-prog">'+pct+'%</span>':isAll?'<span class="badge b-done">✓ Done</span>':'<span class="badge b-new">New</span>';
     var card=document.createElement('div'); card.className='sem-card';
-    if(isHidden) card.style.opacity='0.4';
     card.style.setProperty('--sc1',sem.c1); card.style.setProperty('--sc2',sem.c2);
     var adminBtns = '';
     if(isAdminUser){
       adminBtns = ' <span class="sem-edit-btn" data-sidx="'+idx+'" style="cursor:pointer;font-size:13px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit name">✏️</span>';
-      if(isHidden){
-        adminBtns += '<span class="sem-restore-btn" data-sidx="'+idx+'" style="cursor:pointer;font-size:12px;opacity:.6;margin-left:4px;vertical-align:middle;" title="Restore semester">👁️</span>';
-      } else {
-        adminBtns += '<span class="sem-hide-btn" data-sidx="'+idx+'" style="cursor:pointer;font-size:12px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Hide semester">🗑️</span>';
-      }
+      adminBtns += '<span class="sem-hide-btn" data-sidx="'+idx+'" style="cursor:pointer;font-size:12px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Hide semester">🗑️</span>';
     }
     var subAdminBtn = isAdminUser ? ' <span class="sem-edit-sub-btn" data-sidx="'+idx+'" style="cursor:pointer;font-size:11px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit subtitle">✏️</span>' : '';
     var semLessonCount = readySems[sem.id] || 0;
     var semLessonBadge = semLessonCount > 0 ? '<span style="background:rgba(67,233,123,.15);color:#43e97b;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:700;margin-left:4px;">📄 '+semLessonCount+' Lesson'+(semLessonCount>1?'s':'')+' Ready</span>' : '';
-    card.innerHTML='<div class="sc-num" style="color:'+sem.c1+'" id="stitle_'+idx+'">'+sem.title+adminBtns+'</div><div class="sc-title" id="ssub_'+idx+'">'+sem.sub+subAdminBtn+'</div><div class="pbar"><div class="pfill" style="width:'+pct+'%;background:linear-gradient(90deg,'+sem.c1+','+sem.c2+');"></div></div><div class="sc-footer"><span style="font-size:12px;color:var(--text2);">'+mods.length+' modules</span>'+semLessonBadge+badge+(isHidden?'<span style="font-size:10px;color:#e05252;margin-left:6px;">Hidden</span>':'')+'</div>';
+    card.innerHTML='<div class="sc-num" style="color:'+sem.c1+'" id="stitle_'+idx+'">'+sem.title+adminBtns+'</div><div class="sc-title" id="ssub_'+idx+'">'+sem.sub+subAdminBtn+'</div><div class="pbar"><div class="pfill" style="width:'+pct+'%;background:linear-gradient(90deg,'+sem.c1+','+sem.c2+');"></div></div><div class="sc-footer"><span style="font-size:12px;color:var(--text2);">'+mods.length+' modules</span>'+semLessonBadge+badge+'</div>';
     card.onclick=(function(s,i){return function(e){if(e.target.closest('.sem-edit-btn')||e.target.closest('.sem-edit-sub-btn')||e.target.closest('.sem-hide-btn')||e.target.closest('.sem-restore-btn'))return;openModules(s,i);};})(sem,idx);
     grid.appendChild(card);
   });
@@ -4317,7 +4317,7 @@ function renderSemGrid(grid, semIndices, uni, hidden, customSems, readySems){
     card.style.setProperty('--sc1',cs.c1); card.style.setProperty('--sc2',cs.c2);
     var delBtn = isAdminUser ? ' <span class="sem-edit-btn" data-sidx="custom_'+cs.firestoreId+'" style="cursor:pointer;font-size:13px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit name">✏️</span><span class="sem-del-custom-btn" data-fid="'+cs.firestoreId+'" style="cursor:pointer;font-size:12px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Delete semester">🗑️</span>' : '';
     card.innerHTML='<div class="sc-num" style="color:'+cs.c1+'">'+cs.title+delBtn+'</div><div class="sc-title">'+cs.sub+'</div><div class="pbar"><div class="pfill" style="width:0%;background:linear-gradient(90deg,'+cs.c1+','+cs.c2+');"></div></div><div class="sc-footer"><span style="font-size:12px;color:var(--text2);">0 modules</span><span class="badge b-new">New</span></div>';
-    card.onclick=function(e){if(e.target.closest('.sem-edit-btn')||e.target.closest('.sem-del-custom-btn'))return;/* custom semesters open modules when content is added */};
+    card.onclick=function(e){if(e.target.closest('.sem-edit-btn')||e.target.closest('.sem-del-custom-btn'))return;};
     grid.appendChild(card);
   });
 
@@ -4331,6 +4331,34 @@ function renderSemGrid(grid, semIndices, uni, hidden, customSems, readySems){
     addCard.onmouseout = function(){ this.style.borderColor='var(--border2)'; this.style.background='rgba(108,99,255,.04)'; };
     addCard.onclick = function(){ addNewSemester(); };
     grid.appendChild(addCard);
+  }
+
+  // Hidden semesters toggle (admin only)
+  if(isAdminUser && hiddenCards.length > 0){
+    var toggleWrap = document.createElement('div');
+    toggleWrap.style.cssText = 'grid-column:1/-1;margin-top:12px;';
+    var toggleBtn = document.createElement('button');
+    toggleBtn.style.cssText = 'background:none;border:1px solid var(--border);border-radius:8px;padding:8px 16px;color:var(--text3);font-size:12px;cursor:pointer;font-family:inherit;';
+    toggleBtn.textContent = '👁️ Show ' + hiddenCards.length + ' hidden semester' + (hiddenCards.length > 1 ? 's' : '');
+    var hiddenContainer = document.createElement('div');
+    hiddenContainer.style.cssText = 'display:none;margin-top:12px;display:none;gap:16px;';
+    hiddenContainer.className = 'sem-grid-inner';
+    hiddenCards.forEach(function(hc){
+      var card = document.createElement('div'); card.className='sem-card';
+      card.style.cssText = 'opacity:0.4;';
+      card.style.setProperty('--sc1',hc.sem.c1); card.style.setProperty('--sc2',hc.sem.c2);
+      card.innerHTML='<div class="sc-num" style="color:'+hc.sem.c1+'">'+hc.sem.title+' <span class="sem-restore-btn" data-sidx="'+hc.idx+'" style="cursor:pointer;font-size:12px;opacity:.6;margin-left:4px;vertical-align:middle;" title="Restore semester">👁️ Restore</span></div><div class="sc-title">'+hc.sem.sub+'</div><div class="sc-footer"><span style="font-size:10px;color:#e05252;">Hidden from students</span></div>';
+      card.onclick=function(e){if(e.target.closest('.sem-restore-btn'))return;};
+      hiddenContainer.appendChild(card);
+    });
+    toggleBtn.onclick = function(){
+      var isOpen = hiddenContainer.style.display === 'grid';
+      hiddenContainer.style.display = isOpen ? 'none' : 'grid';
+      toggleBtn.textContent = isOpen ? '👁️ Show ' + hiddenCards.length + ' hidden semester' + (hiddenCards.length > 1 ? 's' : '') : '🙈 Hide hidden semesters';
+    };
+    toggleWrap.appendChild(toggleBtn);
+    toggleWrap.appendChild(hiddenContainer);
+    grid.appendChild(toggleWrap);
   }
 }
 el('nav-semesters').onclick=function(){closeMobileMenu();if(S.uni)openSemesters(S.uni);};
@@ -7199,8 +7227,24 @@ window.uploadLoadSemesters = function(){
   var sel = el('uploadSem');
   sel.innerHTML = '<option value="">— Select semester —</option>';
   el('uploadMod').innerHTML = '<option value="">— Select module —</option>';
-  SEMESTERS.forEach(function(s, i){
-    sel.innerHTML += '<option value="' + i + '">' + s.title + '</option>';
+  var uniId = el('uploadUni').value;
+  if(!uniId){
+    SEMESTERS.forEach(function(s, i){
+      sel.innerHTML += '<option value="' + i + '">' + s.title + '</option>';
+    });
+    return;
+  }
+  db.collection('hiddenSemesters').doc(uniId).get().then(function(doc){
+    var hidden = doc.exists ? (doc.data().indices || []) : [];
+    SEMESTERS.forEach(function(s, i){
+      if(hidden.indexOf(i) === -1){
+        sel.innerHTML += '<option value="' + i + '">' + s.title + '</option>';
+      }
+    });
+  }).catch(function(){
+    SEMESTERS.forEach(function(s, i){
+      sel.innerHTML += '<option value="' + i + '">' + s.title + '</option>';
+    });
   });
 };
 
