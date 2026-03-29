@@ -1976,12 +1976,12 @@ function openLoginFromLanding(){
                 <button id="tabDrive" onclick="switchUploadTab('drive')" style="flex:1;padding:9px;font-size:12px;font-weight:600;border-radius:8px;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-family:inherit;transition:all .2s;">📝 Exam</button>
               </div>
               <div id="uploadTabPhoto">
-                <input type="file" id="uploadFile" accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png" style="font-size:13px;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;width:100%;box-sizing:border-box;color:var(--text);">
-                <div style="font-size:11px;color:var(--text3);margin-top:4px;">Upload your lesson materials. PDF, Word, PowerPoint, JPEG, or PNG. Max 15MB.</div>
+                <input type="file" id="uploadFile" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png" style="font-size:13px;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;width:100%;box-sizing:border-box;color:var(--text);">
+                <div style="font-size:11px;color:var(--text3);margin-top:4px;">Upload lesson materials. PDF, Word, PowerPoint, JPEG, or PNG. Max 15MB each. Up to 10 files at once.</div>
               </div>
               <div id="uploadTabDrive" style="display:none;">
-                <input type="file" id="uploadFileExam" accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png" style="font-size:13px;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;width:100%;box-sizing:border-box;color:var(--text);">
-                <div style="font-size:11px;color:var(--text3);margin-top:4px;">Upload past exams. PDF, Word, PowerPoint, JPEG, or PNG. Max 15MB.</div>
+                <input type="file" id="uploadFileExam" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png" style="font-size:13px;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;width:100%;box-sizing:border-box;color:var(--text);">
+                <div style="font-size:11px;color:var(--text3);margin-top:4px;">Upload past exams. PDF, Word, PowerPoint, JPEG, or PNG. Max 15MB each. Up to 10 files at once.</div>
               </div>
             </div>
 
@@ -7315,25 +7315,36 @@ window.submitUpload = function(){
   var lessonInput = el('uploadFile');
   var examInput = el('uploadFileExam');
   var fileInput = window._uploadFileType === 'exam' ? examInput : lessonInput;
-  var driveLink = '';
 
   if(!uni || semIdx === '' || !mod){
     msg.className = 'admin-msg error';
     msg.textContent = 'Please select university, semester, and module.';
     return;
   }
-  if(!fileInput.files.length && !driveLink){
+  if(!fileInput.files.length){
     msg.className = 'admin-msg error';
-    msg.textContent = 'Please upload a file.';
+    msg.textContent = 'Please select at least one file.';
     return;
   }
 
-  if(fileInput.files.length > 0){
-    var f = fileInput.files[0];
-    var ext = f.name.split('.').pop().toLowerCase();
+  var files = Array.prototype.slice.call(fileInput.files);
+  if(files.length > 10){
+    msg.className = 'admin-msg error';
+    msg.textContent = 'You can upload up to 10 files at once.';
+    return;
+  }
+
+  // Validate all files
+  for(var v = 0; v < files.length; v++){
+    var ext = files[v].name.split('.').pop().toLowerCase();
     if(ALLOWED_EXTENSIONS.indexOf(ext) === -1){
       msg.className = 'admin-msg error';
-      msg.textContent = 'Only PDF, Word (.doc/.docx), PowerPoint (.ppt/.pptx), JPEG, and PNG files are allowed.';
+      msg.textContent = '"' + files[v].name + '" is not allowed. Only PDF, Word, PowerPoint, JPEG, and PNG.';
+      return;
+    }
+    if(files[v].size > 15 * 1024 * 1024){
+      msg.className = 'admin-msg error';
+      msg.textContent = '"' + files[v].name + '" is too large. Max 15MB per file.';
       return;
     }
   }
@@ -7351,99 +7362,95 @@ window.submitUpload = function(){
     .get().then(function(snap){
       var pendingCount = 0;
       snap.forEach(function(doc){ if(doc.data().status === 'pending') pendingCount++; });
-      if(pendingCount >= UPLOAD_PENDING_LIMIT){
+      var slotsLeft = UPLOAD_PENDING_LIMIT - pendingCount;
+      if(slotsLeft <= 0){
         msg.className = 'admin-msg error';
-        msg.textContent = 'You already have ' + pendingCount + ' pending uploads. Please wait for the admin to review them before uploading more.';
+        msg.textContent = 'You already have ' + pendingCount + ' pending uploads. Please wait for the admin to review them.';
         el('uploadSubmitBtn').disabled = false;
         return;
       }
-      // OK to proceed
+      if(files.length > slotsLeft){
+        msg.className = 'admin-msg error';
+        msg.textContent = 'You can only upload ' + slotsLeft + ' more file' + (slotsLeft > 1 ? 's' : '') + ' (' + pendingCount + ' pending). You selected ' + files.length + '.';
+        el('uploadSubmitBtn').disabled = false;
+        return;
+      }
+      // OK to proceed with batch upload
       uploadProgressReset();
-      uploadProgress(10, 'Preparing your handout...', 1);
-      proceedWithUpload(pendingCount);
+      uploadProgress(5, 'Uploading ' + files.length + ' file' + (files.length > 1 ? 's' : '') + '...', 1);
+      uploadFilesSequentially(files, 0, pendingCount, uni, uniObj, semObj, mod, msg);
     }).catch(function(err){
       msg.className = 'admin-msg error';
       msg.textContent = 'Could not check pending uploads: ' + err.message;
       el('uploadSubmitBtn').disabled = false;
     });
 
-  function proceedWithUpload(pendingCount){
-    function saveUpload(imageData){
-      uploadProgress(60, 'Uploading to server...', 3);
-      var docId = S.user.email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + Date.now();
-      db.collection('contributions').doc(docId).set({
-        email: S.user.email,
-        name: S.user.name || '',
-        university: uni,
-        universityName: uniObj ? uniObj.name : uni,
-        semester: semObj ? semObj.id : '',
-        semesterTitle: semObj ? semObj.title : '',
-        module: mod,
-        moduleIcon: '',
-        fileType: window._uploadFileType || 'lesson',
-        driveLink: driveLink,
-        fileURL: imageData || '',
-        notes: '',
-        imageData: '',
-        status: 'pending',
-        createdAt: new Date().toISOString()
-      }).then(function(){
-        var remaining = UPLOAD_PENDING_LIMIT - pendingCount - 1;
-        uploadProgress(100, 'Handout submitted successfully!', 4);
-        msg.className = 'admin-msg success';
-        msg.textContent = '✅ Handout submitted! We will review it within 24 hours. (' + remaining + ' upload' + (remaining !== 1 ? 's' : '') + ' remaining)';
-        el('uploadSubmitBtn').disabled = false;
-        el('uploadFile').value = '';
-        if(el('uploadFileExam')) el('uploadFileExam').value = '';
-        setTimeout(function(){
-          uploadProgressReset();
-          showView('dashboard');
-          renderPhase1Dashboard();
-        }, 2500);
-      }).catch(function(e){
-        uploadProgressReset();
-        msg.className = 'admin-msg error';
-        msg.textContent = 'Error: ' + e.message;
-        el('uploadSubmitBtn').disabled = false;
-      });
-    }
-
-  if(fileInput.files.length > 0){
-    var file = fileInput.files[0];
-    if(file.size > 15 * 1024 * 1024){
-      msg.className = 'admin-msg error';
-      msg.textContent = 'File too large. Max 15MB.';
-      uploadProgressReset();
+  function uploadFilesSequentially(fileList, idx, pendingCount, uni, uniObj, semObj, mod, msg){
+    if(idx >= fileList.length){
+      var remaining = UPLOAD_PENDING_LIMIT - pendingCount - fileList.length;
+      uploadProgress(100, 'All ' + fileList.length + ' file' + (fileList.length > 1 ? 's' : '') + ' submitted!', 4);
+      msg.className = 'admin-msg success';
+      msg.textContent = '✅ ' + fileList.length + ' file' + (fileList.length > 1 ? 's' : '') + ' submitted! We will review within 24 hours. (' + Math.max(0, remaining) + ' upload' + (remaining !== 1 ? 's' : '') + ' remaining)';
       el('uploadSubmitBtn').disabled = false;
+      el('uploadFile').value = '';
+      if(el('uploadFileExam')) el('uploadFileExam').value = '';
+      setTimeout(function(){
+        uploadProgressReset();
+        showView('dashboard');
+        renderPhase1Dashboard();
+      }, 2500);
       return;
     }
-    uploadProgress(20, 'Reading file...', 1);
-    uploadProgress(30, 'Uploading file to storage...', 2);
-    var timestamp = Date.now();
+
+    var file = fileList[idx];
+    var fileNum = (idx + 1) + '/' + fileList.length;
+    var basePct = Math.round((idx / fileList.length) * 80) + 10;
+    uploadProgress(basePct, 'Uploading file ' + fileNum + ': ' + file.name + '...', 2);
+
+    var timestamp = Date.now() + idx;
     var safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
     var storagePath = 'contributions/' + uni + '/' + (semObj ? semObj.id : 'unknown') + '/' + timestamp + '_' + safeName;
     var storageRef = storage.ref(storagePath);
     var uploadTask = storageRef.put(file);
+
     uploadTask.on('state_changed', function(snapshot){
       var pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-      var mapped = 30 + Math.round(pct * 0.3);
-      uploadProgress(mapped, 'Uploading... ' + pct + '%', 2);
+      var mapped = basePct + Math.round((pct / 100) * (80 / fileList.length));
+      uploadProgress(Math.min(mapped, 90), 'Uploading ' + fileNum + '... ' + pct + '%', 2);
     }, function(err){
-      uploadProgressReset();
       msg.className = 'admin-msg error';
-      msg.textContent = 'Upload failed: ' + err.message;
+      msg.textContent = 'Upload failed for "' + file.name + '": ' + err.message;
       el('uploadSubmitBtn').disabled = false;
     }, function(){
       uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL){
-        uploadProgress(55, 'File uploaded, saving...', 2);
-        saveUpload(downloadURL);
+        var docId = S.user.email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + (Date.now() + idx);
+        return db.collection('contributions').doc(docId).set({
+          email: S.user.email,
+          name: S.user.name || '',
+          university: uni,
+          universityName: uniObj ? uniObj.name : uni,
+          semester: semObj ? semObj.id : '',
+          semesterTitle: semObj ? semObj.title : '',
+          module: mod,
+          moduleIcon: '',
+          fileType: window._uploadFileType || 'lesson',
+          driveLink: '',
+          fileURL: downloadURL,
+          notes: '',
+          imageData: '',
+          status: 'pending',
+          createdAt: new Date().toISOString()
+        });
+      }).then(function(){
+        uploadProgress(basePct + Math.round(80 / fileList.length), 'File ' + fileNum + ' saved!', 3);
+        uploadFilesSequentially(fileList, idx + 1, pendingCount, uni, uniObj, semObj, mod, msg);
+      }).catch(function(e){
+        msg.className = 'admin-msg error';
+        msg.textContent = 'Error saving "' + file.name + '": ' + e.message;
+        el('uploadSubmitBtn').disabled = false;
       });
     });
-  } else {
-    uploadProgress(40, 'Sending Drive link...', 2);
-    saveUpload('');
   }
-  } // end proceedWithUpload
 };
 
 /* ── PHASE 1 DASHBOARD RENDER ── */
