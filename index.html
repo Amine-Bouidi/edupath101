@@ -4239,7 +4239,7 @@ function renderUniGrid(grid, resCounts){
         mods.forEach(function(mod){
           totalMods++;
           var rc = resCounts[uni.id] && resCounts[uni.id][sem.id] && resCounts[uni.id][sem.id][mod.title];
-          if(rc && rc >= 2) covered++;
+          if(rc && rc >= 1) covered++;
         });
       });
       pct = totalMods > 0 ? Math.round((covered/totalMods)*100) : 0;
@@ -4322,7 +4322,7 @@ function renderSemGrid(grid, semIndices, uni, hidden, customSems, readySems){
     if(isAdminUser){
       var semData = readySems[sem.id] || {};
       var coveredMods = 0;
-      mods.forEach(function(m){ if((semData[m.title] || 0) >= 2) coveredMods++; });
+      mods.forEach(function(m){ if((semData[m.title] || 0) >= 1) coveredMods++; });
       pct = mods.length > 0 ? Math.round((coveredMods / mods.length) * 100) : 0;
       badge = pct === 100 ? '<span class="badge b-done">✓ Covered</span>' : pct > 0 ? '<span class="badge b-prog">' + coveredMods + '/' + mods.length + '</span>' : '<span class="badge b-new">New</span>';
     } else {
