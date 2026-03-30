@@ -4250,11 +4250,10 @@ function renderUniGrid(grid, resCounts){
       SEMESTERS.forEach(function(sem,si){
         if(uniSems && uniSems.indexOf(si) === -1) return;
         var mods=getMods(si,uni.id);
-        mods.forEach(function(mod){
-          totalMods++;
-          var rc = resCounts[uni.id] && resCounts[uni.id][sem.id] && resCounts[uni.id][sem.id][mod.title];
-          if(rc && rc >= 1) covered++;
-        });
+        totalMods += mods.length;
+        var semData = resCounts[uni.id] && resCounts[uni.id][sem.id] ? resCounts[uni.id][sem.id] : {};
+        var modulesWithRes = Object.keys(semData).length;
+        covered += Math.min(modulesWithRes, mods.length);
       });
       pct = totalMods > 0 ? Math.round((covered/totalMods)*100) : 0;
       pctLabel = pct + '% covered (' + covered + '/' + totalMods + ' modules)';
@@ -4336,8 +4335,8 @@ function renderSemGrid(grid, semIndices, uni, hidden, customSems, readySems){
     var pct = 0, badge = '';
     if(isAdminUser){
       var semData = readySems[sem.id] || {};
-      var coveredMods = 0;
-      mods.forEach(function(m){ if((semData[m.title] || 0) >= 1) coveredMods++; });
+      var semModKeys = Object.keys(semData).filter(function(k){ return k !== '_total'; });
+      var coveredMods = Math.min(semModKeys.length, mods.length);
       pct = mods.length > 0 ? Math.round((coveredMods / mods.length) * 100) : 0;
       badge = pct === 100 ? '<span class="badge b-done">✓ Covered</span>' : pct > 0 ? '<span class="badge b-prog">' + coveredMods + '/' + mods.length + '</span>' : '<span class="badge b-new">New</span>';
     } else {
