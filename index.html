@@ -4227,6 +4227,17 @@ window.renderDashboard = function renderDashboard(){
       if(!resCounts[r.university][r.semester]) resCounts[r.university][r.semester] = {};
       resCounts[r.university][r.semester][r.module] = (resCounts[r.university][r.semester][r.module] || 0) + 1;
     });
+    console.log('📊 Published resources coverage:', JSON.stringify(resCounts, null, 2));
+    console.log('📊 Total published docs:', results[1].size);
+    Object.keys(resCounts).forEach(function(uniId){
+      var uniTotal = 0;
+      Object.keys(resCounts[uniId]).forEach(function(semId){
+        var mods = Object.keys(resCounts[uniId][semId]);
+        uniTotal += mods.length;
+        console.log('  ' + uniId + ' → ' + semId + ': ' + mods.length + ' modules with resources → ' + mods.join(', '));
+      });
+      console.log('  ✅ ' + uniId + ' total: ' + uniTotal + ' modules covered');
+    });
     renderUniGrid(grid, resCounts);
   }).catch(function(){
     renderUniGrid(grid, {});
