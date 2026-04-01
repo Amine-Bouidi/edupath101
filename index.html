@@ -3021,23 +3021,19 @@ var CONTENT_CACHE = {};
 
 function loadContentForModule(uniId, semId, modIdx, callback){
   var docId = uniId + '_' + semId + '_m' + modIdx;
-  console.log('[EduPath] Loading content for docId:', docId);
   if(CONTENT_CACHE[docId]){
-    console.log('[EduPath] Found in cache:', CONTENT_CACHE[docId].length, 'videos');
     callback(CONTENT_CACHE[docId]);
     return;
   }
   db.collection('content').doc(docId).get().then(function(doc){
     if(doc.exists && doc.data().videos){
-      console.log('[EduPath] Loaded from Firestore:', doc.data().videos.length, 'videos');
       CONTENT_CACHE[docId] = doc.data().videos;
       callback(doc.data().videos);
     } else {
-      console.log('[EduPath] No content found in Firestore for:', docId);
       CONTENT_CACHE[docId] = [];
       callback([]);
     }
-  }).catch(function(e){ console.log('[EduPath] Error loading content:', e.message); callback([]); });
+  }).catch(function(){ callback([]); });
 }
 
 function getYouTubeId(uniId, semId, modId, vidIdx){
@@ -4144,7 +4140,7 @@ function enterApp(name, email){
       email: email,
       name: name,
       lastLogin: new Date().toISOString()
-    }, {merge: true}).catch(function(e){ console.log('User track error:', e); });
+    }, {merge: true}).catch(function(){});
   }
   startTrialTimer();
   showAdminIfNeeded();
@@ -4171,7 +4167,7 @@ function googleSignIn(){
     var user = result.user;
     enterApp(user.displayName || 'User', user.email || '');
   }).catch(function(error){
-    console.error('Google sign-in error:', error);
+    /* sign-in error handled below */
     el('loginErr').textContent='Google sign-in failed: ' + (error.message || 'Please try again.');
     el('loginErr').style.display='block';
   });
@@ -4226,17 +4222,6 @@ window.renderDashboard = function renderDashboard(){
       if(!resCounts[r.university]) resCounts[r.university] = {};
       if(!resCounts[r.university][r.semester]) resCounts[r.university][r.semester] = {};
       resCounts[r.university][r.semester][r.module] = (resCounts[r.university][r.semester][r.module] || 0) + 1;
-    });
-    console.log('📊 Published resources coverage:', JSON.stringify(resCounts, null, 2));
-    console.log('📊 Total published docs:', results[1].size);
-    Object.keys(resCounts).forEach(function(uniId){
-      var uniTotal = 0;
-      Object.keys(resCounts[uniId]).forEach(function(semId){
-        var mods = Object.keys(resCounts[uniId][semId]);
-        uniTotal += mods.length;
-        console.log('  ' + uniId + ' → ' + semId + ': ' + mods.length + ' modules with resources → ' + mods.join(', '));
-      });
-      console.log('  ✅ ' + uniId + ' total: ' + uniTotal + ' modules covered');
     });
     renderUniGrid(grid, resCounts);
   }).catch(function(){
@@ -5750,7 +5735,7 @@ window.completePurchase = function(){
       modules: selectedMods, moduleNames: selectedModNames,
       paymentMethod: selectedPayMethod, status: 'pending',
       createdAt: new Date().toISOString()
-    }).catch(function(e){ console.log('Order save error:', e); });
+    }).catch(function(){});
   }
   el('purchaseModal').classList.remove('open');
   setTimeout(function(){
@@ -7627,7 +7612,7 @@ window.renderPhase1Dashboard = function(){
       hist.innerHTML = html;
     }).catch(function(e){
       el('uploadHistory').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">Could not load uploads.</div>';
-      console.error('Upload history error:', e);
+      /* upload history load error */
     });
 };
 
