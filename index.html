@@ -3008,7 +3008,6 @@ function closeMobileMenu(){
   el('mobileOverlay').classList.remove('open');
 }
 
-var CREDS = { username: 'admin', password: 'ea101admin!', name: 'Demo Student' };
 
 /* ── YOUTUBE VIDEO MAPPING ──
    Default video for all modules. To add specific videos per module, use:
@@ -4001,6 +4000,7 @@ function getP(u,s,m){var k=u+'_'+s+'_'+m;return S.progress[k]||{videos:[],quizze
 
 /* ── HELPERS ── */
 function el(id){return document.getElementById(id);}
+function esc(s){if(!s)return '';var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 window.showView = function showView(id){
   if(id === 'upload'){ setTimeout(initUploadPage, 50); }
   sessionStorage.setItem('lastView', id);
@@ -4458,7 +4458,6 @@ function proceedWithModules(mods, sem, idx, grid){
   // Check subscription for enabled modules
   var email = S.user ? S.user.email : '';
   var isAdminUser = email && ADMIN_EMAILS.indexOf(email.toLowerCase()) !== -1;
-  var isDemoUser = S.user && S.user.name === 'Demo Student';
 
   // Fetch published resources for this university+semester to show "Lessons Ready" badges
   var readyPromise = db.collection('published_resources').where('status','==','published').get().then(function(snap){
@@ -4472,7 +4471,7 @@ function proceedWithModules(mods, sem, idx, grid){
     return readyMods;
   }).catch(function(){ return {}; });
 
-  if(isAdminUser || isDemoUser){
+  if(isAdminUser){
     readyPromise.then(function(readyMods){ renderModuleGrid(grid, mods, sem, idx, null, readyMods); });
   } else if(email){
     var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
@@ -4511,9 +4510,8 @@ function renderModuleGrid(grid, mods, sem, idx, subData, readyMods){
     enabledIndices = subData.modules.filter(function(m){return m.enabled;}).map(function(m){return m.index;});
     hasSubscription = true;
   }
-  // Admin and demo always unlocked
+  // Admin always unlocked
   var isAdminUser = S.user && S.user.email && ADMIN_EMAILS.indexOf(S.user.email.toLowerCase()) !== -1;
-  var isDemoUser = S.user && S.user.name === 'Demo Student';
 
   // Trial only applies if NO active subscription
   var onTrial = false;
@@ -4522,7 +4520,7 @@ function renderModuleGrid(grid, mods, sem, idx, subData, readyMods){
     if(remaining > 0 || remaining === -1) onTrial = true;
   }
 
-  var allUnlocked = isAdminUser || isDemoUser || onTrial;
+  var allUnlocked = isAdminUser || onTrial;
 
   mods.forEach(function(mod, modIdx){
     var p=getP(S.uni.id,sem.id,mod.id),dv=p.videos.length,pct=Math.round((dv/VIDEOS.length)*100);
@@ -5351,8 +5349,8 @@ function renderResources(){
         item.innerHTML =
           '<span class="res-file-ext" style="background:' + extColor + ';color:' + extTextColor + ';">' + (r.fileExt || 'PDF') + '</span>' +
           '<div class="res-file-info">' +
-            '<span class="res-file-name">' + (r.title || 'Resource') + '</span>' +
-            '<span class="res-file-size">Shared by ' + (r.contributorName || 'Anonymous') + ' · ' + date + '</span>' +
+            '<span class="res-file-name">' + esc(r.title || 'Resource') + '</span>' +
+            '<span class="res-file-size">Shared by ' + esc(r.contributorName || 'Anonymous') + ' · ' + date + '</span>' +
           '</div>' +
           (r.fileURL ? '<div class="res-file-dl"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>' : '');
         list.appendChild(item);
@@ -6059,7 +6057,7 @@ function loadAdminUsers(){
         var safeRowId = 'auRow' + total;
 
         html += '<div class="au-row" onclick="toggleAdminExpand(\''+safeRowId+'\')">' +
-          '<div><div class="au-name">'+(u.name||'Unknown')+'</div><div class="au-email">'+u.email+(u.whatsapp?' · 📱'+u.whatsapp:'')+'</div></div>' +
+          '<div><div class="au-name">'+esc(u.name||'Unknown')+'</div><div class="au-email">'+esc(u.email)+(u.whatsapp?' · 📱'+esc(u.whatsapp):'')+'</div></div>' +
           '<div class="au-uni">'+uniDisplay+'</div>' +
           '<div class="au-sem">'+semDisplay+'</div>' +
           '<div><span class="au-status '+statusClass+'">'+statusText+'</span></div>' +
@@ -6570,7 +6568,7 @@ function checkUserSubscription(email, callback){
 /* ── ENHANCED TRIAL CHECK WITH FIRESTORE ── */
 var origCheckTrialStatus = checkTrialStatus;
 checkTrialStatus = function(){
-  if(!S.user || !S.user.email || S.user.email === '' || S.user.name === 'Demo Student') {
+  if(!S.user || !S.user.email || S.user.email === '') {
     el('trialBanner').style.display='none';
     el('paywallOverlay').style.display='none';
     return;
@@ -6943,7 +6941,7 @@ function loadMyContributions(){
         html += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">' +
           '<div>' +
             '<div style="font-size:12px;font-weight:600;color:var(--text1);">' + (d.fileType||'lesson') + '</div>' +
-            '<div style="font-size:11px;color:var(--text3);">' + date + (d.notes ? ' · ' + d.notes : '') + '</div>' +
+            '<div style="font-size:11px;color:var(--text3);">' + date + (d.notes ? ' · ' + esc(d.notes) : '') + '</div>' +
           '</div>' +
           '<span style="font-size:11px;padding:3px 10px;border-radius:12px;background:' + statusColor + '22;color:' + statusColor + ';font-weight:600;">' + statusLabel + '</span>' +
         '</div>';
@@ -7051,11 +7049,11 @@ function renderContribList(items, list){
           '<div style="width:44px;height:44px;background:' + (hasAnyFile ? 'rgba(67,233,123,.12)' : 'var(--bg5)') + ';border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">' + fileIcon + '</div>' +
           '<div style="flex:1;min-width:0;overflow:hidden;">' +
             '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
-              '<span style="font-size:12px;font-weight:700;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (d.module||'') + '</span>' +
+              '<span style="font-size:12px;font-weight:700;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + esc(d.module||'') + '</span>' +
               '<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:' + statusColor + '22;color:' + statusColor + ';font-weight:600;flex-shrink:0;">' + (d.status||'pending') + '</span>' +
               '<span style="font-size:9px;padding:2px 6px;border-radius:10px;background:' + fileLabelColor + '22;color:' + fileLabelColor + ';font-weight:600;flex-shrink:0;">' + fileLabel + '</span>' +
             '</div>' +
-            '<div style="font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (d.name||'') + ' · ' + (d.universityName||d.university||'').split('—')[0].trim() + ' · ' + (d.semesterTitle||'') + ' · ' + (d.fileType||'') + ' · ' + date + '</div>' +
+            '<div style="font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + esc(d.name||'') + ' · ' + esc((d.universityName||d.university||'').split('—')[0].trim()) + ' · ' + esc(d.semesterTitle||'') + ' · ' + esc(d.fileType||'') + ' · ' + date + '</div>' +
           '</div>' +
         '</div>' +
         '<div style="display:flex;gap:6px;flex-shrink:0;">' +
