@@ -4184,11 +4184,17 @@ function enterApp(name, email){
   if(!sessionStorage.getItem('announceSeen')){
     sessionStorage.setItem('announceSeen','1');
     setTimeout(function(){
-      el('announcementPopup').classList.add('open');
-      setTimeout(function(){
-        el('announcementPopup').classList.add('fade-out');
-        setTimeout(function(){ el('announcementPopup').classList.remove('open','fade-out'); },500);
+      var ap = el('announcementPopup');
+      ap.classList.add('open');
+      var dismissTimer = setTimeout(function(){
+        ap.classList.add('fade-out');
+        setTimeout(function(){ ap.classList.remove('open','fade-out'); },500);
       },10000);
+      ap.onclick = function(){
+        clearTimeout(dismissTimer);
+        ap.classList.add('fade-out');
+        setTimeout(function(){ ap.classList.remove('open','fade-out'); },500);
+      };
     },800);
   }
 }
