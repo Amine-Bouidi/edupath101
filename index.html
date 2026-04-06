@@ -5818,6 +5818,7 @@ function populateProfileDropdowns(uniElId, semElId, selUni, selSem){
 function checkProfileSetup(email, name){
   if(!email || email === '') return;
   if(isAdmin()) return;
+  if(sessionStorage.getItem('profileDone')) return;
   var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
   db.collection('users').doc(docId).get().then(function(doc){
     if(doc.exists){
@@ -5825,11 +5826,12 @@ function checkProfileSetup(email, name){
       if(d.profileComplete && d.university && d.semester){
         S.user.university = d.university;
         S.user.semester = d.semester;
+        sessionStorage.setItem('profileDone','1');
         return;
       }
     }
     showProfilePopup(name, email);
-  }).catch(function(){ showProfilePopup(name, email); });
+  }).catch(function(){});
 }
 
 function showProfilePopup(name, email){
@@ -5872,6 +5874,7 @@ el('ppSaveBtn').onclick = function(){
   var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
   db.collection('users').doc(docId).set(profileData, {merge: true}).then(function(){
     el('profilePopup').classList.remove('open');
+    sessionStorage.setItem('profileDone','1');
     S.user.name = profileData.name;
     S.user.university = profileData.university;
     S.user.semester = profileData.semester;
