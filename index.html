@@ -8,13 +8,16 @@
 <meta name="keywords" content="English Studies Morocco, Moroccan university courses, FLSH, English department, دراسات انجليزية, الجامعة المغربية">
 <meta name="author" content="Amine Bouidi">
 <meta name="theme-color" content="#0c0c18">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://edupath.online/">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
 
 <!-- Open Graph (Facebook, WhatsApp, Messenger link previews) -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="EduPath — English Studies Courses for Moroccan Universities">
 <meta property="og:description" content="Video lessons, quizzes, past exams and resources for all semesters. 12 universities covered. Start your 48h free trial.">
-<meta property="og:url" content="https://amine-bouidi.github.io/edupath101/">
-<meta property="og:image" content="https://amine-bouidi.github.io/edupath101/og-image.png">
+<meta property="og:url" content="https://edupath.online/">
+<meta property="og:image" content="https://edupath.online/og-image.png">
 <meta property="og:site_name" content="EduPath">
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="ar_MA">
@@ -23,7 +26,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="EduPath — English Studies Courses for Moroccan Universities">
 <meta name="twitter:description" content="Video lessons, quizzes, past exams and resources. 12 universities, 8 semesters. Start free.">
-<meta name="twitter:image" content="https://amine-bouidi.github.io/edupath101/og-image.png">
+<meta name="twitter:image" content="https://edupath.online/og-image.png">
 
 <!-- Preconnect for faster loading -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -527,6 +530,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .toggle .slider:before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;}
 .toggle input:checked+.slider{background:#43e97b;}
 .toggle input:checked+.slider:before{transform:translateX(18px);}
+/* ANNOUNCEMENT POPUP */
+.announce-ov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,10,30,.85);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .5s ease;}
+.announce-ov.open{opacity:1;pointer-events:auto;}
+.announce-ov.fade-out{opacity:0;}
+.announce-box{background:var(--bg3);border:1px solid var(--border2);border-radius:18px;max-width:440px;width:90%;padding:28px 26px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.4);}
+.announce-label{font-family:'Sora',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--accent2);margin-bottom:12px;}
+.announce-msg{font-size:15px;color:var(--text);line-height:1.7;}
+.announce-msg strong{color:var(--teal);}
+
 /* PROFILE POPUP & PAGE */
 .profile-popup-ov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,10,30,.92);z-index:9998;display:none;align-items:flex-start;justify-content:center;backdrop-filter:blur(8px);overflow-y:auto;padding:20px 0;}
 .profile-popup-ov.open{display:flex;}
@@ -1811,6 +1823,14 @@ function openLoginFromLanding(){
     </div>
   </div>
 </div>
+<!-- Announcement popup -->
+<div id="announcementPopup" class="announce-ov">
+  <div class="announce-box">
+    <p class="announce-label">EduPath Team</p>
+    <p class="announce-msg">We will share the video summary for <strong>Semestre 4 — Cultural Studies (Lecture 2)</strong> for <strong>Fes Sais University</strong> this week <strong>(April 6–12)</strong>. Stay alert!</p>
+  </div>
+</div>
+
 <div id="app" class="screen" style="flex-direction:row;">
   <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
   <div class="mobile-overlay" id="mobileOverlay"></div>
@@ -4160,6 +4180,23 @@ function enterApp(name, email){
   if(email && email !== ''){
     checkProfileSetup(email, name);
   }
+  // Show announcement popup once per session
+  if(!sessionStorage.getItem('announceSeen')){
+    sessionStorage.setItem('announceSeen','1');
+    setTimeout(function(){
+      var ap = el('announcementPopup');
+      ap.classList.add('open');
+      var dismissTimer = setTimeout(function(){
+        ap.classList.add('fade-out');
+        setTimeout(function(){ ap.classList.remove('open','fade-out'); },500);
+      },10000);
+      ap.onclick = function(){
+        clearTimeout(dismissTimer);
+        ap.classList.add('fade-out');
+        setTimeout(function(){ ap.classList.remove('open','fade-out'); },500);
+      };
+    },800);
+  }
 }
 function googleSignIn(){
   var provider = new firebase.auth.GoogleAuthProvider();
@@ -4178,6 +4215,7 @@ el('btnSignOut').onclick=function(){
   sessionStorage.removeItem('loggedIn');
   sessionStorage.removeItem('lastView');
   sessionStorage.removeItem('profileDone');
+  sessionStorage.removeItem('announceSeen');
   if(trialInterval) clearInterval(trialInterval);
   el('trialBanner').style.display='none';
   el('paywallOverlay').style.display='none';
@@ -5780,6 +5818,7 @@ function populateProfileDropdowns(uniElId, semElId, selUni, selSem){
 function checkProfileSetup(email, name){
   if(!email || email === '') return;
   if(isAdmin()) return;
+  if(sessionStorage.getItem('profileDone')) return;
   var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
   db.collection('users').doc(docId).get().then(function(doc){
     if(doc.exists){
@@ -5787,11 +5826,12 @@ function checkProfileSetup(email, name){
       if(d.profileComplete && d.university && d.semester){
         S.user.university = d.university;
         S.user.semester = d.semester;
+        sessionStorage.setItem('profileDone','1');
         return;
       }
     }
     showProfilePopup(name, email);
-  }).catch(function(){ showProfilePopup(name, email); });
+  }).catch(function(){});
 }
 
 function showProfilePopup(name, email){
@@ -5834,6 +5874,7 @@ el('ppSaveBtn').onclick = function(){
   var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
   db.collection('users').doc(docId).set(profileData, {merge: true}).then(function(){
     el('profilePopup').classList.remove('open');
+    sessionStorage.setItem('profileDone','1');
     S.user.name = profileData.name;
     S.user.university = profileData.university;
     S.user.semester = profileData.semester;
