@@ -1766,6 +1766,7 @@ function openLoginFromLanding(){
     <div class="pp-field">
       <label>WhatsApp number</label>
       <input type="tel" id="ppWhatsapp" placeholder="+212 6XX-XXXXXX">
+      <p style="color:var(--text2);font-size:11px;margin-top:4px;">Share your WhatsApp number so we can send you exam prep, lesson updates and study resources.</p>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
       <div class="pp-field">
@@ -5850,13 +5851,19 @@ function showProfilePopup(name, email){
 
 function validateProfilePopup(){
   var name = el('ppName').value.trim();
+  var whatsapp = el('ppWhatsapp').value.trim();
+  var age = el('ppAge').value;
+  var gender = el('ppGender').value;
   var uni = el('ppUni').value;
   var sem = el('ppSem').value;
   var terms = el('ppTerms').checked;
-  el('ppSaveBtn').disabled = !(name && uni && sem && terms);
+  el('ppSaveBtn').disabled = !(name && whatsapp && age && gender && uni && sem && terms);
 }
 
 el('ppName').addEventListener('input', validateProfilePopup);
+el('ppWhatsapp').addEventListener('input', validateProfilePopup);
+el('ppAge').addEventListener('change', validateProfilePopup);
+el('ppGender').addEventListener('change', validateProfilePopup);
 el('ppUni').addEventListener('change', validateProfilePopup);
 el('ppSem').addEventListener('change', validateProfilePopup);
 
