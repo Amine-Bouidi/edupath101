@@ -4215,6 +4215,7 @@ el('btnSignOut').onclick=function(){
   sessionStorage.removeItem('loggedIn');
   sessionStorage.removeItem('lastView');
   sessionStorage.removeItem('profileDone');
+  localStorage.removeItem('profileDone');
   sessionStorage.removeItem('announceSeen');
   if(trialInterval) clearInterval(trialInterval);
   el('trialBanner').style.display='none';
@@ -5818,15 +5819,18 @@ function populateProfileDropdowns(uniElId, semElId, selUni, selSem){
 function checkProfileSetup(email, name){
   if(!email || email === '') return;
   if(isAdmin()) return;
-  if(sessionStorage.getItem('profileDone')) return;
+  if(localStorage.getItem('profileDone')) return;
   var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
   db.collection('users').doc(docId).get().then(function(doc){
     if(doc.exists){
       var d = doc.data();
-      if(d.profileComplete && d.university && d.semester){
+      if(d.university && d.semester){
         S.user.university = d.university;
         S.user.semester = d.semester;
-        sessionStorage.setItem('profileDone','1');
+        localStorage.setItem('profileDone','1');
+        if(!d.profileComplete){
+          db.collection('users').doc(docId).set({profileComplete:true},{merge:true}).catch(function(){});
+        }
         return;
       }
     }
@@ -5874,7 +5878,7 @@ el('ppSaveBtn').onclick = function(){
   var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
   db.collection('users').doc(docId).set(profileData, {merge: true}).then(function(){
     el('profilePopup').classList.remove('open');
-    sessionStorage.setItem('profileDone','1');
+    localStorage.setItem('profileDone','1');
     S.user.name = profileData.name;
     S.user.university = profileData.university;
     S.user.semester = profileData.semester;
