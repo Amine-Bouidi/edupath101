@@ -3010,8 +3010,14 @@ el('sbToggle').onclick = function(){
 
 /* ── MOBILE MENU ── */
 el('mobileMenuBtn').onclick = function(){
-  el('sidebar').classList.add('mobile-open');
-  el('mobileOverlay').classList.add('open');
+  var isOpen = el('sidebar').classList.contains('mobile-open');
+  if(isOpen){
+    el('sidebar').classList.remove('mobile-open');
+    el('mobileOverlay').classList.remove('open');
+  } else {
+    el('sidebar').classList.add('mobile-open');
+    el('mobileOverlay').classList.add('open');
+  }
 };
 el('mobileOverlay').onclick = function(){
   el('sidebar').classList.remove('mobile-open');
