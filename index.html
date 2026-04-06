@@ -549,16 +549,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .privacy-page h3{font-family:'Sora',sans-serif;font-size:16px;color:#fff;margin:20px 0 8px;}
 .privacy-page p{margin-bottom:12px;color:#c8c5bc;}
 .privacy-page strong{color:#fff;}
-.profile-popup{background:var(--card);border:1px solid var(--border);border-radius:20px;max-width:480px;width:92%;padding:32px 28px;text-align:center;margin:auto;}
-.profile-popup h2{font-family:'Sora',sans-serif;font-size:22px;margin-bottom:6px;}
-.profile-popup .pp-sub{color:var(--text2);font-size:13px;line-height:1.6;margin-bottom:20px;}
-.profile-popup .pp-change{color:var(--text3);font-size:11px;margin-bottom:18px;font-style:italic;}
-.pp-field{text-align:left;margin-bottom:14px;}
-.pp-field label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;}
-.pp-field input,.pp-field select{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text1);font-size:14px;box-sizing:border-box;}
+.profile-popup{background:var(--card);border:1px solid var(--border);border-radius:20px;max-width:480px;width:92%;padding:22px 20px;text-align:center;margin:auto;}
+.profile-popup h2{font-family:'Sora',sans-serif;font-size:18px;margin-bottom:10px;}
+.pp-field{text-align:left;margin-bottom:10px;}
+.pp-field label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:3px;}
+.pp-field input,.pp-field select{width:100%;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text1);font-size:14px;box-sizing:border-box;}
 .pp-field input:read-only{opacity:.6;cursor:not-allowed;}
 .pp-field select{-webkit-appearance:auto;}
-.pp-save-btn{background:linear-gradient(135deg,var(--accent2),#9b59b6);color:#fff;border:none;padding:13px 32px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;width:100%;margin-top:6px;position:sticky;bottom:0;}
+.pp-save-btn{background:linear-gradient(135deg,var(--accent2),#9b59b6);color:#fff;border:none;padding:11px 24px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;width:100%;margin-top:4px;}
 .pp-save-btn:hover{opacity:.9;}
 .pp-save-btn:disabled{opacity:.5;cursor:not-allowed;}
 /* Sidebar profile link */
@@ -1751,10 +1749,7 @@ function openLoginFromLanding(){
 <!-- PROFILE SETUP POPUP (first login) -->
 <div class="profile-popup-ov" id="profilePopup">
   <div class="profile-popup">
-    <div style="font-size:44px;margin-bottom:8px;">👋</div>
     <h2>Welcome to EduPath!</h2>
-    <p class="pp-sub">Let's set up your profile so we can show you the right content for your university and semester.</p>
-    <p class="pp-change">You can change these anytime from your profile settings.</p>
     <div class="pp-field">
       <label>Full name</label>
       <input type="text" id="ppName" placeholder="Your name">
@@ -1766,9 +1761,9 @@ function openLoginFromLanding(){
     <div class="pp-field">
       <label>WhatsApp number</label>
       <input type="tel" id="ppWhatsapp" placeholder="+212 6XX-XXXXXX">
-      <p style="color:var(--text2);font-size:11px;margin-top:4px;">Share your WhatsApp number so we can send you exam prep, lesson updates and study resources.</p>
+      <p style="color:var(--text2);font-size:11px;margin-top:3px;">Share your WhatsApp number so we can send you exam prep, lesson updates and study resources.</p>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
       <div class="pp-field">
         <label>Age</label>
         <select id="ppAge">
@@ -1796,8 +1791,7 @@ function openLoginFromLanding(){
       <label>Current semester</label>
       <select id="ppSem"><option value="">— Select your semester —</option></select>
     </div>
-    <div style="margin:14px 0;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;">
-      <div style="font-size:11px;color:var(--text3);line-height:1.6;max-height:80px;overflow-y:auto;margin-bottom:10px;">By using EduPath, you agree to our Privacy Policy and Refund Policy. We collect your name, email, and university info to provide our educational services. Refunds are available within 24 hours of purchase. We never sell your data to third parties.</div>
+    <div style="margin:6px 0;padding:6px 8px;">
       <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--text2);">
         <input type="checkbox" id="ppTerms" onchange="validateProfilePopup()" style="accent-color:var(--accent2);width:18px;height:18px;flex-shrink:0;">
         I agree to the <a href="#" onclick="event.preventDefault();el('profilePopup').classList.remove('open');openPrivacyPage();" style="color:var(--accent2);text-decoration:underline;">Privacy Policy & Refund Policy</a>
