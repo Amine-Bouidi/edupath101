@@ -265,6 +265,15 @@
             margin-bottom: 4px;
         }
 
+        /* Arabic translation inline */
+        .ar-translation {
+            color: #e94560;
+            font-size: 11.5px;
+            font-weight: 500;
+            direction: rtl;
+            unicode-bidi: isolate;
+        }
+
         /* RTL support */
         .card-body[dir="rtl"] {
             text-align: right;
@@ -387,6 +396,7 @@ Main Topic: Definition and Types of Culture
             <div id="totalTime" style="font-size:13px;color:#888;font-weight:500;"></div>
         </div>
         <div class="board-actions">
+            <button class="btn btn-primary" id="translateBtn" onclick="translateAllToArabic()">Translate to Arabic</button>
             <button class="btn btn-secondary" onclick="window.print()">Print / Save PDF</button>
             <button class="btn btn-secondary" onclick="copyAsText()">Copy as Text</button>
             <button class="btn btn-secondary" onclick="editInput()">Edit Input</button>
@@ -762,6 +772,96 @@ function copyAsText() {
         document.body.removeChild(ta);
         alert('Script copied to clipboard!');
     });
+}
+
+// ── Translate a single text to Arabic via MyMemory API ──
+function translateText(text) {
+    var url = 'https://api.mymemory.translated.net/get?q=' +
+        encodeURIComponent(text) + '&langpair=en|ar';
+    return fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.responseData && data.responseData.translatedText) {
+                var t = data.responseData.translatedText;
+                // MyMemory sometimes returns uppercase or untranslated — skip those
+                if (t === text || t === text.toUpperCase()) return '';
+                return t;
+            }
+            return '';
+        })
+        .catch(function() { return ''; });
+}
+
+// ── Translate all English points to Arabic ──
+function translateAllToArabic() {
+    var btn = document.getElementById('translateBtn');
+    btn.textContent = 'Translating...';
+    btn.disabled = true;
+
+    // Collect all li elements and card-title elements that don't already have a translation
+    var elements = document.querySelectorAll('#board .card-text li, #board .card-title');
+    var toTranslate = [];
+
+    elements.forEach(function(el) {
+        // Skip if already translated or if text is Arabic
+        if (el.querySelector('.ar-translation')) return;
+        // Get only the direct text (not child ol text)
+        var directText = '';
+        for (var n = 0; n < el.childNodes.length; n++) {
+            if (el.childNodes[n].nodeType === 3) { // text node
+                directText += el.childNodes[n].textContent;
+            }
+        }
+        directText = directText.trim();
+        if (!directText || hasArabic(directText)) return;
+        toTranslate.push({ el: el, text: directText });
+    });
+
+    if (toTranslate.length === 0) {
+        btn.textContent = 'Done!';
+        setTimeout(function() { btn.textContent = 'Translate to Arabic'; btn.disabled = false; }, 1500);
+        return;
+    }
+
+    // Translate in small batches to avoid rate limits (5 at a time, 300ms gap)
+    var batchSize = 5;
+    var idx = 0;
+    var done = 0;
+
+    function processBatch() {
+        var batch = toTranslate.slice(idx, idx + batchSize);
+        idx += batchSize;
+
+        var promises = batch.map(function(item) {
+            return translateText(item.text).then(function(arabic) {
+                if (arabic) {
+                    var span = document.createElement('span');
+                    span.className = 'ar-translation';
+                    span.textContent = ' (' + arabic + ')';
+                    // Insert after the direct text, before any sub-list
+                    var subOl = item.el.querySelector('ol');
+                    if (subOl) {
+                        item.el.insertBefore(span, subOl);
+                    } else {
+                        item.el.appendChild(span);
+                    }
+                }
+                done++;
+                btn.textContent = 'Translating... ' + done + '/' + toTranslate.length;
+            });
+        });
+
+        Promise.all(promises).then(function() {
+            if (idx < toTranslate.length) {
+                setTimeout(processBatch, 300);
+            } else {
+                btn.textContent = 'Done!';
+                setTimeout(function() { btn.textContent = 'Translate to Arabic'; btn.disabled = false; }, 2000);
+            }
+        });
+    }
+
+    processBatch();
 }
 
 // ── Switch back to input ──
