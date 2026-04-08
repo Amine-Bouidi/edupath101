@@ -777,79 +777,105 @@ function copyAsText() {
     });
 }
 
-// ── Generate illustrations for all shots via Pollinations.ai (free, no API key) ──
+// ── Build SVG diagram for a shot (fallback / instant) ──
+function buildSvgDiagram(title, points) {
+    var colors = ['#e94560','#1a1a2e','#16213e','#0f3460','#533483','#e94560'];
+    var icons = [
+        '<circle cx="12" cy="8" r="5" fill="none" stroke="CCC" stroke-width="1.5"/><path d="M3 21v-2a7 7 0 0114 0v2" fill="none" stroke="CCC" stroke-width="1.5"/>',
+        '<rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="CCC" stroke-width="1.5"/><path d="M3 9h18M9 21V9" fill="none" stroke="CCC" stroke-width="1.5"/>',
+        '<circle cx="12" cy="12" r="9" fill="none" stroke="CCC" stroke-width="1.5"/><path d="M12 8v4l3 3" fill="none" stroke="CCC" stroke-width="1.5"/>',
+        '<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" fill="none" stroke="CCC" stroke-width="1.5"/>',
+        '<path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" fill="none" stroke="CCC" stroke-width="1.5"/>',
+        '<path d="M4 19.5A2.5 2.5 0 016.5 17H20" fill="none" stroke="CCC" stroke-width="1.5"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" fill="none" stroke="CCC" stroke-width="1.5"/>'
+    ];
+
+    var w = 260, padding = 16;
+    var titleH = 36;
+    var pointH = 28;
+    var totalH = titleH + padding + (points.length * pointH) + padding + 10;
+
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + w + ' ' + totalH + '" style="width:100%;height:auto;font-family:DM Sans,sans-serif;">';
+    svg += '<rect width="' + w + '" height="' + totalH + '" fill="#fafafa" rx="8"/>';
+
+    // Title
+    var titleShort = title.length > 30 ? title.substring(0, 28) + '...' : title;
+    svg += '<text x="' + (w/2) + '" y="' + (padding + 16) + '" text-anchor="middle" font-size="13" font-weight="700" fill="#1a1a2e">' + escHtml(titleShort) + '</text>';
+    svg += '<line x1="' + padding + '" y1="' + (titleH + 4) + '" x2="' + (w - padding) + '" y2="' + (titleH + 4) + '" stroke="#eee" stroke-width="1"/>';
+
+    // Points with icons
+    for (var i = 0; i < points.length; i++) {
+        var y = titleH + padding + (i * pointH) + 14;
+        var color = colors[i % colors.length];
+        var iconSvg = icons[i % icons.length].replace(/CCC/g, color);
+        svg += '<g transform="translate(' + padding + ',' + (y - 10) + ') scale(0.7)">' + iconSvg + '</g>';
+        var ptText = (typeof points[i] === 'string') ? points[i] : points[i].text;
+        ptText = ptText.length > 35 ? ptText.substring(0, 33) + '...' : ptText;
+        svg += '<text x="' + (padding + 22) + '" y="' + y + '" font-size="11" fill="#333">' + escHtml(ptText) + '</text>';
+    }
+
+    svg += '</svg>';
+    return svg;
+}
+
+function escHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ── Generate illustrations for all shots ──
 function generateIllustrations() {
     var btn = document.getElementById('illustrateBtn');
-    btn.textContent = 'Generating...';
-    btn.disabled = true;
-
     var imageAreas = document.querySelectorAll('#board .card-illustration');
-    var loaded = 0;
-    var total = imageAreas.length;
 
     for (var idx = 0; idx < imageAreas.length; idx++) {
-        (function(area, shotIdx) {
-            // Skip if user already uploaded an image
-            if (area.querySelector('img')) {
-                loaded++;
-                if (loaded >= total) {
-                    btn.textContent = 'Done!';
-                    setTimeout(function() { btn.textContent = 'Generate Illustrations'; btn.disabled = false; }, 2000);
-                }
-                return;
+        var area = imageAreas[idx];
+        // Skip if user already uploaded their own image
+        if (area.querySelector('img[src^="data:"]')) continue;
+
+        var shot = _generatedShots[idx] || {};
+        var title = shot.title || 'Shot ' + (idx + 1);
+        var points = [];
+        if (shot.points) {
+            for (var i = 0; i < shot.points.length; i++) {
+                points.push(shot.points[i]);
             }
+        }
 
-            // Build prompt from shot data
-            var shot = _generatedShots[shotIdx] || {};
-            var conceptTitle = shot.title || 'Shot ' + (shotIdx + 1);
-            var keyPoints = [];
-            if (shot.points) {
-                for (var i = 0; i < Math.min(shot.points.length, 3); i++) {
-                    var pt = shot.points[i];
-                    keyPoints.push(typeof pt === 'string' ? pt : pt.text);
-                }
-            }
+        // Try Pollinations.ai first (loads as <img>, no CORS issues)
+        (function(currentArea, shotTitle, shotPoints, shotIdx) {
+            var prompt = 'black white sketch ' + shotTitle + ', whiteboard, stick figures, icons, arrows, no color';
+            var seed = shotIdx * 1000 + shotTitle.length;
+            var imgUrl = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(prompt) + '?width=512&height=512&seed=' + seed + '&nologo=true';
 
-            var prompt = 'Simple hand-drawn black and white sketch about ' + conceptTitle +
-                (keyPoints.length > 0 ? '. Key ideas: ' + keyPoints.join(', ') : '') +
-                '. Style: minimalist whiteboard drawing, bold handwritten labels, stick figures, simple icons, arrows, black ink on white background, educational illustration, no color, no photographs';
-
-            var encodedPrompt = encodeURIComponent(prompt);
-            var seed = shotIdx * 1000 + conceptTitle.length; // Consistent seed per shot
-            var imgUrl = 'https://image.pollinations.ai/prompt/' + encodedPrompt + '?width=512&height=512&seed=' + seed + '&nologo=true';
-
-            // Show loading state
-            area.innerHTML = '<div style="text-align:center;padding:20px;"><div style="display:inline-block;width:24px;height:24px;border:3px solid #ddd;border-top-color:#e94560;border-radius:50%;animation:spin 1s linear infinite;"></div><div style="font-size:11px;color:#999;margin-top:8px;">Generating ' + (shotIdx + 1) + '/' + total + '...</div></div>';
+            currentArea.innerHTML = '<div style="text-align:center;padding:16px;"><div style="display:inline-block;width:20px;height:20px;border:3px solid #ddd;border-top-color:#e94560;border-radius:50%;animation:spin 1s linear infinite;"></div><div style="font-size:10px;color:#bbb;margin-top:6px;">Loading illustration...</div></div>';
 
             var img = new Image();
+            img.crossOrigin = 'anonymous';
+            var timeout = setTimeout(function() {
+                // Timeout after 15s — use SVG fallback
+                img.onload = null;
+                img.onerror = null;
+                currentArea.innerHTML = buildSvgDiagram(shotTitle, shotPoints);
+            }, 15000);
+
             img.onload = function() {
-                area.innerHTML = '';
-                area.appendChild(img);
-                loaded++;
-                btn.textContent = 'Generated ' + loaded + '/' + total;
-                if (loaded >= total) {
-                    btn.textContent = 'Done!';
-                    setTimeout(function() { btn.textContent = 'Generate Illustrations'; btn.disabled = false; }, 2000);
-                }
+                clearTimeout(timeout);
+                img.style.width = '100%';
+                img.style.height = 'auto';
+                img.style.borderRadius = '4px';
+                currentArea.innerHTML = '';
+                currentArea.appendChild(img);
             };
             img.onerror = function() {
-                area.innerHTML = '<div style="color:#e94560;font-size:11px;text-align:center;padding:8px;">Failed to load. Click to retry.</div>';
-                area.onclick = function() {
-                    img.src = imgUrl + '&retry=' + Date.now();
-                    area.innerHTML = '<div style="text-align:center;padding:20px;font-size:11px;color:#999;">Retrying...</div>';
-                };
-                loaded++;
-                if (loaded >= total) {
-                    btn.textContent = 'Generate Illustrations';
-                    btn.disabled = false;
-                }
+                clearTimeout(timeout);
+                // Fallback: SVG diagram
+                currentArea.innerHTML = buildSvgDiagram(shotTitle, shotPoints);
             };
-            img.style.width = '100%';
-            img.style.height = 'auto';
-            img.style.borderRadius = '4px';
             img.src = imgUrl;
-        })(imageAreas[idx], idx);
+        })(area, title, points, idx);
     }
+
+    btn.textContent = 'Done!';
+    setTimeout(function() { btn.textContent = 'Generate Illustrations'; btn.disabled = false; }, 3000);
 }
 
 // ── Translate a single text to Arabic via MyMemory API ──
