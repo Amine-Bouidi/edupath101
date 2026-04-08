@@ -364,10 +364,10 @@ Main Topic: Definition and Types of Culture
    - popular culture"></textarea>
 
         <div class="format-guide">
-            <strong>Accepted formats:</strong><br>
-            <code>1. Main Point</code> or <code># Main Point</code> or <code>* Main Point</code> for shot titles<br>
-            <code>&nbsp;&nbsp;- sub-point</code> or <code>&nbsp;&nbsp;a. sub-point</code> for details under each shot<br>
-            The first line (before any numbered item) is used as the main topic.
+            <strong>Shots:</strong> <code>1. Title</code> or <code># Title</code> or <code>* Title</code><br>
+            <strong>Main sub-points (1, 2, 3...):</strong> <code>&nbsp;&nbsp;- point</code> — or use <code>concept: explanation</code> to auto-split<br>
+            <strong>Small sub-points (A, B, C...):</strong> <code>&nbsp;&nbsp;&nbsp;&nbsp;a. detail</code> or deeper indent <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- detail</code><br>
+            Auto-detected from: indentation depth, letter markers (a. b. c.), colon splits, roman numerals (i. ii.)
         </div>
 
         <div class="btn-row">
@@ -451,28 +451,64 @@ function parseMindMap(text) {
             currentShot = { title: branchTitle, points: [] };
             shots.push(currentShot);
         } else if (currentShot) {
-            // Detect indentation level
-            var indent = line.match(/^(\s*)/)[1].length;
-            var point = trimmed
-                .replace(/^[-*+]\s*/, '')
-                .replace(/^[a-z][.\)]\s*/i, '')
-                .replace(/^\d+[.\)]\s*/, '')
+            // Smart indentation detection
+            var indent = 0;
+            var tabMatch = line.match(/^(\t+)/);
+            var spaceMatch = line.match(/^( +)/);
+            if (tabMatch) indent = tabMatch[1].length * 4;
+            else if (spaceMatch) indent = spaceMatch[1].length;
+
+            // Clean the point text (remove bullet markers, letter markers, sub-numbers)
+            var rawPoint = trimmed
+                .replace(/^[-*+•·›]\s*/, '')          // bullets: - * + • · ›
+                .replace(/^[a-z][.\)]\s+/i, '')        // letter markers: a. b) C.
+                .replace(/^[ivxIVX]+[.\)]\s+/, '')     // roman numerals: i. ii) III.
+                .replace(/^\d+[.\)]\s*/, '')            // numbers: 1. 2)
                 .trim();
-            if (point) {
-                // If indent >= 4 or line starts with deeper markers, it's a sub-sub-point
-                var isSubSub = indent >= 4 || (indent >= 2 && currentShot.points.length > 0 && !line.match(/^\s{0,1}\S/));
-                if (isSubSub && currentShot.points.length > 0) {
-                    // Attach to the last main point as a child
-                    var lastPoint = currentShot.points[currentShot.points.length - 1];
-                    if (typeof lastPoint === 'string') {
-                        // Convert to object with children
-                        currentShot.points[currentShot.points.length - 1] = { text: lastPoint, children: [point] };
-                    } else {
-                        lastPoint.children.push(point);
-                    }
-                } else {
-                    currentShot.points.push(point);
+            if (!rawPoint) continue;
+
+            // Determine if this is a sub-sub-point (child) or a main sub-point
+            var isChild = false;
+
+            // Method 1: Deep indentation (6+ spaces or 2+ tabs relative to branch)
+            if (indent >= 6) {
+                isChild = true;
+            }
+            // Method 2: Letter/roman markers at any indent (a. b. c. or i. ii.)
+            else if (trimmed.match(/^[a-z][.\)]\s+/i) && !trimmed.match(/^[A-Z][.\)]\s+[A-Z]/)) {
+                isChild = true;
+            }
+            // Method 3: Deeper indent than first point in this shot
+            else if (currentShot.points.length > 0 && indent > 0) {
+                // Track the indent of the first sub-point we saw
+                if (!currentShot._firstIndent) currentShot._firstIndent = indent;
+                if (indent > currentShot._firstIndent) {
+                    isChild = true;
                 }
+            }
+            // Method 4: Double-bullet like "- - sub" or "-- sub"
+            else if (trimmed.match(/^[-*+•]\s*[-*+•]\s+/) || trimmed.match(/^--\s+/)) {
+                rawPoint = trimmed.replace(/^[-*+•]\s*[-*+•]\s+/, '').replace(/^--\s+/, '').trim();
+                isChild = true;
+            }
+
+            // Check for colon pattern: "main concept: explanation details"
+            // Split into main point + child explanation
+            var colonSplit = rawPoint.match(/^([^:]{3,30}):\s+(.{5,})$/);
+            if (colonSplit && !isChild) {
+                var mainText = colonSplit[1].trim();
+                var childText = colonSplit[2].trim();
+                currentShot.points.push({ text: mainText, children: [childText] });
+            } else if (isChild && currentShot.points.length > 0) {
+                // Attach to the last main point as a child
+                var lastPoint = currentShot.points[currentShot.points.length - 1];
+                if (typeof lastPoint === 'string') {
+                    currentShot.points[currentShot.points.length - 1] = { text: lastPoint, children: [rawPoint] };
+                } else {
+                    lastPoint.children.push(rawPoint);
+                }
+            } else {
+                currentShot.points.push(rawPoint);
             }
         } else {
             // Before first branch - this is the topic line
@@ -738,38 +774,32 @@ function loadExample() {
     document.getElementById('mindMapInput').value =
         'Main Topic: Definition and Types of Culture\n\n' +
         '1. Definition of Culture\n' +
-        '   - etymologia\n' +
-        '       - from Latin "cultus"\n' +
-        '       - means cultivation, care, agriculture\n' +
-        '   - modern usage\n' +
-        '       - shared beliefs, values, and practices of a group\n' +
-        '       - transmitted across generations\n\n' +
+        '   - etymologia: from Latin "cultus", means cultivation and care\n' +
+        '   - modern usage: shared beliefs, values, and practices of a group\n' +
+        '   - anthropological view: Edward Tylor 1871 definition\n' +
+        '      a. complex whole including knowledge, belief, art\n' +
+        '      b. morals, law, customs acquired by man as member of society\n\n' +
         '2. Characteristics of Culture\n' +
         '   - learned and transmitted\n' +
-        '       - not biological or inherited\n' +
-        '       - passed from generation to generation\n' +
+        '      a. not biological or inherited\n' +
+        '      b. passed from generation to generation\n' +
+        '      c. through language, observation, imitation\n' +
         '   - shared and collective\n' +
-        '       - not individual\n' +
-        '       - belongs to a group or community\n' +
-        '   - dynamic\n' +
-        '       - changes over time\n' +
-        '       - adapts to new conditions\n' +
-        '   - symbolic\n' +
-        '       - uses language and symbols\n\n' +
+        '      a. not individual\n' +
+        '      b. belongs to a group or community\n' +
+        '   - dynamic: changes over time and adapts to new conditions\n' +
+        '   - symbolic: uses language and symbols to communicate meaning\n\n' +
         '3. Types of Culture\n' +
-        '   - material culture\n' +
-        '       - physical objects\n' +
-        '       - architecture, tools, clothing\n' +
-        '   - non-material culture\n' +
-        '       - ideas, beliefs, values\n' +
-        '       - norms and customs\n' +
+        '   - material culture: physical objects, architecture, tools, clothing\n' +
+        '   - non-material culture: ideas, beliefs, values, norms and customs\n' +
         '   - subculture\n' +
-        '       - smaller group within larger culture\n' +
-        '       - e.g. punk, hip-hop\n\n' +
+        '      a. smaller group within larger culture\n' +
+        '      b. e.g. punk movement, hip-hop culture\n' +
+        '   - popular culture: mainstream media and entertainment\n\n' +
         '4. Importance of Studying Culture\n' +
         '   - understanding human behavior\n' +
         '   - cross-cultural communication\n' +
-        '   - breaking stereotypes\n' +
+        '   - breaking stereotypes and prejudices\n' +
         '   - academic research in social sciences\n';
 }
 </script>
