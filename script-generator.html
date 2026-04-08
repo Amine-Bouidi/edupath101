@@ -382,7 +382,10 @@ Main Topic: Definition and Types of Culture
 <!-- Board Output -->
 <div class="board-section" id="boardSection">
     <div class="board-header">
-        <div class="board-title" id="boardTitle">Video Script Board</div>
+        <div style="display:flex;align-items:baseline;gap:12px;">
+            <div class="board-title" id="boardTitle">Video Script Board</div>
+            <div id="totalTime" style="font-size:13px;color:#888;font-weight:500;"></div>
+        </div>
         <div class="board-actions">
             <button class="btn btn-secondary" onclick="window.print()">Print / Save PDF</button>
             <button class="btn btn-secondary" onclick="copyAsText()">Copy as Text</button>
@@ -576,12 +579,28 @@ function generateScript() {
         // Determine card count (image placeholder + text card)
         var cardCount = shot.isHook ? 2 : (shot.points.length > 0 ? 2 : 1);
 
+        // Calculate reading time (speaking pace ~130 words/min for clear educational delivery)
+        var allText = shot.title + ' ';
+        for (var t = 0; t < shot.points.length; t++) {
+            var pt = shot.points[t];
+            if (typeof pt === 'string') {
+                allText += pt + ' ';
+            } else {
+                allText += pt.text + ' ' + pt.children.join(' ') + ' ';
+            }
+        }
+        var wordCount = allText.trim().split(/\s+/).length;
+        var seconds = Math.round((wordCount / 130) * 60);
+        var readTime = seconds < 60
+            ? '~' + seconds + 's'
+            : '~' + Math.floor(seconds / 60) + 'm ' + (seconds % 60 > 0 ? (seconds % 60) + 's' : '');
+
         var isRtl = hasArabic(shot.title) || (shot.points.length > 0 && hasArabic(shot.points.join(' ')));
 
         // Shot header
         var header = document.createElement('div');
         header.className = 'shot-header';
-        header.innerHTML = '<h3>Shot ' + (s + 1) + '</h3><div class="card-count">' + cardCount + ' cards</div>';
+        header.innerHTML = '<h3>Shot ' + (s + 1) + '</h3><div class="card-count">' + cardCount + ' cards · ' + readTime + '</div>';
         shotDiv.appendChild(header);
 
         // Image card
@@ -670,6 +689,25 @@ function generateScript() {
 
         board.appendChild(shotDiv);
     }
+
+    // Calculate total video time from all shots
+    var totalWords = 0;
+    for (var tw = 0; tw < allShots.length; tw++) {
+        var twShot = allShots[tw];
+        var twText = twShot.title + ' ';
+        for (var tp = 0; tp < twShot.points.length; tp++) {
+            var twPt = twShot.points[tp];
+            if (typeof twPt === 'string') twText += twPt + ' ';
+            else twText += twPt.text + ' ' + twPt.children.join(' ') + ' ';
+        }
+        totalWords += twText.trim().split(/\s+/).length;
+    }
+    var totalSec = Math.round((totalWords / 130) * 60);
+    var totalMin = Math.floor(totalSec / 60);
+    var remSec = totalSec % 60;
+    document.getElementById('totalTime').textContent =
+        'Total: ~' + totalMin + 'm ' + (remSec > 0 ? remSec + 's' : '') +
+        ' · ' + allShots.length + ' shots · ' + totalWords + ' words';
 
     // Show board, hide input
     document.getElementById('inputSection').style.display = 'none';
