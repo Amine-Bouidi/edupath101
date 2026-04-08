@@ -350,6 +350,23 @@
             </div>
         </div>
 
+        <!-- Gemini API Key (for illustrations) -->
+        <div style="margin-bottom:16px;">
+            <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'; this.querySelector('span').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'" style="cursor:pointer;font-size:13px;font-weight:600;color:#555;user-select:none;">
+                <span>▸</span> Illustration Settings (Gemini API)
+            </div>
+            <div style="display:none;margin-top:8px;padding:12px 16px;background:#f9f9fb;border:1px solid #eee;border-radius:8px;">
+                <div class="form-group" style="margin-bottom:8px;">
+                    <label>Gemini API Key (free)</label>
+                    <input type="password" id="geminiApiKey" placeholder="Paste your Gemini API key here" style="padding:10px 14px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;width:100%;">
+                </div>
+                <div style="font-size:11px;color:#888;line-height:1.5;">
+                    Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank" style="color:#e94560;">aistudio.google.com/apikey</a> — 500 free images/day.
+                    Your key is saved locally in your browser.
+                </div>
+            </div>
+        </div>
+
         <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px;">Mind Map Text</label>
         <textarea id="mindMapInput" placeholder="Paste your mind map here...
 
@@ -396,6 +413,7 @@ Main Topic: Definition and Types of Culture
             <div id="totalTime" style="font-size:13px;color:#888;font-weight:500;"></div>
         </div>
         <div class="board-actions">
+            <button class="btn btn-primary" id="illustrateBtn" onclick="generateIllustrations()">Generate Illustrations</button>
             <button class="btn btn-primary" id="translateBtn" onclick="translateAllToArabic()">Translate to Arabic</button>
             <button class="btn btn-secondary" onclick="window.print()">Print / Save PDF</button>
             <button class="btn btn-secondary" onclick="copyAsText()">Copy as Text</button>
@@ -406,6 +424,21 @@ Main Topic: Definition and Types of Culture
 </div>
 
 <script>
+// ── Load saved API key from localStorage ──
+(function() {
+    var savedKey = localStorage.getItem('gemini_api_key');
+    document.addEventListener('DOMContentLoaded', function() {
+        var input = document.getElementById('geminiApiKey');
+        if (savedKey) input.value = savedKey;
+        input.addEventListener('change', function() {
+            localStorage.setItem('gemini_api_key', this.value.trim());
+        });
+    });
+})();
+
+// ── Store generated shots data for illustration prompts ──
+var _generatedShots = [];
+
 // ── Detect if text contains Arabic ──
 function hasArabic(text) {
     return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(text);
@@ -719,6 +752,9 @@ function generateScript() {
         'Total: ~' + totalMin + 'm ' + (remSec > 0 ? remSec + 's' : '') +
         ' · ' + allShots.length + ' shots · ' + totalWords + ' words';
 
+    // Save shots data for illustration generation
+    _generatedShots = allShots;
+
     // Show board, hide input
     document.getElementById('inputSection').style.display = 'none';
     document.getElementById('boardSection').style.display = 'block';
@@ -772,6 +808,125 @@ function copyAsText() {
         document.body.removeChild(ta);
         alert('Script copied to clipboard!');
     });
+}
+
+// ── Generate illustrations for all shots via Gemini API ──
+function generateIllustrations() {
+    var apiKey = (document.getElementById('geminiApiKey').value || localStorage.getItem('gemini_api_key') || '').trim();
+    if (!apiKey) {
+        alert('Please add your Gemini API key first.\n\nOpen "Illustration Settings (Gemini API)" in the input form, paste your free key from aistudio.google.com/apikey');
+        editInput();
+        return;
+    }
+    // Save key
+    localStorage.setItem('gemini_api_key', apiKey);
+
+    var btn = document.getElementById('illustrateBtn');
+    btn.textContent = 'Generating...';
+    btn.disabled = true;
+
+    var imageAreas = document.querySelectorAll('#board .card-image');
+    var shotIdx = 0;
+
+    function generateNext() {
+        if (shotIdx >= imageAreas.length) {
+            btn.textContent = 'Done!';
+            setTimeout(function() { btn.textContent = 'Generate Illustrations'; btn.disabled = false; }, 2000);
+            return;
+        }
+
+        var area = imageAreas[shotIdx];
+        // Skip if user already uploaded an image
+        if (area.querySelector('img')) {
+            shotIdx++;
+            generateNext();
+            return;
+        }
+
+        btn.textContent = 'Generating ' + (shotIdx + 1) + '/' + imageAreas.length + '...';
+
+        // Build prompt from shot data
+        var shot = _generatedShots[shotIdx] || {};
+        var conceptTitle = shot.title || 'Shot ' + (shotIdx + 1);
+        var keyPoints = [];
+        if (shot.points) {
+            for (var i = 0; i < Math.min(shot.points.length, 4); i++) {
+                var pt = shot.points[i];
+                keyPoints.push(typeof pt === 'string' ? pt : pt.text);
+            }
+        }
+
+        var prompt = 'Generate a simple hand-drawn black and white sketch illustration about: "' + conceptTitle + '".\n' +
+            (keyPoints.length > 0 ? 'Key concepts: ' + keyPoints.join(', ') + '.\n' : '') +
+            'Style: minimalist whiteboard drawing with bold handwritten text labels, ' +
+            'stick figures, simple icons, arrows and diagrams. ' +
+            'Black ink lines on pure white background. ' +
+            'Educational illustration style. No color, no photographs, no realistic rendering. ' +
+            'Include 1-2 short text labels in the drawing.';
+
+        var currentArea = area;
+        var currentIdx = shotIdx;
+
+        fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=' + apiKey, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { responseModalities: ['IMAGE', 'TEXT'] }
+            })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            // Find the image part in the response
+            if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+                var parts = data.candidates[0].content.parts;
+                for (var p = 0; p < parts.length; p++) {
+                    if (parts[p].inlineData) {
+                        var mimeType = parts[p].inlineData.mimeType || 'image/png';
+                        var base64 = parts[p].inlineData.data;
+                        var img = document.createElement('img');
+                        img.src = 'data:' + mimeType + ';base64,' + base64;
+                        currentArea.innerHTML = '';
+                        currentArea.appendChild(img);
+                        // Re-add file input for manual override
+                        var fi = document.createElement('input');
+                        fi.type = 'file';
+                        fi.accept = 'image/*';
+                        fi.style.display = 'none';
+                        fi.addEventListener('change', function(e) {
+                            var file = e.target.files[0];
+                            if (!file) return;
+                            var reader = new FileReader();
+                            var pa = e.target.parentElement;
+                            reader.onload = function(ev) {
+                                var newImg = document.createElement('img');
+                                newImg.src = ev.target.result;
+                                pa.innerHTML = '';
+                                pa.appendChild(newImg);
+                            };
+                            reader.readAsDataURL(file);
+                        });
+                        currentArea.appendChild(fi);
+                        break;
+                    }
+                }
+            }
+            // If error in response, log it
+            if (data.error) {
+                console.warn('Gemini API error for shot ' + (currentIdx + 1) + ':', data.error.message);
+            }
+        })
+        .catch(function(err) {
+            console.warn('Failed to generate illustration for shot ' + (currentIdx + 1) + ':', err);
+        })
+        .then(function() {
+            // Move to next shot after a short delay to avoid rate limits
+            shotIdx++;
+            setTimeout(generateNext, 1000);
+        });
+    }
+
+    generateNext();
 }
 
 // ── Translate a single text to Arabic via MyMemory API ──
