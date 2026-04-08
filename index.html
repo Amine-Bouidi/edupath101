@@ -255,6 +255,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 /* UNI GRID */
 .uni-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:32px;}
 .uni-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px 18px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.uni-card.dragging{opacity:0.4;border:2px dashed var(--accent);}
+.uni-card.drag-over{border:2px solid var(--accent);transform:scale(1.02);}
 .uni-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--uc);}
 .uni-card:hover{border-color:var(--border2);transform:translateY(-3px);box-shadow:0 14px 36px rgba(0,0,0,.3);}
 .uc-emoji{font-size:26px;margin-bottom:10px;}
@@ -4276,7 +4278,23 @@ function renderUniGrid(grid, resCounts){
   var isAdminUser = isAdmin();
   resCounts = resCounts || {};
   grid.innerHTML='';
-  var sorted = UNIVERSITIES.slice().sort(function(a,b){return (b.verified?1:0)-(a.verified?1:0);});
+  // Use saved order if available, otherwise use UNIVERSITIES array order
+  var savedOrder = null;
+  try { savedOrder = JSON.parse(localStorage.getItem('uni_order')); } catch(e){}
+  var sorted;
+  if (savedOrder && savedOrder.length > 0) {
+    sorted = [];
+    savedOrder.forEach(function(id) {
+      var u = UNIVERSITIES.find(function(x){ return x.id === id; });
+      if (u) sorted.push(u);
+    });
+    // Add any new universities not in saved order
+    UNIVERSITIES.forEach(function(u) {
+      if (!sorted.find(function(x){ return x.id === u.id; })) sorted.push(u);
+    });
+  } else {
+    sorted = UNIVERSITIES.slice();
+  }
   sorted.forEach(function(uni){
     var pct = 0;
     var pctLabel = '0% complete';
@@ -4302,10 +4320,31 @@ function renderUniGrid(grid, resCounts){
     }
     var card=document.createElement('div'); card.className='uni-card';
     card.style.setProperty('--uc',uni.c);
+    card.setAttribute('draggable','true');
+    card.setAttribute('data-uni-id', uni.id);
     var logoHtml = UNI_LOGOS[uni.id] ? '<img src="'+UNI_LOGOS[uni.id]+'" style="width:48px;height:48px;object-fit:contain;border-radius:8px;margin-bottom:8px;">' : '<div class="uc-emoji">'+uni.emoji+'</div>';
     var verifiedBadge = uni.verified ? '<span style="display:inline-block;background:linear-gradient(135deg,#43e97b,#38f9d7);color:#111;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;vertical-align:middle;">✓ Verified</span>' : '';
     card.innerHTML=logoHtml+'<div class="uc-name" id="utitle_'+uni.id+'">'+uni.name+verifiedBadge+(isAdminUser?' <span class="uni-edit-btn" data-uid="'+uni.id+'" style="cursor:pointer;font-size:13px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit name">✏️</span>':'')+'</div><div class="uc-country">'+uni.country+'</div><div class="uc-bar"><div class="uc-fill" style="width:'+pct+'%"></div></div><div class="uc-pct">'+pctLabel+'</div>';
     card.onclick=(function(u){return function(e){if(e.target.closest('.uni-edit-btn'))return;openSemesters(u);};})(uni);
+    // Drag and drop handlers
+    card.addEventListener('dragstart', function(e){ e.dataTransfer.setData('text/plain', uni.id); this.classList.add('dragging'); });
+    card.addEventListener('dragend', function(){ this.classList.remove('dragging'); });
+    card.addEventListener('dragover', function(e){ e.preventDefault(); this.classList.add('drag-over'); });
+    card.addEventListener('dragleave', function(){ this.classList.remove('drag-over'); });
+    card.addEventListener('drop', function(e){
+      e.preventDefault(); this.classList.remove('drag-over');
+      var fromId = e.dataTransfer.getData('text/plain');
+      var toId = this.getAttribute('data-uni-id');
+      if (fromId === toId) return;
+      // Reorder: move dragged card before drop target
+      var cards = grid.querySelectorAll('.uni-card');
+      var fromCard = grid.querySelector('[data-uni-id="'+fromId+'"]');
+      if (fromCard) grid.insertBefore(fromCard, this);
+      // Save new order to localStorage
+      var newOrder = [];
+      grid.querySelectorAll('.uni-card').forEach(function(c){ newOrder.push(c.getAttribute('data-uni-id')); });
+      localStorage.setItem('uni_order', JSON.stringify(newOrder));
+    });
     grid.appendChild(card);
   });
 }
