@@ -346,6 +346,23 @@
             </div>
         </div>
 
+        <!-- Gemini API Key (Nano Banana illustrations) -->
+        <div style="margin-bottom:16px;">
+            <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'; this.querySelector('span').textContent=this.nextElementSibling.style.display==='none'?'▸':'▾'" style="cursor:pointer;font-size:13px;font-weight:600;color:#555;user-select:none;">
+                <span>▸</span> Illustration Settings (Nano Banana / Gemini)
+            </div>
+            <div style="display:none;margin-top:8px;padding:12px 16px;background:#f9f9fb;border:1px solid #eee;border-radius:8px;">
+                <div class="form-group" style="margin-bottom:8px;">
+                    <label>Gemini API Key</label>
+                    <input type="password" id="geminiApiKey" placeholder="Paste your Gemini API key here" style="padding:10px 14px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;width:100%;">
+                </div>
+                <div style="font-size:11px;color:#888;line-height:1.5;">
+                    Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank" style="color:#e94560;">aistudio.google.com/apikey</a> — generates high-quality whiteboard-style illustrations.
+                    Without a key, basic fallback illustrations are used instead.
+                </div>
+            </div>
+        </div>
+
         <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px;">Mind Map Text</label>
         <textarea id="mindMapInput" placeholder="Paste your mind map here...
 
@@ -405,6 +422,16 @@ Main Topic: Definition and Types of Culture
 <script>
 // ── Store generated shots data for illustration prompts ──
 var _generatedShots = [];
+
+// ── Load saved Gemini API key ──
+document.addEventListener('DOMContentLoaded', function() {
+    var input = document.getElementById('geminiApiKey');
+    var saved = localStorage.getItem('gemini_api_key');
+    if (saved && input) input.value = saved;
+    if (input) input.addEventListener('change', function() {
+        localStorage.setItem('gemini_api_key', this.value.trim());
+    });
+});
 
 // ── Detect if text contains Arabic ──
 function hasArabic(text) {
@@ -821,61 +848,158 @@ function escHtml(s) {
     return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-// ── Generate illustrations for all shots ──
-function generateIllustrations() {
-    var btn = document.getElementById('illustrateBtn');
-    var imageAreas = document.querySelectorAll('#board .card-illustration');
+// ── Gemini model names to try (in order) ──
+var GEMINI_MODELS = [
+    'gemini-2.0-flash-exp-image-generation',
+    'gemini-2.0-flash-exp',
+    'gemini-2.5-flash-image',
+    'gemini-3.1-flash-image-preview'
+];
 
-    for (var idx = 0; idx < imageAreas.length; idx++) {
-        var area = imageAreas[idx];
-        // Skip if user already uploaded their own image
-        if (area.querySelector('img[src^="data:"]')) continue;
+// ── Generate illustration for one shot via Gemini API ──
+function generateWithGemini(apiKey, prompt, modelIdx, onSuccess, onFail) {
+    if (modelIdx >= GEMINI_MODELS.length) { onFail('All models failed'); return; }
+    var model = GEMINI_MODELS[modelIdx];
+    var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + apiKey;
 
-        var shot = _generatedShots[idx] || {};
-        var title = shot.title || 'Shot ' + (idx + 1);
-        var points = [];
-        if (shot.points) {
-            for (var i = 0; i < shot.points.length; i++) {
-                points.push(shot.points[i]);
+    fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }], role: 'user' }],
+            generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
+        })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+            var parts = data.candidates[0].content.parts;
+            for (var p = 0; p < parts.length; p++) {
+                if (parts[p].inlineData) {
+                    var mime = parts[p].inlineData.mimeType || 'image/png';
+                    var b64 = parts[p].inlineData.data;
+                    onSuccess('data:' + mime + ';base64,' + b64);
+                    return;
+                }
             }
         }
+        var errMsg = data.error ? data.error.message : 'No image returned';
+        console.warn('Gemini ' + model + ':', errMsg);
+        generateWithGemini(apiKey, prompt, modelIdx + 1, onSuccess, onFail);
+    })
+    .catch(function(err) {
+        console.warn('Gemini ' + model + ' fetch error:', err);
+        generateWithGemini(apiKey, prompt, modelIdx + 1, onSuccess, onFail);
+    });
+}
 
-        // Try Pollinations.ai first (loads as <img>, no CORS issues)
-        (function(currentArea, shotTitle, shotPoints, shotIdx) {
-            var prompt = 'black white sketch ' + shotTitle + ', whiteboard, stick figures, icons, arrows, no color';
-            var seed = shotIdx * 1000 + shotTitle.length;
-            var imgUrl = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(prompt) + '?width=512&height=512&seed=' + seed + '&nologo=true';
+// ── Generate illustrations for all shots (sequential) ──
+function generateIllustrations() {
+    var apiKey = (document.getElementById('geminiApiKey').value || localStorage.getItem('gemini_api_key') || '').trim();
+    if (apiKey) localStorage.setItem('gemini_api_key', apiKey);
 
-            currentArea.innerHTML = '<div style="text-align:center;padding:16px;"><div style="display:inline-block;width:20px;height:20px;border:3px solid #ddd;border-top-color:#e94560;border-radius:50%;animation:spin 1s linear infinite;"></div><div style="font-size:10px;color:#bbb;margin-top:6px;">Loading illustration...</div></div>';
+    var btn = document.getElementById('illustrateBtn');
+    btn.textContent = 'Generating...';
+    btn.disabled = true;
 
-            var img = new Image();
-            img.crossOrigin = 'anonymous';
-            var timeout = setTimeout(function() {
-                // Timeout after 15s — use SVG fallback
-                img.onload = null;
-                img.onerror = null;
-                currentArea.innerHTML = buildSvgDiagram(shotTitle, shotPoints);
-            }, 15000);
+    var imageAreas = document.querySelectorAll('#board .card-illustration');
+    var shotIdx = 0;
 
-            img.onload = function() {
-                clearTimeout(timeout);
-                img.style.width = '100%';
-                img.style.height = 'auto';
-                img.style.borderRadius = '4px';
-                currentArea.innerHTML = '';
-                currentArea.appendChild(img);
+    function processNext() {
+        if (shotIdx >= imageAreas.length) {
+            btn.textContent = 'Done!';
+            setTimeout(function() { btn.textContent = 'Generate Illustrations'; btn.disabled = false; }, 2000);
+            return;
+        }
+
+        var area = imageAreas[shotIdx];
+        // Skip if user already uploaded their own image
+        if (area.querySelector('img[src^="data:"]') || area.querySelector('img[src^="blob:"]')) {
+            shotIdx++;
+            processNext();
+            return;
+        }
+
+        btn.textContent = 'Generating ' + (shotIdx + 1) + '/' + imageAreas.length + '...';
+
+        var shot = _generatedShots[shotIdx] || {};
+        var title = shot.title || 'Shot ' + (shotIdx + 1);
+        var keyPoints = [];
+        if (shot.points) {
+            for (var i = 0; i < Math.min(shot.points.length, 3); i++) {
+                var pt = shot.points[i];
+                keyPoints.push(typeof pt === 'string' ? pt : pt.text);
+            }
+        }
+        var points = shot.points || [];
+
+        var prompt = 'Generate a simple hand-drawn black and white sketch illustration about: "' + title + '".\n' +
+            (keyPoints.length > 0 ? 'Key concepts: ' + keyPoints.join(', ') + '.\n' : '') +
+            'Style: minimalist whiteboard drawing, bold handwritten text labels, stick figures, simple icons, arrows and diagrams. Black ink on pure white background. Educational illustration. No color, no photographs.';
+
+        // Show spinner
+        area.innerHTML = '<div style="text-align:center;padding:16px;"><div style="display:inline-block;width:20px;height:20px;border:3px solid #ddd;border-top-color:#e94560;border-radius:50%;animation:spin 1s linear infinite;"></div><div style="font-size:10px;color:#bbb;margin-top:6px;">Generating ' + (shotIdx + 1) + '/' + imageAreas.length + '...</div></div>';
+
+        var currentArea = area;
+        var currentTitle = title;
+        var currentPoints = points;
+
+        function showImage(src) {
+            var img = document.createElement('img');
+            img.src = src;
+            img.style.width = '100%';
+            img.style.height = 'auto';
+            img.style.borderRadius = '4px';
+            currentArea.innerHTML = '';
+            currentArea.appendChild(img);
+        }
+
+        function fallbackPollinations() {
+            var shortPrompt = 'black white sketch ' + currentTitle + ', whiteboard, stick figures, icons, arrows, no color';
+            var seed = shotIdx * 1000 + currentTitle.length;
+            var imgUrl = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(shortPrompt) + '?width=512&height=512&seed=' + seed + '&nologo=true';
+
+            var pImg = new Image();
+            var pTimeout = setTimeout(function() {
+                pImg.onload = null; pImg.onerror = null;
+                currentArea.innerHTML = buildSvgDiagram(currentTitle, currentPoints);
+                shotIdx++;
+                setTimeout(processNext, 300);
+            }, 12000);
+
+            pImg.onload = function() {
+                clearTimeout(pTimeout);
+                showImage(pImg.src);
+                shotIdx++;
+                setTimeout(processNext, 300);
             };
-            img.onerror = function() {
-                clearTimeout(timeout);
-                // Fallback: SVG diagram
-                currentArea.innerHTML = buildSvgDiagram(shotTitle, shotPoints);
+            pImg.onerror = function() {
+                clearTimeout(pTimeout);
+                currentArea.innerHTML = buildSvgDiagram(currentTitle, currentPoints);
+                shotIdx++;
+                setTimeout(processNext, 300);
             };
-            img.src = imgUrl;
-        })(area, title, points, idx);
+            pImg.src = imgUrl;
+        }
+
+        if (apiKey) {
+            // Tier 1: Gemini API
+            generateWithGemini(apiKey, prompt, 0, function(dataUrl) {
+                showImage(dataUrl);
+                shotIdx++;
+                setTimeout(processNext, 1500);
+            }, function(err) {
+                console.warn('Gemini failed for shot ' + (shotIdx + 1) + ':', err);
+                // Tier 2: Pollinations fallback
+                fallbackPollinations();
+            });
+        } else {
+            // No API key — Tier 2: Pollinations, then Tier 3: SVG
+            fallbackPollinations();
+        }
     }
 
-    btn.textContent = 'Done!';
-    setTimeout(function() { btn.textContent = 'Generate Illustrations'; btn.disabled = false; }, 3000);
+    processNext();
 }
 
 // ── Translate a single text to Arabic via MyMemory API ──
