@@ -860,63 +860,75 @@ function generateIllustrations() {
         var currentArea = area;
         var currentIdx = shotIdx;
 
-        fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=' + apiKey, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: { responseModalities: ['IMAGE', 'TEXT'] }
+        // Try multiple model names (fallback chain)
+        var models = [
+            'gemini-2.0-flash-preview-image-generation',
+            'gemini-2.5-flash-preview-04-17',
+            'gemini-2.0-flash-exp'
+        ];
+
+        function tryModel(modelIdx) {
+            if (modelIdx >= models.length) {
+                // All models failed — show error on card
+                currentArea.innerHTML = '<div style="color:#e94560;font-size:11px;text-align:center;padding:8px;">Failed to generate. Check API key or try again.</div>';
+                shotIdx++;
+                setTimeout(generateNext, 500);
+                return;
+            }
+
+            var modelName = models[modelIdx];
+            var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent?key=' + apiKey;
+
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
+                })
             })
-        })
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-            // Find the image part in the response
-            if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
-                var parts = data.candidates[0].content.parts;
-                for (var p = 0; p < parts.length; p++) {
-                    if (parts[p].inlineData) {
-                        var mimeType = parts[p].inlineData.mimeType || 'image/png';
-                        var base64 = parts[p].inlineData.data;
-                        var img = document.createElement('img');
-                        img.src = 'data:' + mimeType + ';base64,' + base64;
-                        currentArea.innerHTML = '';
-                        currentArea.appendChild(img);
-                        // Re-add file input for manual override
-                        var fi = document.createElement('input');
-                        fi.type = 'file';
-                        fi.accept = 'image/*';
-                        fi.style.display = 'none';
-                        fi.addEventListener('change', function(e) {
-                            var file = e.target.files[0];
-                            if (!file) return;
-                            var reader = new FileReader();
-                            var pa = e.target.parentElement;
-                            reader.onload = function(ev) {
-                                var newImg = document.createElement('img');
-                                newImg.src = ev.target.result;
-                                pa.innerHTML = '';
-                                pa.appendChild(newImg);
-                            };
-                            reader.readAsDataURL(file);
-                        });
-                        currentArea.appendChild(fi);
-                        break;
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var imageFound = false;
+
+                // Find the image part in the response
+                if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+                    var parts = data.candidates[0].content.parts;
+                    for (var p = 0; p < parts.length; p++) {
+                        if (parts[p].inlineData) {
+                            var mimeType = parts[p].inlineData.mimeType || 'image/png';
+                            var base64 = parts[p].inlineData.data;
+                            var img = document.createElement('img');
+                            img.src = 'data:' + mimeType + ';base64,' + base64;
+                            currentArea.innerHTML = '';
+                            currentArea.appendChild(img);
+                            imageFound = true;
+                            break;
+                        }
                     }
                 }
-            }
-            // If error in response, log it
-            if (data.error) {
-                console.warn('Gemini API error for shot ' + (currentIdx + 1) + ':', data.error.message);
-            }
-        })
-        .catch(function(err) {
-            console.warn('Failed to generate illustration for shot ' + (currentIdx + 1) + ':', err);
-        })
-        .then(function() {
-            // Move to next shot after a short delay to avoid rate limits
-            shotIdx++;
-            setTimeout(generateNext, 1000);
-        });
+
+                if (imageFound) {
+                    // Success — move to next shot
+                    shotIdx++;
+                    setTimeout(generateNext, 1000);
+                } else if (data.error) {
+                    console.warn('Model ' + modelName + ' error:', data.error.message);
+                    // Try next model
+                    tryModel(modelIdx + 1);
+                } else {
+                    console.warn('Model ' + modelName + ' returned no image. Response:', JSON.stringify(data).substring(0, 300));
+                    // Try next model
+                    tryModel(modelIdx + 1);
+                }
+            })
+            .catch(function(err) {
+                console.warn('Model ' + modelName + ' fetch failed:', err);
+                tryModel(modelIdx + 1);
+            });
+        }
+
+        tryModel(0);
     }
 
     generateNext();
