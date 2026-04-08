@@ -862,15 +862,16 @@ function generateIllustrations() {
 
         // Try multiple model names (fallback chain)
         var models = [
-            'gemini-2.0-flash-preview-image-generation',
-            'gemini-2.5-flash-preview-04-17',
-            'gemini-2.0-flash-exp'
+            'gemini-2.0-flash-exp-image-generation',
+            'gemini-2.0-flash-exp',
+            'gemini-2.5-flash-preview-04-17'
         ];
+        var lastError = '';
 
         function tryModel(modelIdx) {
             if (modelIdx >= models.length) {
-                // All models failed — show error on card
-                currentArea.innerHTML = '<div style="color:#e94560;font-size:11px;text-align:center;padding:8px;">Failed to generate. Check API key or try again.</div>';
+                // All models failed — show actual error on card
+                currentArea.innerHTML = '<div style="color:#e94560;font-size:11px;text-align:center;padding:8px;">Error: ' + (lastError || 'All models failed') + '</div>';
                 shotIdx++;
                 setTimeout(generateNext, 500);
                 return;
@@ -883,8 +884,8 @@ function generateIllustrations() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
+                    contents: [{ parts: [{ text: prompt }], role: 'user' }],
+                    generationConfig: { responseModalities: ['Text', 'Image'] }
                 })
             })
             .then(function(r) { return r.json(); })
@@ -911,18 +912,19 @@ function generateIllustrations() {
                 if (imageFound) {
                     // Success — move to next shot
                     shotIdx++;
-                    setTimeout(generateNext, 1000);
+                    setTimeout(generateNext, 1500);
                 } else if (data.error) {
-                    console.warn('Model ' + modelName + ' error:', data.error.message);
-                    // Try next model
+                    lastError = data.error.message || data.error.status;
+                    console.warn('Model ' + modelName + ' error:', lastError);
                     tryModel(modelIdx + 1);
                 } else {
-                    console.warn('Model ' + modelName + ' returned no image. Response:', JSON.stringify(data).substring(0, 300));
-                    // Try next model
+                    lastError = 'No image in response';
+                    console.warn('Model ' + modelName + ':', JSON.stringify(data).substring(0, 500));
                     tryModel(modelIdx + 1);
                 }
             })
             .catch(function(err) {
+                lastError = err.message || 'Network error';
                 console.warn('Model ' + modelName + ' fetch failed:', err);
                 tryModel(modelIdx + 1);
             });
