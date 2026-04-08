@@ -965,6 +965,12 @@ function generateIllustrations() {
         }
 
         var area = imageAreas[shotIdx];
+        // Skip Shot 1 (HOOK) — no illustration needed
+        if (shotIdx === 0) {
+            shotIdx++;
+            processNext();
+            return;
+        }
         // Skip if user already uploaded their own image
         if (area.querySelector('img[src^="data:"]') || area.querySelector('img[src^="blob:"]')) {
             shotIdx++;
