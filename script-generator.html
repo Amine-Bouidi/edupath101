@@ -364,10 +364,11 @@ Main Topic: Definition and Types of Culture
    - popular culture"></textarea>
 
         <div class="format-guide">
-            <strong>Shots:</strong> <code>1. Title</code> or <code># Title</code> or <code>* Title</code><br>
-            <strong>Main sub-points (1, 2, 3...):</strong> <code>&nbsp;&nbsp;- point</code> — or use <code>concept: explanation</code> to auto-split<br>
-            <strong>Small sub-points (A, B, C...):</strong> <code>&nbsp;&nbsp;&nbsp;&nbsp;a. detail</code> or deeper indent <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- detail</code><br>
-            Auto-detected from: indentation depth, letter markers (a. b. c.), colon splits, roman numerals (i. ii.)
+            <strong>Just paste directly from NotebookLM / Google Docs!</strong><br>
+            <code>1. Shot Title</code> → each numbered item becomes a Shot<br>
+            <code>&nbsp;&nbsp;- point</code> → main sub-points (numbered 1, 2, 3...)<br>
+            <code>&nbsp;&nbsp;&nbsp;&nbsp;- detail</code> → indented deeper = small sub-points (lettered A, B, C...)<br>
+            Hierarchy is auto-detected from indentation — no extra formatting needed.
         </div>
 
         <div class="btn-row">
@@ -448,59 +449,37 @@ function parseMindMap(text) {
             foundFirstBranch = true;
             // Remove trailing colon
             branchTitle = branchTitle.replace(/:$/, '').trim();
-            currentShot = { title: branchTitle, points: [] };
+            currentShot = { title: branchTitle, points: [], _minIndent: null };
             shots.push(currentShot);
         } else if (currentShot) {
-            // Smart indentation detection
+            // Measure raw indentation (spaces before any text)
             var indent = 0;
             var tabMatch = line.match(/^(\t+)/);
             var spaceMatch = line.match(/^( +)/);
             if (tabMatch) indent = tabMatch[1].length * 4;
             else if (spaceMatch) indent = spaceMatch[1].length;
 
-            // Clean the point text (remove bullet markers, letter markers, sub-numbers)
+            // Clean the point text (remove bullet markers)
             var rawPoint = trimmed
                 .replace(/^[-*+•·›]\s*/, '')          // bullets: - * + • · ›
-                .replace(/^[a-z][.\)]\s+/i, '')        // letter markers: a. b) C.
-                .replace(/^[ivxIVX]+[.\)]\s+/, '')     // roman numerals: i. ii) III.
                 .replace(/^\d+[.\)]\s*/, '')            // numbers: 1. 2)
                 .trim();
             if (!rawPoint) continue;
 
-            // Determine if this is a sub-sub-point (child) or a main sub-point
-            var isChild = false;
+            // NotebookLM pattern: all lines use "- " bullets,
+            // hierarchy is PURELY from indentation depth.
+            // First indent level seen = main points (numbered 1,2,3)
+            // Deeper indent = sub-points (lettered A,B,C)
 
-            // Method 1: Deep indentation (6+ spaces or 2+ tabs relative to branch)
-            if (indent >= 6) {
-                isChild = true;
-            }
-            // Method 2: Letter/roman markers at any indent (a. b. c. or i. ii.)
-            else if (trimmed.match(/^[a-z][.\)]\s+/i) && !trimmed.match(/^[A-Z][.\)]\s+[A-Z]/)) {
-                isChild = true;
-            }
-            // Method 3: Deeper indent than first point in this shot
-            else if (currentShot.points.length > 0 && indent > 0) {
-                // Track the indent of the first sub-point we saw
-                if (!currentShot._firstIndent) currentShot._firstIndent = indent;
-                if (indent > currentShot._firstIndent) {
-                    isChild = true;
-                }
-            }
-            // Method 4: Double-bullet like "- - sub" or "-- sub"
-            else if (trimmed.match(/^[-*+•]\s*[-*+•]\s+/) || trimmed.match(/^--\s+/)) {
-                rawPoint = trimmed.replace(/^[-*+•]\s*[-*+•]\s+/, '').replace(/^--\s+/, '').trim();
-                isChild = true;
+            if (currentShot._minIndent === null) {
+                // First sub-item: record its indent as the "main" level
+                currentShot._minIndent = indent;
             }
 
-            // Check for colon pattern: "main concept: explanation details"
-            // Split into main point + child explanation
-            var colonSplit = rawPoint.match(/^([^:]{3,30}):\s+(.{5,})$/);
-            if (colonSplit && !isChild) {
-                var mainText = colonSplit[1].trim();
-                var childText = colonSplit[2].trim();
-                currentShot.points.push({ text: mainText, children: [childText] });
-            } else if (isChild && currentShot.points.length > 0) {
-                // Attach to the last main point as a child
+            var isChild = indent > currentShot._minIndent;
+
+            if (isChild && currentShot.points.length > 0) {
+                // Attach to the last main point as a lettered child
                 var lastPoint = currentShot.points[currentShot.points.length - 1];
                 if (typeof lastPoint === 'string') {
                     currentShot.points[currentShot.points.length - 1] = { text: lastPoint, children: [rawPoint] };
@@ -772,35 +751,31 @@ function loadExample() {
     document.getElementById('inputModule').value = 'Cultural Studies';
     document.getElementById('inputLecture').value = '1';
     document.getElementById('mindMapInput').value =
-        'Main Topic: Definition and Types of Culture\n\n' +
-        '1. Definition of Culture\n' +
-        '   - etymologia: from Latin "cultus", means cultivation and care\n' +
-        '   - modern usage: shared beliefs, values, and practices of a group\n' +
-        '   - anthropological view: Edward Tylor 1871 definition\n' +
-        '      a. complex whole including knowledge, belief, art\n' +
-        '      b. morals, law, customs acquired by man as member of society\n\n' +
-        '2. Characteristics of Culture\n' +
-        '   - learned and transmitted\n' +
-        '      a. not biological or inherited\n' +
-        '      b. passed from generation to generation\n' +
-        '      c. through language, observation, imitation\n' +
-        '   - shared and collective\n' +
-        '      a. not individual\n' +
-        '      b. belongs to a group or community\n' +
-        '   - dynamic: changes over time and adapts to new conditions\n' +
-        '   - symbolic: uses language and symbols to communicate meaning\n\n' +
-        '3. Types of Culture\n' +
-        '   - material culture: physical objects, architecture, tools, clothing\n' +
-        '   - non-material culture: ideas, beliefs, values, norms and customs\n' +
-        '   - subculture\n' +
-        '      a. smaller group within larger culture\n' +
-        '      b. e.g. punk movement, hip-hop culture\n' +
-        '   - popular culture: mainstream media and entertainment\n\n' +
-        '4. Importance of Studying Culture\n' +
-        '   - understanding human behavior\n' +
-        '   - cross-cultural communication\n' +
-        '   - breaking stereotypes and prejudices\n' +
-        '   - academic research in social sciences\n';
+        'The revolution Influence of Mass Media\n\n' +
+        '1. Mass Media:\n' +
+        '   - Definition\n' +
+        '     - Small group communicating to large audience\n' +
+        '     - Channels for message dissemination\n' +
+        '   - Traditional Forms\n' +
+        '     - Print (books, newspapers, magazines)\n' +
+        '     - Broadcast (radio, television)\n' +
+        '     - Cinema (movies, documentaries)\n' +
+        '   - Evolution\n' +
+        '     - 1920s: Progressive Era\n' +
+        '     - Move to Mass Self-Communication\n' +
+        '     - Transition from Push to Pull technologies\n\n' +
+        '2. Mass Communication Stages:\n' +
+        '   - Professional communicators create messages\n' +
+        '   - Quick and continuous dissemination\n' +
+        '   - Reception by diverse audience\n' +
+        '   - Audience interpretation\n' +
+        '   - Audience influence or change\n\n' +
+        '3. Intended Effects & Functions\n' +
+        '   - Commercial advertising\n' +
+        '   - Political campaigns\n' +
+        '   - Public service announcements\n' +
+        '   - Government indoctrination\n' +
+        '   - Ritual events (sports)\n';
 }
 </script>
 </body>
