@@ -451,14 +451,28 @@ function parseMindMap(text) {
             currentShot = { title: branchTitle, points: [] };
             shots.push(currentShot);
         } else if (currentShot) {
-            // This is a sub-point
+            // Detect indentation level
+            var indent = line.match(/^(\s*)/)[1].length;
             var point = trimmed
                 .replace(/^[-*+]\s*/, '')
                 .replace(/^[a-z][.\)]\s*/i, '')
                 .replace(/^\d+[.\)]\s*/, '')
                 .trim();
             if (point) {
-                currentShot.points.push(point);
+                // If indent >= 4 or line starts with deeper markers, it's a sub-sub-point
+                var isSubSub = indent >= 4 || (indent >= 2 && currentShot.points.length > 0 && !line.match(/^\s{0,1}\S/));
+                if (isSubSub && currentShot.points.length > 0) {
+                    // Attach to the last main point as a child
+                    var lastPoint = currentShot.points[currentShot.points.length - 1];
+                    if (typeof lastPoint === 'string') {
+                        // Convert to object with children
+                        currentShot.points[currentShot.points.length - 1] = { text: lastPoint, children: [point] };
+                    } else {
+                        lastPoint.children.push(point);
+                    }
+                } else {
+                    currentShot.points.push(point);
+                }
             }
         } else {
             // Before first branch - this is the topic line
@@ -612,8 +626,23 @@ function generateScript() {
             } else {
                 var ol = document.createElement('ol');
                 for (var p = 0; p < shot.points.length; p++) {
+                    var item = shot.points[p];
                     var li = document.createElement('li');
-                    li.textContent = shot.points[p];
+                    if (typeof item === 'string') {
+                        li.textContent = item;
+                    } else {
+                        // Main point text + lettered sub-list
+                        li.textContent = item.text;
+                        var subOl = document.createElement('ol');
+                        subOl.style.listStyleType = 'upper-alpha';
+                        subOl.style.marginTop = '4px';
+                        for (var c = 0; c < item.children.length; c++) {
+                            var subLi = document.createElement('li');
+                            subLi.textContent = item.children[c];
+                            subOl.appendChild(subLi);
+                        }
+                        li.appendChild(subOl);
+                    }
                     ol.appendChild(li);
                 }
                 textEl.appendChild(ol);
@@ -652,8 +681,17 @@ function copyAsText() {
             text += hookText.textContent + '\n';
         }
         if (points.length > 0) {
-            points.forEach(function(li, j) {
-                text += (j + 1) + '. ' + li.textContent + '\n';
+            var mainIdx = 0;
+            points.forEach(function(li) {
+                // Check if this is a top-level li (direct child of ol, not nested)
+                if (li.parentElement && li.parentElement.style.listStyleType === 'upper-alpha') {
+                    // Sub-point: letter it
+                    var subIdx = Array.prototype.indexOf.call(li.parentElement.children, li);
+                    text += '   ' + String.fromCharCode(65 + subIdx) + '. ' + li.childNodes[0].textContent + '\n';
+                } else {
+                    mainIdx++;
+                    text += mainIdx + '. ' + li.childNodes[0].textContent + '\n';
+                }
             });
         }
         text += '\n';
@@ -700,21 +738,34 @@ function loadExample() {
     document.getElementById('mindMapInput').value =
         'Main Topic: Definition and Types of Culture\n\n' +
         '1. Definition of Culture\n' +
-        '   - etymologia: from Latin "cultus"\n' +
-        '   - meaning: cultivation, care, agriculture\n' +
-        '   - modern usage: shared beliefs, values, and practices of a group\n\n' +
+        '   - etymologia\n' +
+        '       - from Latin "cultus"\n' +
+        '       - means cultivation, care, agriculture\n' +
+        '   - modern usage\n' +
+        '       - shared beliefs, values, and practices of a group\n' +
+        '       - transmitted across generations\n\n' +
         '2. Characteristics of Culture\n' +
-        '   - learned and transmitted from generation to generation\n' +
-        '   - shared and collective: not individual\n' +
-        '   - complex and multifaceted\n' +
-        '   - dynamic: changes over time\n' +
-        '   - symbolic: uses language and symbols\n\n' +
+        '   - learned and transmitted\n' +
+        '       - not biological or inherited\n' +
+        '       - passed from generation to generation\n' +
+        '   - shared and collective\n' +
+        '       - not individual\n' +
+        '       - belongs to a group or community\n' +
+        '   - dynamic\n' +
+        '       - changes over time\n' +
+        '       - adapts to new conditions\n' +
+        '   - symbolic\n' +
+        '       - uses language and symbols\n\n' +
         '3. Types of Culture\n' +
-        '   - material culture: physical objects, architecture\n' +
-        '   - non-material culture: ideas, beliefs, values\n' +
-        '   - subculture: smaller group within larger culture\n' +
-        '   - popular culture: mainstream media and entertainment\n' +
-        '   - high culture: arts, literature, classical music\n\n' +
+        '   - material culture\n' +
+        '       - physical objects\n' +
+        '       - architecture, tools, clothing\n' +
+        '   - non-material culture\n' +
+        '       - ideas, beliefs, values\n' +
+        '       - norms and customs\n' +
+        '   - subculture\n' +
+        '       - smaller group within larger culture\n' +
+        '       - e.g. punk, hip-hop\n\n' +
         '4. Importance of Studying Culture\n' +
         '   - understanding human behavior\n' +
         '   - cross-cultural communication\n' +
