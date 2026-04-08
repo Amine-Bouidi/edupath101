@@ -848,48 +848,100 @@ function escHtml(s) {
     return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-// ── Gemini model names to try (in order) ──
-var GEMINI_MODELS = [
-    'gemini-2.0-flash-exp-image-generation',
-    'gemini-2.0-flash-exp',
-    'gemini-2.5-flash-image',
-    'gemini-3.1-flash-image-preview'
-];
+// ── Auto-detected Gemini image model (cached after first detection) ──
+var _detectedGeminiModel = null;
+var _geminiErrors = [];
 
-// ── Generate illustration for one shot via Gemini API ──
-function generateWithGemini(apiKey, prompt, modelIdx, onSuccess, onFail) {
-    if (modelIdx >= GEMINI_MODELS.length) { onFail('All models failed'); return; }
-    var model = GEMINI_MODELS[modelIdx];
-    var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + apiKey;
+// ── Detect which Gemini model supports image generation ──
+function detectGeminiModel(apiKey, callback) {
+    if (_detectedGeminiModel) { callback(_detectedGeminiModel); return; }
 
-    fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }], role: 'user' }],
-            generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
-        })
-    })
+    // Fetch all available models and find ones with "image" in the name
+    fetch('https://generativelanguage.googleapis.com/v1beta/models?key=' + apiKey)
     .then(function(r) { return r.json(); })
     .then(function(data) {
-        if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
-            var parts = data.candidates[0].content.parts;
-            for (var p = 0; p < parts.length; p++) {
-                if (parts[p].inlineData) {
-                    var mime = parts[p].inlineData.mimeType || 'image/png';
-                    var b64 = parts[p].inlineData.data;
-                    onSuccess('data:' + mime + ';base64,' + b64);
-                    return;
-                }
+        if (data.error) {
+            _geminiErrors.push('API Key error: ' + data.error.message);
+            callback(null);
+            return;
+        }
+        if (!data.models) { _geminiErrors.push('No models returned'); callback(null); return; }
+
+        // Find image generation models - prefer flash image models
+        var imageModels = [];
+        for (var i = 0; i < data.models.length; i++) {
+            var name = data.models[i].name.replace('models/', '');
+            if (name.indexOf('image') !== -1) {
+                imageModels.push(name);
             }
         }
-        var errMsg = data.error ? data.error.message : 'No image returned';
-        console.warn('Gemini ' + model + ':', errMsg);
-        generateWithGemini(apiKey, prompt, modelIdx + 1, onSuccess, onFail);
+
+        if (imageModels.length > 0) {
+            // Prefer flash image models, then any image model
+            var preferred = null;
+            for (var j = 0; j < imageModels.length; j++) {
+                if (imageModels[j].indexOf('flash') !== -1 && imageModels[j].indexOf('image') !== -1) {
+                    preferred = imageModels[j];
+                    break;
+                }
+            }
+            _detectedGeminiModel = preferred || imageModels[0];
+            callback(_detectedGeminiModel);
+        } else {
+            // No image models found - try known names as fallback
+            _geminiErrors.push('No image models found. Available: ' + data.models.map(function(m) { return m.name; }).slice(0, 10).join(', '));
+            // Try common names
+            var fallbacks = ['gemini-2.0-flash-exp-image-generation', 'gemini-2.0-flash-exp', 'gemini-2.5-flash-image'];
+            _detectedGeminiModel = fallbacks[0];
+            callback(_detectedGeminiModel);
+        }
     })
     .catch(function(err) {
-        console.warn('Gemini ' + model + ' fetch error:', err);
-        generateWithGemini(apiKey, prompt, modelIdx + 1, onSuccess, onFail);
+        _geminiErrors.push('Network error: ' + err.message);
+        callback(null);
+    });
+}
+
+// ── Generate illustration for one shot via Gemini API ──
+function generateWithGemini(apiKey, prompt, onSuccess, onFail) {
+    detectGeminiModel(apiKey, function(model) {
+        if (!model) {
+            onFail(_geminiErrors.join('. '));
+            return;
+        }
+
+        var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + apiKey;
+
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }], role: 'user' }],
+                generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
+            })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+                var parts = data.candidates[0].content.parts;
+                for (var p = 0; p < parts.length; p++) {
+                    if (parts[p].inlineData) {
+                        var mime = parts[p].inlineData.mimeType || 'image/png';
+                        var b64 = parts[p].inlineData.data;
+                        onSuccess('data:' + mime + ';base64,' + b64);
+                        return;
+                    }
+                }
+            }
+            var errMsg = data.error ? data.error.message : 'No image in response';
+            // Reset detected model if it failed (try detection again next time)
+            _detectedGeminiModel = null;
+            onFail('Model ' + model + ': ' + errMsg);
+        })
+        .catch(function(err) {
+            _detectedGeminiModel = null;
+            onFail('Model ' + model + ': ' + err.message);
+        });
     });
 }
 
@@ -983,13 +1035,16 @@ function generateIllustrations() {
         }
 
         if (apiKey) {
-            // Tier 1: Gemini API
-            generateWithGemini(apiKey, prompt, 0, function(dataUrl) {
+            // Tier 1: Gemini API (auto-detects correct model)
+            generateWithGemini(apiKey, prompt, function(dataUrl) {
                 showImage(dataUrl);
                 shotIdx++;
                 setTimeout(processNext, 1500);
             }, function(err) {
-                console.warn('Gemini failed for shot ' + (shotIdx + 1) + ':', err);
+                // Show error visibly on first failure so user can see what went wrong
+                if (shotIdx === 0) {
+                    alert('Gemini API error:\n' + err + '\n\nFalling back to alternative illustrations.');
+                }
                 // Tier 2: Pollinations fallback
                 fallbackPollinations();
             });
