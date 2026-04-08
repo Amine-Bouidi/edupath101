@@ -322,12 +322,22 @@
 
         <div class="form-row">
             <div class="form-group">
-                <label>Video Title</label>
-                <input type="text" id="videoTitle" placeholder="e.g. Cultural Studies - S4 Fes">
+                <label>University / الجامعة</label>
+                <input type="text" id="inputUniversity" placeholder="e.g. سيدي محمد بن عبد الله - فاس">
             </div>
             <div class="form-group">
-                <label>Target Audience</label>
-                <input type="text" id="targetAudience" placeholder="e.g. English Studies S4 - Fes">
+                <label>Semester / الفصل</label>
+                <input type="text" id="inputSemester" placeholder="e.g. S4">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Module / الموديل</label>
+                <input type="text" id="inputModule" placeholder="e.g. Cultural Studies">
+            </div>
+            <div class="form-group">
+                <label>Lecture # / رقم المحاضرة</label>
+                <input type="text" id="inputLecture" placeholder="e.g. 1">
             </div>
         </div>
 
@@ -476,8 +486,10 @@ function generateScript() {
         return;
     }
 
-    var videoTitle = document.getElementById('videoTitle').value.trim();
-    var audience = document.getElementById('targetAudience').value.trim();
+    var university = document.getElementById('inputUniversity').value.trim();
+    var semester = document.getElementById('inputSemester').value.trim();
+    var moduleName = document.getElementById('inputModule').value.trim();
+    var lectureNum = document.getElementById('inputLecture').value.trim();
     var parsed = parseMindMap(input);
 
     if (parsed.shots.length === 0) {
@@ -486,27 +498,22 @@ function generateScript() {
     }
 
     // Set board title
-    var title = videoTitle || parsed.topic || 'Untitled Video';
+    var title = (moduleName || parsed.topic || 'Untitled') + (semester ? ' - ' + semester : '') + (university ? ' - ' + university : '');
     document.getElementById('boardTitle').textContent = title;
 
     // Build shots array with Hook as Shot 1
     var allShots = [];
 
-    // Shot 1: Hook
-    var hookTopic = parsed.topic || videoTitle || parsed.shots[0].title;
-    var hookAudience = audience || '';
-    var hookText = '';
-    if (hasArabic(hookTopic)) {
-        hookText = '"' + 'السلام عليكم، معكم أمين بويدي...' + '\n';
-        hookText += 'هذا الفيديو يتناول موضوع: ' + hookTopic;
-        if (hookAudience) hookText += '\n' + 'موجه ل: ' + hookAudience;
-        hookText += '"';
-    } else {
-        hookText = '"Hello everyone, welcome back to EduPath...\n';
-        hookText += 'In this video, we\'ll cover: ' + hookTopic;
-        if (hookAudience) hookText += '\nFor: ' + hookAudience;
-        hookText += '"';
-    }
+    // Shot 1: Hook (always in Darija with the standard EduPath intro)
+    var hookText = '"السلام عليكم، معكم أمين بويدي...\n';
+    hookText += 'هاذ الفيديو لطلبة الدراسات الانجليزية';
+    if (university) hookText += '.لجامعة ' + university;
+    if (semester) hookText += ' الفصل ' + semester;
+    hookText += '\n';
+    hookText += 'و اليوم ان شاء الله غاذي نلخصو المحاضرة';
+    if (lectureNum) hookText += ' رقم ' + lectureNum;
+    if (moduleName) hookText += ' ديال موديل ' + moduleName;
+    hookText += '"';
     allShots.push({
         title: 'HOOK + topic + audience',
         points: [hookText],
@@ -675,8 +682,10 @@ function editInput() {
 // ── Clear all fields ──
 function clearAll() {
     document.getElementById('mindMapInput').value = '';
-    document.getElementById('videoTitle').value = '';
-    document.getElementById('targetAudience').value = '';
+    document.getElementById('inputUniversity').value = '';
+    document.getElementById('inputSemester').value = '';
+    document.getElementById('inputModule').value = '';
+    document.getElementById('inputLecture').value = '';
     document.getElementById('board').innerHTML = '';
     document.getElementById('boardSection').style.display = 'none';
     document.getElementById('inputSection').style.display = 'block';
@@ -684,8 +693,10 @@ function clearAll() {
 
 // ── Load example data ──
 function loadExample() {
-    document.getElementById('videoTitle').value = 'Cultural Studies - S4 Fes';
-    document.getElementById('targetAudience').value = 'English Studies S4 - Fes';
+    document.getElementById('inputUniversity').value = 'سيدي محمد بن عبد الله - فاس';
+    document.getElementById('inputSemester').value = 'S4';
+    document.getElementById('inputModule').value = 'Cultural Studies';
+    document.getElementById('inputLecture').value = '1';
     document.getElementById('mindMapInput').value =
         'Main Topic: Definition and Types of Culture\n\n' +
         '1. Definition of Culture\n' +
