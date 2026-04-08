@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduPath - Video Script Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: #1a1a2e;
+            color: #fff;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header h1 {
+            font-family: 'Sora', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .header h1 span { color: #e94560; }
+        .header-subtitle { font-size: 13px; opacity: .7; }
+
+        /* ── Input Section ── */
+        .input-section {
+            max-width: 900px;
+            margin: 32px auto;
+            padding: 0 24px;
+        }
+        .input-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06);
+        }
+        .input-card h2 {
+            font-family: 'Sora', sans-serif;
+            font-size: 18px;
+            margin-bottom: 6px;
+        }
+        .input-card .subtitle {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #555;
+        }
+        .form-group input {
+            padding: 10px 14px;
+            border: 1.5px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'DM Sans', sans-serif;
+            transition: border-color .2s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 260px;
+            padding: 14px;
+            border: 1.5px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'DM Sans', sans-serif;
+            line-height: 1.6;
+            resize: vertical;
+            transition: border-color .2s;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        textarea::placeholder { color: #bbb; }
+
+        .format-guide {
+            background: #f9f9fb;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-top: 16px;
+            font-size: 12px;
+            color: #666;
+            line-height: 1.7;
+        }
+        .format-guide strong { color: #333; }
+        .format-guide code {
+            background: #eef;
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s;
+        }
+        .btn-primary {
+            background: #e94560;
+            color: #fff;
+        }
+        .btn-primary:hover { background: #d13350; }
+        .btn-secondary {
+            background: #eee;
+            color: #555;
+        }
+        .btn-secondary:hover { background: #ddd; }
+
+        /* ── Board Output ── */
+        .board-section {
+            padding: 24px;
+            display: none;
+        }
+        .board-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 0 8px;
+        }
+        .board-title {
+            font-family: 'Sora', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a2e;
+        }
+        .board-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .board {
+            display: flex;
+            gap: 0;
+            overflow-x: auto;
+            padding: 8px 0 24px;
+            align-items: flex-start;
+        }
+
+        /* Arrow between shots */
+        .shot-arrow {
+            display: flex;
+            align-items: center;
+            padding-top: 28px;
+            flex-shrink: 0;
+        }
+        .shot-arrow svg {
+            width: 48px;
+            height: 20px;
+            color: #bbb;
+        }
+
+        /* Shot column */
+        .shot {
+            min-width: 260px;
+            max-width: 300px;
+            flex-shrink: 0;
+        }
+        .shot-header {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .shot-header h3 {
+            font-family: 'Sora', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+        }
+        .shot-header .card-count {
+            font-size: 12px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        /* Card */
+        .card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 1px 6px rgba(0,0,0,.07);
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .card-image {
+            width: 100%;
+            height: 130px;
+            background: #f0f0f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+        }
+        .card-image svg {
+            width: 36px;
+            height: 36px;
+            color: #ccc;
+        }
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .card-image input[type="file"] {
+            display: none;
+        }
+        .card-body {
+            padding: 14px 16px;
+        }
+        .card-title {
+            font-family: 'Sora', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .card-text {
+            font-size: 12.5px;
+            color: #555;
+            line-height: 1.7;
+        }
+        .card-text ol, .card-text ul {
+            padding-left: 18px;
+        }
+        .card-text li {
+            margin-bottom: 4px;
+        }
+
+        /* RTL support */
+        .card-body[dir="rtl"] {
+            text-align: right;
+        }
+        .card-body[dir="rtl"] .card-text ol,
+        .card-body[dir="rtl"] .card-text ul {
+            padding-left: 0;
+            padding-right: 18px;
+        }
+
+        /* ── Print Styles ── */
+        @media print {
+            .header, .input-section, .board-actions, .btn-row { display: none !important; }
+            .board-section { display: block !important; padding: 0; }
+            .board {
+                flex-wrap: wrap;
+                gap: 16px;
+                overflow: visible;
+            }
+            .shot-arrow { display: none; }
+            .shot {
+                min-width: 200px;
+                max-width: 48%;
+                flex: 1 1 45%;
+                page-break-inside: avoid;
+            }
+            .card { box-shadow: 0 0 0 1px #ddd; }
+            .board-title { font-size: 18px; }
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            .form-row { flex-direction: column; gap: 12px; }
+            .shot { min-width: 220px; }
+            .input-section { padding: 0 12px; }
+            .board-section { padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+    <div>
+        <h1>Edu<span>Path</span> Script Generator</h1>
+        <div class="header-subtitle">Turn your mind map into a video script board</div>
+    </div>
+</div>
+
+<!-- Input Section -->
+<div class="input-section" id="inputSection">
+    <div class="input-card">
+        <h2>Paste your Mind Map</h2>
+        <p class="subtitle">Copy the mind map summary from Google NotebookLM and paste it below</p>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Video Title</label>
+                <input type="text" id="videoTitle" placeholder="e.g. Cultural Studies - S4 Fes">
+            </div>
+            <div class="form-group">
+                <label>Target Audience</label>
+                <input type="text" id="targetAudience" placeholder="e.g. English Studies S4 - Fes">
+            </div>
+        </div>
+
+        <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px;">Mind Map Text</label>
+        <textarea id="mindMapInput" placeholder="Paste your mind map here...
+
+Example:
+Main Topic: Definition and Types of Culture
+
+1. Definition of Culture
+   - etymologia: from Latin &quot;cultus&quot;
+   - meaning: cultivation, care, agriculture
+   - modern definition: shared beliefs and practices
+
+2. Characteristics of Culture
+   - learned and transmitted
+   - shared and collective
+   - complex and multifaceted
+
+3. Types of Culture
+   - material culture
+   - non-material culture
+   - subculture
+   - popular culture"></textarea>
+
+        <div class="format-guide">
+            <strong>Accepted formats:</strong><br>
+            <code>1. Main Point</code> or <code># Main Point</code> or <code>* Main Point</code> for shot titles<br>
+            <code>&nbsp;&nbsp;- sub-point</code> or <code>&nbsp;&nbsp;a. sub-point</code> for details under each shot<br>
+            The first line (before any numbered item) is used as the main topic.
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-primary" onclick="generateScript()">Generate Script</button>
+            <button class="btn btn-secondary" onclick="loadExample()">Load Example</button>
+            <button class="btn btn-secondary" onclick="clearAll()">Clear</button>
+        </div>
+    </div>
+</div>
+
+<!-- Board Output -->
+<div class="board-section" id="boardSection">
+    <div class="board-header">
+        <div class="board-title" id="boardTitle">Video Script Board</div>
+        <div class="board-actions">
+            <button class="btn btn-secondary" onclick="window.print()">Print / Save PDF</button>
+            <button class="btn btn-secondary" onclick="copyAsText()">Copy as Text</button>
+            <button class="btn btn-secondary" onclick="editInput()">Edit Input</button>
+        </div>
+    </div>
+    <div class="board" id="board"></div>
+</div>
+
+<script>
+// ── Detect if text contains Arabic ──
+function hasArabic(text) {
+    return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(text);
+}
+
+// ── Parse mind map text into structured shots ──
+function parseMindMap(text) {
+    var lines = text.split('\n');
+    var topic = '';
+    var shots = [];
+    var currentShot = null;
+    var foundFirstBranch = false;
+
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        var trimmed = line.trim();
+        if (!trimmed) continue;
+
+        // Check if this is a main branch (numbered, heading, or bold)
+        var branchMatch = trimmed.match(/^(?:(\d+)[.\)]\s*|#{1,3}\s*|\*\*(.+?)\*\*$|>\s*)/);
+        var isBranch = false;
+        var branchTitle = '';
+
+        if (branchMatch) {
+            // Numbered item like "1. Definition"
+            if (branchMatch[1]) {
+                branchTitle = trimmed.replace(/^\d+[.\)]\s*/, '');
+                isBranch = true;
+            }
+            // Heading like "# Definition" or "## Definition"
+            else if (trimmed.match(/^#{1,3}\s+/)) {
+                branchTitle = trimmed.replace(/^#{1,3}\s+/, '');
+                isBranch = true;
+            }
+            // Bold like "**Definition**"
+            else if (branchMatch[2]) {
+                branchTitle = branchMatch[2];
+                isBranch = true;
+            }
+        }
+
+        // Also detect lines that start with a capital letter or Arabic and have no indent
+        // but only after we've found at least one branch pattern
+        if (!isBranch && foundFirstBranch && !line.match(/^[\s\t]/) && !trimmed.match(/^[-*+]\s/) && !trimmed.match(/^[a-z]\.\s/i) && trimmed.length > 3) {
+            // Check if next lines are indented (sub-points) - this is a branch
+            var nextLine = i + 1 < lines.length ? lines[i + 1] : '';
+            if (nextLine.match(/^[\s\t]+[-*+\da-z]/i)) {
+                branchTitle = trimmed;
+                isBranch = true;
+            }
+        }
+
+        if (isBranch) {
+            foundFirstBranch = true;
+            // Remove trailing colon
+            branchTitle = branchTitle.replace(/:$/, '').trim();
+            currentShot = { title: branchTitle, points: [] };
+            shots.push(currentShot);
+        } else if (currentShot) {
+            // This is a sub-point
+            var point = trimmed
+                .replace(/^[-*+]\s*/, '')
+                .replace(/^[a-z][.\)]\s*/i, '')
+                .replace(/^\d+[.\)]\s*/, '')
+                .trim();
+            if (point) {
+                currentShot.points.push(point);
+            }
+        } else {
+            // Before first branch - this is the topic line
+            var topicLine = trimmed
+                .replace(/^(main\s*topic|topic|subject|title)\s*[:=]\s*/i, '')
+                .replace(/^#{1,3}\s*/, '')
+                .replace(/^\*\*(.+?)\*\*$/, '$1')
+                .trim();
+            if (topicLine && !topic) {
+                topic = topicLine;
+            } else if (topicLine && topic) {
+                topic += ' - ' + topicLine;
+            }
+        }
+    }
+
+    return { topic: topic, shots: shots };
+}
+
+// ── Generate the visual script board ──
+function generateScript() {
+    var input = document.getElementById('mindMapInput').value.trim();
+    if (!input) {
+        alert('Please paste your mind map text first.');
+        return;
+    }
+
+    var videoTitle = document.getElementById('videoTitle').value.trim();
+    var audience = document.getElementById('targetAudience').value.trim();
+    var parsed = parseMindMap(input);
+
+    if (parsed.shots.length === 0) {
+        alert('Could not detect any main points. Make sure your text has numbered items (1. 2. 3.) or headings (# Title).');
+        return;
+    }
+
+    // Set board title
+    var title = videoTitle || parsed.topic || 'Untitled Video';
+    document.getElementById('boardTitle').textContent = title;
+
+    // Build shots array with Hook as Shot 1
+    var allShots = [];
+
+    // Shot 1: Hook
+    var hookTopic = parsed.topic || videoTitle || parsed.shots[0].title;
+    var hookAudience = audience || '';
+    var hookText = '';
+    if (hasArabic(hookTopic)) {
+        hookText = '"' + 'السلام عليكم، معكم أمين بويدي...' + '\n';
+        hookText += 'هذا الفيديو يتناول موضوع: ' + hookTopic;
+        if (hookAudience) hookText += '\n' + 'موجه ل: ' + hookAudience;
+        hookText += '"';
+    } else {
+        hookText = '"Hello everyone, welcome back to EduPath...\n';
+        hookText += 'In this video, we\'ll cover: ' + hookTopic;
+        if (hookAudience) hookText += '\nFor: ' + hookAudience;
+        hookText += '"';
+    }
+    allShots.push({
+        title: 'HOOK + topic + audience',
+        points: [hookText],
+        isHook: true
+    });
+
+    // Remaining shots from mind map branches
+    for (var i = 0; i < parsed.shots.length; i++) {
+        allShots.push(parsed.shots[i]);
+    }
+
+    // Render the board
+    var board = document.getElementById('board');
+    board.innerHTML = '';
+
+    for (var s = 0; s < allShots.length; s++) {
+        var shot = allShots[s];
+
+        // Arrow between shots (except before first)
+        if (s > 0) {
+            var arrow = document.createElement('div');
+            arrow.className = 'shot-arrow';
+            arrow.innerHTML = '<svg viewBox="0 0 48 20" fill="none"><line x1="0" y1="10" x2="38" y2="10" stroke="currentColor" stroke-width="1.5"/><polyline points="34,5 42,10 34,15" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>';
+            board.appendChild(arrow);
+        }
+
+        // Shot column
+        var shotDiv = document.createElement('div');
+        shotDiv.className = 'shot';
+
+        // Determine card count (image placeholder + text card)
+        var cardCount = shot.isHook ? 2 : (shot.points.length > 0 ? 2 : 1);
+
+        var isRtl = hasArabic(shot.title) || (shot.points.length > 0 && hasArabic(shot.points.join(' ')));
+
+        // Shot header
+        var header = document.createElement('div');
+        header.className = 'shot-header';
+        header.innerHTML = '<h3>Shot ' + (s + 1) + '</h3><div class="card-count">' + cardCount + ' cards</div>';
+        shotDiv.appendChild(header);
+
+        // Image card
+        var imgCard = document.createElement('div');
+        imgCard.className = 'card';
+        var imgArea = document.createElement('div');
+        imgArea.className = 'card-image';
+        imgArea.setAttribute('data-shot', s);
+        imgArea.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14"/><path d="M14 8h.01"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>';
+        // Click to upload image
+        var fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.setAttribute('data-shot', s);
+        fileInput.addEventListener('change', function(e) {
+            var file = e.target.files[0];
+            if (!file) return;
+            var reader = new FileReader();
+            var parentArea = e.target.parentElement;
+            reader.onload = function(ev) {
+                var img = document.createElement('img');
+                img.src = ev.target.result;
+                parentArea.innerHTML = '';
+                parentArea.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        });
+        imgArea.appendChild(fileInput);
+        imgArea.addEventListener('click', function(e) {
+            var input = this.querySelector('input[type="file"]');
+            if (input) input.click();
+        });
+        imgCard.appendChild(imgArea);
+        shotDiv.appendChild(imgCard);
+
+        // Text card
+        if (shot.points.length > 0 || shot.isHook) {
+            var textCard = document.createElement('div');
+            textCard.className = 'card';
+            var body = document.createElement('div');
+            body.className = 'card-body';
+            if (isRtl) body.setAttribute('dir', 'rtl');
+
+            var titleEl = document.createElement('div');
+            titleEl.className = 'card-title';
+            titleEl.textContent = shot.title;
+            body.appendChild(titleEl);
+
+            var textEl = document.createElement('div');
+            textEl.className = 'card-text';
+
+            if (shot.isHook) {
+                var p = document.createElement('p');
+                p.style.whiteSpace = 'pre-line';
+                p.textContent = shot.points[0];
+                textEl.appendChild(p);
+            } else {
+                var ol = document.createElement('ol');
+                for (var p = 0; p < shot.points.length; p++) {
+                    var li = document.createElement('li');
+                    li.textContent = shot.points[p];
+                    ol.appendChild(li);
+                }
+                textEl.appendChild(ol);
+            }
+
+            body.appendChild(textEl);
+            textCard.appendChild(body);
+            shotDiv.appendChild(textCard);
+        }
+
+        board.appendChild(shotDiv);
+    }
+
+    // Show board, hide input
+    document.getElementById('inputSection').style.display = 'none';
+    document.getElementById('boardSection').style.display = 'block';
+}
+
+// ── Copy board content as plain text ──
+function copyAsText() {
+    var shots = document.querySelectorAll('.shot');
+    var text = document.getElementById('boardTitle').textContent + '\n';
+    text += '='.repeat(40) + '\n\n';
+
+    shots.forEach(function(shot, i) {
+        var header = shot.querySelector('.shot-header h3');
+        var title = shot.querySelector('.card-title');
+        var points = shot.querySelectorAll('.card-text li');
+        var hookText = shot.querySelector('.card-text p');
+
+        text += header.textContent + '\n';
+        if (title) text += title.textContent + '\n';
+        text += '-'.repeat(30) + '\n';
+
+        if (hookText) {
+            text += hookText.textContent + '\n';
+        }
+        if (points.length > 0) {
+            points.forEach(function(li, j) {
+                text += (j + 1) + '. ' + li.textContent + '\n';
+            });
+        }
+        text += '\n';
+    });
+
+    navigator.clipboard.writeText(text).then(function() {
+        alert('Script copied to clipboard!');
+    }).catch(function() {
+        // Fallback
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        alert('Script copied to clipboard!');
+    });
+}
+
+// ── Switch back to input ──
+function editInput() {
+    document.getElementById('inputSection').style.display = 'block';
+    document.getElementById('boardSection').style.display = 'none';
+}
+
+// ── Clear all fields ──
+function clearAll() {
+    document.getElementById('mindMapInput').value = '';
+    document.getElementById('videoTitle').value = '';
+    document.getElementById('targetAudience').value = '';
+    document.getElementById('board').innerHTML = '';
+    document.getElementById('boardSection').style.display = 'none';
+    document.getElementById('inputSection').style.display = 'block';
+}
+
+// ── Load example data ──
+function loadExample() {
+    document.getElementById('videoTitle').value = 'Cultural Studies - S4 Fes';
+    document.getElementById('targetAudience').value = 'English Studies S4 - Fes';
+    document.getElementById('mindMapInput').value =
+        'Main Topic: Definition and Types of Culture\n\n' +
+        '1. Definition of Culture\n' +
+        '   - etymologia: from Latin "cultus"\n' +
+        '   - meaning: cultivation, care, agriculture\n' +
+        '   - modern usage: shared beliefs, values, and practices of a group\n\n' +
+        '2. Characteristics of Culture\n' +
+        '   - learned and transmitted from generation to generation\n' +
+        '   - shared and collective: not individual\n' +
+        '   - complex and multifaceted\n' +
+        '   - dynamic: changes over time\n' +
+        '   - symbolic: uses language and symbols\n\n' +
+        '3. Types of Culture\n' +
+        '   - material culture: physical objects, architecture\n' +
+        '   - non-material culture: ideas, beliefs, values\n' +
+        '   - subculture: smaller group within larger culture\n' +
+        '   - popular culture: mainstream media and entertainment\n' +
+        '   - high culture: arts, literature, classical music\n\n' +
+        '4. Importance of Studying Culture\n' +
+        '   - understanding human behavior\n' +
+        '   - cross-cultural communication\n' +
+        '   - breaking stereotypes\n' +
+        '   - academic research in social sciences\n';
+}
+</script>
+</body>
+</html>
