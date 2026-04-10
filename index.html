@@ -1994,11 +1994,11 @@ function openLoginFromLanding(){
               </div>
               <div id="uploadTabPhoto">
                 <input type="file" id="uploadFile" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png" style="font-size:13px;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;width:100%;box-sizing:border-box;color:var(--text);">
-                <div style="font-size:11px;color:var(--text3);margin-top:4px;">Upload lesson materials. PDF, Word, PowerPoint, JPEG, or PNG. Max 15MB each. Up to 10 files at once.</div>
+                <div style="font-size:11px;color:var(--text3);margin-top:4px;">Upload lesson materials. PDF, Word, PowerPoint, JPEG, or PNG. Max 30MB each. Up to 10 files at once.</div>
               </div>
               <div id="uploadTabDrive" style="display:none;">
                 <input type="file" id="uploadFileExam" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png" style="font-size:13px;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;width:100%;box-sizing:border-box;color:var(--text);">
-                <div style="font-size:11px;color:var(--text3);margin-top:4px;">Upload past exams. PDF, Word, PowerPoint, JPEG, or PNG. Max 15MB each. Up to 10 files at once.</div>
+                <div style="font-size:11px;color:var(--text3);margin-top:4px;">Upload past exams. PDF, Word, PowerPoint, JPEG, or PNG. Max 30MB each. Up to 10 files at once.</div>
               </div>
             </div>
 
@@ -6990,9 +6990,9 @@ window.submitContributePage = function(){
 
   if(fileInput.files.length > 0){
     var file = fileInput.files[0];
-    if(file.size > 15 * 1024 * 1024){
+    if(file.size > 30 * 1024 * 1024){
       msg.className = 'admin-msg error';
-      msg.textContent = 'File too large. Max 15MB.';
+      msg.textContent = 'File too large. Max 30MB.';
       return;
     }
     msg.textContent = '📤 Compressing & uploading...';
@@ -7313,9 +7313,9 @@ window.submitContribution = function(){
 
   if(fileInput.files.length > 0){
     var file = fileInput.files[0];
-    if(file.size > 15 * 1024 * 1024){
+    if(file.size > 30 * 1024 * 1024){
       msg.className = 'admin-msg error';
-      msg.textContent = 'File too large. Max 15MB.';
+      msg.textContent = 'File too large. Max 30MB.';
       return;
     }
     msg.textContent = 'Compressing & uploading...';
@@ -7523,9 +7523,9 @@ window.submitUpload = function(){
       msg.textContent = '"' + files[v].name + '" is not allowed. Only PDF, Word, PowerPoint, JPEG, and PNG.';
       return;
     }
-    if(files[v].size > 15 * 1024 * 1024){
+    if(files[v].size > 30 * 1024 * 1024){
       msg.className = 'admin-msg error';
-      msg.textContent = '"' + files[v].name + '" is too large. Max 15MB per file.';
+      msg.textContent = '"' + files[v].name + '" is too large. Max 30MB per file.';
       return;
     }
   }
