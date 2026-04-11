@@ -6621,7 +6621,7 @@ function renderVideoSlots(container, docId, savedVideos){
       '</div>' +
       '<div style="display:none;">' +
       '<div class="cm-field"><label>Video title</label><input type="text" id="cm_title_'+i+'" value="' + (v && v.title ? v.title : '') + '" placeholder="e.g. Introduction to Past Tense"></div>' +
-      '<div class="cm-field"><label>YouTube video ID (the part after v= in the URL)</label><input type="text" id="cm_ytid_'+i+'" value="' + (v && v.ytId ? v.ytId : '') + '" placeholder="e.g. dQw4w9WgXcQ"></div>' +
+      '<div class="cm-field"><label>YouTube video ID or full URL</label><input type="text" id="cm_ytid_'+i+'" value="' + (v && v.ytId ? v.ytId : '') + '" placeholder="dQw4w9WgXcQ or https://youtu.be/dQw4w9WgXcQ"></div>' +
       '<div class="cm-field"><label>Duration</label><input type="text" id="cm_dur_'+i+'" value="' + (v && v.duration ? v.duration : '') + '" placeholder="e.g. 12:30"></div>' +
       '<div class="cm-field"><label>Summary</label><textarea id="cm_sum_'+i+'" rows="2" style="width:100%;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text1);font-size:13px;box-sizing:border-box;resize:vertical;font-family:inherit;" placeholder="Brief summary of the video lesson...">' + (v && v.summary ? v.summary : '') + '</textarea></div>' +
       '<div class="cm-field"><label>Key point 1</label><input type="text" id="cm_k1_'+i+'" value="' + (v && v.keys && v.keys[0] ? v.keys[0] : '') + '" placeholder="First key takeaway"></div>' +
@@ -6672,6 +6672,9 @@ window.cmSaveVideos = function(docId){
   for(var i = 0; i < 5; i++){
     var title = el('cm_title_'+i).value.trim();
     var ytId = el('cm_ytid_'+i).value.trim();
+    // Auto-extract the 11-char video ID from any YouTube URL format
+    var ytMatch = ytId.match(/(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    if(ytMatch) ytId = ytMatch[1];
     var dur = el('cm_dur_'+i).value.trim();
     var sum = el('cm_sum_'+i).value.trim();
     var keys = [];
