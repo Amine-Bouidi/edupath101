@@ -5211,6 +5211,18 @@ function resetBigQuizIntro(){
   if(intro) intro.style.display = 'block';
 }
 
+function getActiveQuiz(){
+  /* Use custom quiz from Firestore for the current video if available */
+  if(S.uni && S.sem && S.mod){
+    var modIdx = S.mod.id.replace('m','');
+    var cacheKey = S.uni.id + '_' + S.sem.id + '_m' + (parseInt(modIdx)-1);
+    if(CONTENT_CACHE[cacheKey] && CONTENT_CACHE[cacheKey][S.vidIdx] && CONTENT_CACHE[cacheKey][S.vidIdx].customQuiz && CONTENT_CACHE[cacheKey][S.vidIdx].customQuiz.length > 0){
+      return CONTENT_CACHE[cacheKey][S.vidIdx].customQuiz;
+    }
+  }
+  return PLACEHOLDER_QUIZ_100;
+}
+
 function openBigQuiz(){
   bigQuizState = { qIdx:0, score:0, answered:false, done:false };
   el('qzOverlay').style.display = 'flex';
@@ -5224,7 +5236,7 @@ function closeBigQuiz(){
 }
 
 function showBigQuestion(){
-  var qs = PLACEHOLDER_QUIZ_100;
+  var qs = getActiveQuiz();
   var q = qs[bigQuizState.qIdx];
   var num = bigQuizState.qIdx + 1;
   var pct = Math.round((num / qs.length) * 100);
@@ -5266,7 +5278,7 @@ function answerBigQuiz(i, correct){
   }
   fb.style.display = 'block';
 
-  var isLast = bigQuizState.qIdx >= PLACEHOLDER_QUIZ_100.length - 1;
+  var isLast = bigQuizState.qIdx >= getActiveQuiz().length - 1;
   if(isLast){
     el('qzBigNextBtn').textContent = 'See my results →';
     bigQuizState.done = true;
@@ -5293,7 +5305,7 @@ function retryBigQuiz(){
 }
 
 function showBigResult(){
-  var total = PLACEHOLDER_QUIZ_100.length;
+  var total = getActiveQuiz().length;
   var score = bigQuizState.score;
   var pct = Math.round((score / total) * 100);
 
@@ -6722,6 +6734,7 @@ function renderVideoSlots(container, docId, savedVideos){
       '<div class="cm-field"><label>Key point 3</label><input type="text" id="cm_k3_'+i+'" value="' + (v && v.keys && v.keys[2] ? v.keys[2] : '') + '" placeholder="Third key takeaway"></div>' +
       '<div class="cm-field"><label>Key point 4</label><input type="text" id="cm_k4_'+i+'" value="' + (v && v.keys && v.keys[3] ? v.keys[3] : '') + '" placeholder="Fourth key takeaway (optional)"></div>' +
       '<div class="cm-field"><label>Key point 5</label><input type="text" id="cm_k5_'+i+'" value="' + (v && v.keys && v.keys[4] ? v.keys[4] : '') + '" placeholder="Fifth key takeaway (optional)"></div>' +
+      '<div class="cm-field"><label>Custom Quiz JSON <span style="color:var(--text3);font-weight:400;font-size:11px;">(paste 100 MCQ as JSON array — leave blank to use placeholder)</span></label><textarea id="cm_quiz_'+i+'" rows="4" style="width:100%;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text1);font-size:11px;box-sizing:border-box;resize:vertical;font-family:monospace;" placeholder=\'[{"q":"Question?","opts":["A","B","C"],"correct":0}, ...]\'>' + (v && v.customQuiz ? esc(JSON.stringify(v.customQuiz)) : '') + '</textarea><div id="cm_quiz_status_'+i+'" style="font-size:11px;color:var(--text3);margin-top:4px;">' + (v && v.customQuiz && v.customQuiz.length ? '✓ ' + v.customQuiz.length + ' questions saved' : 'No custom quiz') + '</div></div>' +
       '</div>' +
     '</div>';
   }
@@ -6775,7 +6788,28 @@ window.cmSaveVideos = function(docId){
       var kv = el('cm_k'+k+'_'+i).value.trim();
       if(kv) keys.push(kv);
     }
-    videos.push({title: title, ytId: ytId, duration: dur, summary: sum, keys: keys, index: i});
+    /* Parse optional custom quiz JSON */
+    var customQuiz = null;
+    var quizRaw = el('cm_quiz_'+i).value.trim();
+    if(quizRaw){
+      try {
+        var parsed = JSON.parse(quizRaw);
+        if(Array.isArray(parsed) && parsed.length > 0 && parsed[0].q && parsed[0].opts && typeof parsed[0].correct === 'number'){
+          customQuiz = parsed;
+          el('cm_quiz_status_'+i).textContent = '✓ ' + parsed.length + ' questions saved';
+          el('cm_quiz_status_'+i).style.color = 'var(--success)';
+        } else {
+          el('cm_quiz_status_'+i).textContent = '⚠ Invalid format — needs [{q, opts, correct}, ...]';
+          el('cm_quiz_status_'+i).style.color = 'var(--accent3)';
+        }
+      } catch(e){
+        el('cm_quiz_status_'+i).textContent = '⚠ Invalid JSON: ' + e.message;
+        el('cm_quiz_status_'+i).style.color = 'var(--accent3)';
+      }
+    }
+    var vidObj = {title: title, ytId: ytId, duration: dur, summary: sum, keys: keys, index: i};
+    if(customQuiz) vidObj.customQuiz = customQuiz;
+    videos.push(vidObj);
   }
   /* Collect resources */
   var lessons = [];
