@@ -3149,10 +3149,77 @@ function getVideoTitle(uniId, semId, modId, vidIdx){
 function getVideoDuration(uniId, semId, modId, vidIdx){
   var modIdx = modId.replace('m','');
   var cacheKey = uniId + '_' + semId + '_m' + (parseInt(modIdx)-1);
+  // Runtime override from YouTube IFrame API
+  var rtKey = uniId + '_' + semId + '_' + modId + '_' + vidIdx;
+  if(REAL_DURATIONS[rtKey]) return REAL_DURATIONS[rtKey];
   if(CONTENT_CACHE[cacheKey] && CONTENT_CACHE[cacheKey][vidIdx] && CONTENT_CACHE[cacheKey][vidIdx].duration){
     return CONTENT_CACHE[cacheKey][vidIdx].duration;
   }
   return '';
+}
+
+/* ── YouTube IFrame API: fetch real durations ── */
+var REAL_DURATIONS = {};
+var YT_PLAYER = null;
+var YT_API_READY = false;
+var YT_API_LOADING = false;
+var YT_PENDING_CTX = null;
+
+function loadYTApi(){
+  if(YT_API_READY || YT_API_LOADING) return;
+  YT_API_LOADING = true;
+  var s = document.createElement('script');
+  s.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(s);
+}
+
+window.onYouTubeIframeAPIReady = function(){
+  YT_API_READY = true;
+  if(YT_PENDING_CTX) attachYTPlayerForDuration(YT_PENDING_CTX.u, YT_PENDING_CTX.s, YT_PENDING_CTX.m, YT_PENDING_CTX.v);
+};
+
+function formatDur(secs){
+  secs = Math.round(secs);
+  var h = Math.floor(secs / 3600);
+  var m = Math.floor((secs % 3600) / 60);
+  var s = secs % 60;
+  if(h > 0) return h + ':' + (m<10?'0':'') + m + ':' + (s<10?'0':'') + s;
+  return m + ':' + (s<10?'0':'') + s;
+}
+
+function attachYTPlayerForDuration(uniId, semId, modId, vidIdx){
+  if(!YT_API_READY){
+    YT_PENDING_CTX = { u:uniId, s:semId, m:modId, v:vidIdx };
+    loadYTApi();
+    return;
+  }
+  YT_PENDING_CTX = null;
+  try {
+    if(YT_PLAYER && typeof YT_PLAYER.destroy === 'function'){ YT_PLAYER.destroy(); }
+  } catch(e){}
+  YT_PLAYER = new YT.Player('ytPlayer', {
+    events: {
+      'onReady': function(ev){
+        try {
+          var d = ev.target.getDuration();
+          if(d > 0){
+            var key = uniId + '_' + semId + '_' + modId + '_' + vidIdx;
+            REAL_DURATIONS[key] = formatDur(d);
+            // Update player's duration display
+            if(S.uni && S.uni.id === uniId && S.sem && S.sem.id === semId && S.mod && S.mod.id === modId && S.vidIdx === vidIdx){
+              if(el('vovDur')) el('vovDur').textContent = REAL_DURATIONS[key];
+            }
+            // Update the corresponding entry in the video list
+            var listEntries = document.querySelectorAll('#vidList .vid-item');
+            if(listEntries[vidIdx]){
+              var dEl = listEntries[vidIdx].querySelector('.vi-item-d');
+              if(dEl) dEl.textContent = REAL_DURATIONS[key];
+            }
+          }
+        } catch(e){}
+      }
+    }
+  });
 }
 
 function getVideoField(uniId, semId, modId, vidIdx, field){
@@ -5041,10 +5108,13 @@ el('btnPlay').onclick=function(){
   var vid=VIDEOS[S.vidIdx];
   var ytId = getYouTubeId(S.uni.id, S.sem.id, S.mod.id, S.vidIdx);
   var iframe = el('ytPlayer');
-  iframe.src = 'https://www.youtube.com/embed/' + ytId + '?autoplay=1&rel=0&modestbranding=1&cc_load_policy=0&origin=' + encodeURIComponent(window.location.origin || 'https://amine-bouidi.github.io');
+  iframe.src = 'https://www.youtube.com/embed/' + ytId + '?autoplay=1&rel=0&modestbranding=1&cc_load_policy=0&enablejsapi=1&origin=' + encodeURIComponent(window.location.origin || 'https://amine-bouidi.github.io');
   iframe.style.display = 'block';
   el('vidOverlay').style.display='none';
   el('vidPlaying').style.display='none';
+
+  /* Fetch real duration via YouTube IFrame API */
+  attachYTPlayerForDuration(S.uni.id, S.sem.id, S.mod.id, S.vidIdx);
 
   /* Enable mark as complete after 5 seconds of watching */
   if(fakeT)clearInterval(fakeT);
