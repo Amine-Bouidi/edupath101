@@ -3204,22 +3204,45 @@ function attachYTPlayerForDuration(uniId, semId, modId, vidIdx){
           var d = ev.target.getDuration();
           if(d > 0){
             var key = uniId + '_' + semId + '_' + modId + '_' + vidIdx;
-            REAL_DURATIONS[key] = formatDur(d);
+            var formatted = formatDur(d);
+            REAL_DURATIONS[key] = formatted;
             // Update player's duration display
             if(S.uni && S.uni.id === uniId && S.sem && S.sem.id === semId && S.mod && S.mod.id === modId && S.vidIdx === vidIdx){
-              if(el('vovDur')) el('vovDur').textContent = REAL_DURATIONS[key];
+              if(el('vovDur')) el('vovDur').textContent = formatted;
             }
             // Update the corresponding entry in the video list
             var listEntries = document.querySelectorAll('#vidList .vid-item');
             if(listEntries[vidIdx]){
               var dEl = listEntries[vidIdx].querySelector('.vi-item-d');
-              if(dEl) dEl.textContent = REAL_DURATIONS[key];
+              if(dEl) dEl.textContent = formatted;
             }
+            // Persist back to Firestore if not already stored there
+            persistDurationIfMissing(uniId, semId, modId, vidIdx, formatted);
           }
         } catch(e){}
       }
     }
   });
+}
+
+/* Write the discovered duration back to Firestore so it persists across sessions */
+function persistDurationIfMissing(uniId, semId, modId, vidIdx, duration){
+  var modIdx = modId.replace('m','');
+  var docId = uniId + '_' + semId + '_m' + (parseInt(modIdx)-1);
+  // Skip if cache already has this duration
+  if(CONTENT_CACHE[docId] && CONTENT_CACHE[docId][vidIdx] && CONTENT_CACHE[docId][vidIdx].duration === duration) return;
+  db.collection('content').doc(docId).get().then(function(doc){
+    if(!doc.exists) return;
+    var data = doc.data();
+    var videos = data.videos || [];
+    if(!videos[vidIdx]) return;
+    if(videos[vidIdx].duration === duration) return;
+    videos[vidIdx].duration = duration;
+    db.collection('content').doc(docId).set({videos: videos}, {merge: true}).then(function(){
+      // Refresh local cache so future reads use the persisted value
+      CONTENT_CACHE[docId] = videos;
+    }).catch(function(){});
+  }).catch(function(){});
 }
 
 function getVideoField(uniId, semId, modId, vidIdx, field){
@@ -6692,7 +6715,7 @@ function renderVideoSlots(container, docId, savedVideos){
       '<div style="display:none;">' +
       '<div class="cm-field"><label>Video title</label><input type="text" id="cm_title_'+i+'" value="' + (v && v.title ? v.title : '') + '" placeholder="e.g. Introduction to Past Tense"></div>' +
       '<div class="cm-field"><label>YouTube video ID or full URL</label><input type="text" id="cm_ytid_'+i+'" value="' + (v && v.ytId ? v.ytId : '') + '" placeholder="dQw4w9WgXcQ or https://youtu.be/dQw4w9WgXcQ"></div>' +
-      '<div class="cm-field"><label>Duration</label><input type="text" id="cm_dur_'+i+'" value="' + (v && v.duration ? v.duration : '') + '" placeholder="e.g. 12:30"></div>' +
+      '<div class="cm-field"><label>Duration <span style="color:var(--text3);font-weight:400;font-size:11px;">(auto-fetched from YouTube — leave blank)</span></label><input type="text" id="cm_dur_'+i+'" value="' + (v && v.duration ? v.duration : '') + '" placeholder="auto"></div>' +
       '<div class="cm-field"><label>Summary</label><textarea id="cm_sum_'+i+'" rows="2" style="width:100%;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text1);font-size:13px;box-sizing:border-box;resize:vertical;font-family:inherit;" placeholder="Brief summary of the video lesson...">' + (v && v.summary ? v.summary : '') + '</textarea></div>' +
       '<div class="cm-field"><label>Key point 1</label><input type="text" id="cm_k1_'+i+'" value="' + (v && v.keys && v.keys[0] ? v.keys[0] : '') + '" placeholder="First key takeaway"></div>' +
       '<div class="cm-field"><label>Key point 2</label><input type="text" id="cm_k2_'+i+'" value="' + (v && v.keys && v.keys[1] ? v.keys[1] : '') + '" placeholder="Second key takeaway"></div>' +
@@ -6780,15 +6803,102 @@ window.cmSaveVideos = function(docId){
     var msg = el('cmSaveMsg');
     msg.className = 'admin-msg success';
     msg.textContent = '✅ Videos saved!';
-    cmLoadVideos();
-    cmUpdateCoverage();
-    setTimeout(function(){ msg.className = 'admin-msg'; }, 3000);
+    // Auto-fetch real durations for any video with a ytId but no duration
+    var needFetch = false;
+    for(var vi = 0; vi < videos.length; vi++){
+      if(videos[vi].ytId && !videos[vi].duration){ needFetch = true; break; }
+    }
+    if(needFetch){
+      msg.textContent = '✅ Videos saved! Fetching durations from YouTube...';
+      fetchDurationsForVideos(docId, videos).then(function(updated){
+        if(updated > 0){
+          msg.textContent = '✅ Saved + auto-filled ' + updated + ' duration' + (updated>1?'s':'') + ' from YouTube';
+        } else {
+          msg.textContent = '✅ Videos saved!';
+        }
+        cmLoadVideos();
+        cmUpdateCoverage();
+        setTimeout(function(){ msg.className = 'admin-msg'; }, 4000);
+      });
+    } else {
+      cmLoadVideos();
+      cmUpdateCoverage();
+      setTimeout(function(){ msg.className = 'admin-msg'; }, 3000);
+    }
   }).catch(function(e){
     var msg = el('cmSaveMsg');
     msg.className = 'admin-msg error';
     msg.textContent = '❌ Error: ' + e.message;
   });
 };
+
+/* Fetch real duration for each video missing it, then update Firestore */
+function fetchDurationsForVideos(docId, videos){
+  return new Promise(function(resolve){
+    loadYTApi();
+    var pending = [];
+    for(var i = 0; i < videos.length; i++){
+      if(videos[i].ytId && !videos[i].duration) pending.push(i);
+    }
+    if(pending.length === 0){ resolve(0); return; }
+
+    function whenReady(cb){
+      if(YT_API_READY && window.YT && YT.Player) cb();
+      else setTimeout(function(){ whenReady(cb); }, 200);
+    }
+
+    whenReady(function(){
+      var done = 0;
+      var updated = 0;
+      pending.forEach(function(idx){
+        // Create a hidden iframe for this video
+        var iframe = document.createElement('iframe');
+        iframe.id = 'cm_dur_iframe_' + idx + '_' + Date.now();
+        iframe.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;opacity:0;';
+        iframe.src = 'https://www.youtube.com/embed/' + videos[idx].ytId + '?enablejsapi=1&origin=' + encodeURIComponent(window.location.origin);
+        iframe.allow = 'autoplay';
+        document.body.appendChild(iframe);
+
+        var player;
+        var settled = false;
+        var timeoutId = setTimeout(function(){ finish(); }, 8000);
+
+        function finish(){
+          if(settled) return;
+          settled = true;
+          clearTimeout(timeoutId);
+          try { if(player && player.destroy) player.destroy(); } catch(e){}
+          if(iframe.parentNode) iframe.parentNode.removeChild(iframe);
+          done++;
+          if(done === pending.length){
+            // Write all updated durations back to Firestore
+            db.collection('content').doc(docId).set({videos: videos, updatedAt: new Date().toISOString()}, {merge: true}).then(function(){
+              resolve(updated);
+            }).catch(function(){ resolve(updated); });
+          }
+        }
+
+        try {
+          player = new YT.Player(iframe.id, {
+            events: {
+              'onReady': function(ev){
+                try {
+                  var d = ev.target.getDuration();
+                  if(d > 0){
+                    videos[idx].duration = formatDur(d);
+                    updated++;
+                  }
+                } catch(e){}
+                finish();
+              },
+              'onError': function(){ finish(); }
+            }
+          });
+        } catch(e){ finish(); }
+      });
+    });
+  });
+}
 
 window.cmClearVideos = function(docId){
   if(!confirm('Clear all videos for this module?')) return;
