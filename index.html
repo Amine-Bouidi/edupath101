@@ -387,6 +387,55 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .qz-retry-btn{background:var(--bg3);border:1px solid var(--border2);color:var(--accent2);padding:8px 20px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif;transition:all .2s;}
 .qz-retry-btn:hover{background:var(--bg4);}
 
+/* ── MODULE TEST INTRO + OVERLAY ── */
+.qz-intro{text-align:center;padding:6px 0 2px;}
+.qz-intro-sub{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:14px;}
+.qz-start-btn{width:100%;padding:14px 20px;background:linear-gradient(135deg,var(--warning),var(--accent3));color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;font-family:'Sora',sans-serif;transition:all .2s;box-shadow:0 4px 16px rgba(249,168,37,.25);}
+.qz-start-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(249,168,37,.35);}
+.qz-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,10,30,.92);backdrop-filter:blur(8px);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.qz-overlay-inner{background:var(--bg2);border:1px solid var(--border2);border-radius:18px;max-width:640px;width:100%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;}
+.qz-overlay-hdr{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.qz-overlay-title{font-family:'Sora',sans-serif;font-size:15px;font-weight:700;color:var(--warning);flex-shrink:0;}
+.qz-overlay-progress{flex:1;display:flex;align-items:center;gap:10px;justify-content:flex-end;}
+.qz-overlay-progress span{font-size:12px;font-weight:700;color:var(--text3);white-space:nowrap;}
+.qz-overlay-bar{width:120px;height:5px;background:var(--bg5);border-radius:3px;overflow:hidden;}
+.qz-overlay-bar-fill{height:100%;background:linear-gradient(90deg,var(--warning),var(--accent3));border-radius:3px;transition:width .3s;width:0%;}
+.qz-close{background:var(--bg3);border:1px solid var(--border);color:var(--text2);width:30px;height:30px;border-radius:8px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+.qz-close:hover{background:var(--bg4);color:var(--text);}
+.qz-overlay-body{padding:24px 24px 20px;overflow-y:auto;flex:1;}
+.qz-big-q{font-size:16px;font-weight:600;line-height:1.6;margin-bottom:18px;color:var(--text);}
+.qz-big-opts{display:flex;flex-direction:column;gap:10px;}
+.qz-big-opt{background:var(--bg3);border:1px solid var(--border);padding:14px 18px;border-radius:11px;cursor:pointer;font-size:14px;transition:all .18s;color:var(--text);text-align:left;font-family:'DM Sans',sans-serif;}
+.qz-big-opt:hover{border-color:var(--border2);background:var(--bg4);}
+.qz-big-opt.correct{border-color:var(--success);background:rgba(67,233,123,.12);color:var(--success);}
+.qz-big-opt.wrong{border-color:var(--accent3);background:rgba(255,101,132,.12);color:var(--accent3);}
+.qz-big-opt:disabled{cursor:default;}
+.qz-big-fb{margin-top:14px;font-size:13px;font-weight:600;display:none;padding:11px 15px;border-radius:9px;}
+.qz-big-fb.ok{background:rgba(67,233,123,.1);color:var(--success);}
+.qz-big-fb.bad{background:rgba(255,101,132,.1);color:var(--accent3);}
+.qz-big-next{margin-top:16px;width:100%;padding:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'Sora',sans-serif;transition:all .2s;}
+.qz-big-next:hover{opacity:.9;}
+.qz-overlay-result{padding:32px 24px;text-align:center;flex:1;overflow-y:auto;}
+.qz-big-score{width:110px;height:110px;border-radius:50%;margin:0 auto 18px;display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-size:26px;font-weight:800;border:4px solid;}
+.qz-big-rtitle{font-family:'Sora',sans-serif;font-size:20px;font-weight:700;margin-bottom:8px;}
+.qz-big-rsub{font-size:13px;color:var(--text2);margin-bottom:22px;line-height:1.55;max-width:420px;margin-left:auto;margin-right:auto;}
+.qz-big-result-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.qz-big-retry,.qz-big-finish{padding:11px 24px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Sora',sans-serif;transition:all .2s;}
+.qz-big-retry{background:var(--bg3);border:1px solid var(--border2);color:var(--accent2);}
+.qz-big-retry:hover{background:var(--bg4);}
+.qz-big-finish{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;}
+.qz-big-finish:hover{opacity:.9;}
+@media(max-width:600px){
+  .qz-overlay{padding:10px;}
+  .qz-overlay-inner{max-height:95vh;}
+  .qz-overlay-hdr{padding:12px 14px;gap:8px;}
+  .qz-overlay-title{font-size:13px;}
+  .qz-overlay-bar{width:80px;}
+  .qz-overlay-body{padding:18px 16px;}
+  .qz-big-q{font-size:14px;}
+  .qz-big-opt{padding:12px 14px;font-size:13px;}
+}
+
 /* ── RESOURCES ── */
 .res-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
 .res-hdr{display:flex;align-items:center;gap:9px;padding:14px 16px 0;}
@@ -2765,23 +2814,40 @@ function openLoginFromLanding(){
           <div class="quiz-card">
             <div class="qz-hdr">
               <div class="qz-hdr-icon">📝</div>
-              <div class="qz-hdr-title">Quick Quiz</div>
-              <div class="qz-progress-wrap" id="qzProgressWrap">
-                <span class="qz-qnum" id="qzQNum">1 / 10</span>
-                <div class="qz-progress-bar"><div class="qz-progress-fill" id="qzProgressFill"></div></div>
+              <div class="qz-hdr-title">Module Test</div>
+            </div>
+            <div class="qz-intro">
+              <p class="qz-intro-sub">Challenge yourself with a 100-question test covering this module.</p>
+              <button class="qz-start-btn" id="qzStartBtn">🎯 I am ready for test</button>
+            </div>
+          </div>
+
+          <!-- BIG QUIZ MINI-PAGE OVERLAY -->
+          <div class="qz-overlay" id="qzOverlay" style="display:none;">
+            <div class="qz-overlay-inner">
+              <div class="qz-overlay-hdr">
+                <div class="qz-overlay-title">📝 Module Test</div>
+                <div class="qz-overlay-progress">
+                  <span id="qzBigNum">1 / 100</span>
+                  <div class="qz-overlay-bar"><div class="qz-overlay-bar-fill" id="qzBigFill"></div></div>
+                </div>
+                <button class="qz-close" id="qzCloseBtn" title="Close test">✕</button>
               </div>
-            </div>
-            <div id="qzBody">
-              <div class="qz-q" id="qzQ"></div>
-              <div class="qz-opts" id="qzOpts"></div>
-              <div class="qz-fb" id="qzFb"></div>
-              <button class="qz-next-btn" id="qzNextBtn" style="display:none;" onclick="quizNext()">Next question →</button>
-            </div>
-            <div id="qzResult" style="display:none;" class="qz-result">
-              <div class="qz-score-circle" id="qzScoreCircle"></div>
-              <div class="qz-result-title" id="qzResultTitle"></div>
-              <div class="qz-result-sub" id="qzResultSub"></div>
-              <button class="qz-retry-btn" id="qzRetryBtn" onclick="quizRetry()">↺ Retry quiz</button>
+              <div class="qz-overlay-body" id="qzBigBody">
+                <div class="qz-big-q" id="qzBigQ"></div>
+                <div class="qz-big-opts" id="qzBigOpts"></div>
+                <div class="qz-big-fb" id="qzBigFb"></div>
+                <button class="qz-big-next" id="qzBigNextBtn" style="display:none;">Next question →</button>
+              </div>
+              <div class="qz-overlay-result" id="qzBigResult" style="display:none;">
+                <div class="qz-big-score" id="qzBigScoreCircle"></div>
+                <div class="qz-big-rtitle" id="qzBigResultTitle"></div>
+                <div class="qz-big-rsub" id="qzBigResultSub"></div>
+                <div class="qz-big-result-actions">
+                  <button class="qz-big-retry" id="qzBigRetryBtn">↺ Retry test</button>
+                  <button class="qz-big-finish" id="qzBigFinishBtn">Close</button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -4957,7 +5023,7 @@ function renderPlayer(){
     kl.appendChild(item);
   });
 
-  renderQuiz();
+  resetBigQuizIntro();
   renderVidList();
   renderCommunity();
   renderResources();
@@ -5009,109 +5075,141 @@ el('btnNxt').onclick=function(){
 };
 
 /* ── QUIZ STATE ── */
-var quizState = { qIdx:0, score:0, answered:false, done:false };
-
-function renderQuiz(){
-  var qs = VIDEOS[S.vidIdx].quizzes;
-  var p  = getP(S.uni.id,S.sem.id,S.mod.id);
-  var savedScore = p.quizScores ? p.quizScores[S.vidIdx] : undefined;
-
-  /* reset quiz state for this video */
-  quizState = { qIdx:0, score:0, answered:false, done:false };
-
-  if(savedScore !== undefined){
-    /* already completed — show result */
-    showQuizResult(savedScore, qs.length, false);
-    return;
+/* ── MODULE TEST (100 MCQ, 3 options each) ── */
+var PLACEHOLDER_QUIZ_100 = (function(){
+  var pool = [
+    {q:'What is the most effective way to learn new material?',opts:['Re-reading only','Active recall and practice','Highlighting text'],correct:1},
+    {q:'Which strategy helps long-term retention the most?',opts:['Cramming','Spaced repetition','Skipping review'],correct:1},
+    {q:'What should you do first when facing a new topic?',opts:['Memorise details','Understand the big picture','Skip to exercises'],correct:1},
+    {q:'Good note-taking involves…',opts:['Copying everything word-for-word','Summarising ideas in your own words','Only writing the date'],correct:1},
+    {q:'What is the purpose of a learning objective?',opts:['To confuse students','To guide your study focus','To fill pages'],correct:1},
+    {q:'Active engagement in class mainly improves…',opts:['Short-term memory only','Long-term retention','Reading speed'],correct:1},
+    {q:'Which is a sign of true understanding?',opts:['Finishing the chapter','Explaining it in your own words','Highlighting the page'],correct:1},
+    {q:'When should you identify knowledge gaps?',opts:['After the exam','Early, before moving forward','Never'],correct:1},
+    {q:'Worked examples help you…',opts:['Skip theory','Bridge abstract ideas and concrete practice','Waste time'],correct:1},
+    {q:'What does "blending theory and practice" mean?',opts:['Studying theory alone','Connecting concepts to real examples','Only doing exercises'],correct:1},
+    {q:'How should you handle mistakes while studying?',opts:['Ignore them','Review them immediately','Hide them'],correct:1},
+    {q:'What is a good strategy for complex problems?',opts:['Guess quickly','Break them into sub-problems','Skip them'],correct:1},
+    {q:'Why are definitions important?',opts:['They look nice','Small wording differences change meaning','They are not important'],correct:1},
+    {q:'Studying common misconceptions helps you…',opts:['Waste time','Avoid common traps','Pass faster'],correct:1},
+    {q:'What accelerates retention most?',opts:['Isolated memorisation','Connecting new ideas to existing knowledge','Passive reading'],correct:1},
+    {q:'Pattern recognition in examples helps with…',opts:['Copying answers','Solving unseen problems','Memorising dates'],correct:1},
+    {q:'Edge cases reveal…',opts:['Nothing useful','The boundaries of a concept','Tutor errors'],correct:1},
+    {q:'Which is the best test of understanding?',opts:['Finishing the video','Explaining it to someone else','Highlighting text'],correct:1},
+    {q:'What should you do before a new lesson?',opts:['Nothing','Review previous notes','Close your books'],correct:1},
+    {q:'Checking units and constraints helps you…',opts:['Avoid common errors','Finish faster','Skip questions'],correct:0}
+  ];
+  var out = [];
+  for(var i = 0; i < 100; i++){
+    var base = pool[i % pool.length];
+    out.push({q: base.q, opts: base.opts.slice(), correct: base.correct});
   }
-  showQuizQuestion();
+  return out;
+})();
+
+var bigQuizState = { qIdx:0, score:0, answered:false, done:false };
+
+function resetBigQuizIntro(){
+  bigQuizState = { qIdx:0, score:0, answered:false, done:false };
+  var ov = el('qzOverlay'); if(ov) ov.style.display = 'none';
+  var intro = document.querySelector('.qz-intro');
+  if(intro) intro.style.display = 'block';
 }
 
-function showQuizQuestion(){
-  var qs  = VIDEOS[S.vidIdx].quizzes;
-  var q   = qs[quizState.qIdx];
-  var num = quizState.qIdx + 1;
+function openBigQuiz(){
+  bigQuizState = { qIdx:0, score:0, answered:false, done:false };
+  el('qzOverlay').style.display = 'flex';
+  el('qzBigBody').style.display = 'block';
+  el('qzBigResult').style.display = 'none';
+  showBigQuestion();
+}
+
+function closeBigQuiz(){
+  el('qzOverlay').style.display = 'none';
+}
+
+function showBigQuestion(){
+  var qs = PLACEHOLDER_QUIZ_100;
+  var q = qs[bigQuizState.qIdx];
+  var num = bigQuizState.qIdx + 1;
   var pct = Math.round((num / qs.length) * 100);
 
-  el('qzBody').style.display='block';
-  el('qzResult').style.display='none';
-  el('qzQNum').textContent = num + ' / ' + qs.length;
-  el('qzProgressFill').style.width = pct + '%';
-  el('qzQ').textContent = q.q;
+  el('qzBigNum').textContent = num + ' / ' + qs.length;
+  el('qzBigFill').style.width = pct + '%';
+  el('qzBigQ').textContent = q.q;
 
-  var opts = el('qzOpts'); opts.innerHTML='';
-  var fb   = el('qzFb');   fb.style.display='none'; fb.className='qz-fb';
-  el('qzNextBtn').style.display='none';
-  quizState.answered = false;
+  var opts = el('qzBigOpts'); opts.innerHTML = '';
+  var fb = el('qzBigFb'); fb.style.display = 'none'; fb.className = 'qz-big-fb';
+  el('qzBigNextBtn').style.display = 'none';
+  bigQuizState.answered = false;
 
-  q.opts.forEach(function(opt,i){
+  q.opts.forEach(function(opt, i){
     var b = document.createElement('button');
-    b.className='qz-opt'; b.textContent=opt;
-    b.onclick = (function(idx){ return function(){ answerQuiz(idx, q.correct); }; })(i);
+    b.className = 'qz-big-opt';
+    b.textContent = opt;
+    b.onclick = (function(idx){ return function(){ answerBigQuiz(idx, q.correct); }; })(i);
     opts.appendChild(b);
   });
 }
 
-function answerQuiz(i, correct){
-  if(quizState.answered) return;
-  quizState.answered = true;
+function answerBigQuiz(i, correct){
+  if(bigQuizState.answered) return;
+  bigQuizState.answered = true;
 
-  var btns = el('qzOpts').querySelectorAll('.qz-opt');
-  btns.forEach(function(b){ b.disabled=true; });
+  var btns = el('qzBigOpts').querySelectorAll('.qz-big-opt');
+  btns.forEach(function(b){ b.disabled = true; });
 
-  var fb = el('qzFb');
+  var fb = el('qzBigFb');
   if(i === correct){
     btns[i].classList.add('correct');
-    fb.className='qz-fb ok'; fb.textContent='✓ Correct!';
-    quizState.score++;
+    fb.className = 'qz-big-fb ok'; fb.textContent = '✓ Correct!';
+    bigQuizState.score++;
   } else {
     btns[i].classList.add('wrong');
     btns[correct].classList.add('correct');
-    fb.className='qz-fb bad'; fb.textContent='✗ Not quite — correct answer highlighted.';
+    fb.className = 'qz-big-fb bad'; fb.textContent = '✗ Not quite — correct answer highlighted.';
   }
-  fb.style.display='block';
+  fb.style.display = 'block';
 
-  var qs = VIDEOS[S.vidIdx].quizzes;
-  var isLast = quizState.qIdx >= qs.length - 1;
-
+  var isLast = bigQuizState.qIdx >= PLACEHOLDER_QUIZ_100.length - 1;
   if(isLast){
-    el('qzNextBtn').textContent = 'See my results →';
-    el('qzNextBtn').style.display='block';
-    quizState.done = true;
+    el('qzBigNextBtn').textContent = 'See my results →';
+    bigQuizState.done = true;
   } else {
-    el('qzNextBtn').textContent = 'Next question →';
-    el('qzNextBtn').style.display='block';
+    el('qzBigNextBtn').textContent = 'Next question →';
+  }
+  el('qzBigNextBtn').style.display = 'block';
+}
+
+function nextBigQuiz(){
+  if(bigQuizState.done){
+    showBigResult();
+  } else {
+    bigQuizState.qIdx++;
+    showBigQuestion();
   }
 }
-window.quizNext = function(){
-  if(quizState.done){
-    var qs  = VIDEOS[S.vidIdx].quizzes;
-    var p   = getP(S.uni.id,S.sem.id,S.mod.id);
-    if(!p.quizScores) p.quizScores = {};
-    p.quizScores[S.vidIdx] = quizState.score;
-    showQuizResult(quizState.score, qs.length, true);
-  } else {
-    quizState.qIdx++;
-    showQuizQuestion();
-  }
-};
-window.quizRetry = function(){
-  var p = getP(S.uni.id,S.sem.id,S.mod.id);
-  if(p.quizScores) delete p.quizScores[S.vidIdx];
-  quizState = { qIdx:0, score:0, answered:false, done:false };
-  showQuizQuestion();
-};
 
-function showQuizResult(score, total, fresh){
-  el('qzBody').style.display='none';
-  el('qzResult').style.display='block';
-  el('qzProgressFill').style.width='100%';
-  el('qzQNum').textContent = total + ' / ' + total;
+function retryBigQuiz(){
+  bigQuizState = { qIdx:0, score:0, answered:false, done:false };
+  el('qzBigBody').style.display = 'block';
+  el('qzBigResult').style.display = 'none';
+  showBigQuestion();
+}
 
+function showBigResult(){
+  var total = PLACEHOLDER_QUIZ_100.length;
+  var score = bigQuizState.score;
   var pct = Math.round((score / total) * 100);
-  var circle = el('qzScoreCircle');
-  var title  = el('qzResultTitle');
-  var sub    = el('qzResultSub');
+
+  el('qzBigBody').style.display = 'none';
+  el('qzBigResult').style.display = 'block';
+  el('qzBigFill').style.width = '100%';
+  el('qzBigNum').textContent = total + ' / ' + total;
+
+  var circle = el('qzBigScoreCircle');
+  var title = el('qzBigResultTitle');
+  var sub = el('qzBigResultSub');
 
   circle.textContent = score + '/' + total;
 
@@ -5119,21 +5217,30 @@ function showQuizResult(score, total, fresh){
     circle.style.borderColor = 'var(--success)';
     circle.style.color = 'var(--success)';
     circle.style.background = 'rgba(67,233,123,.08)';
-    title.textContent = pct===100 ? '🏆 Perfect score!' : '🎉 Excellent work!';
-    sub.textContent = 'You scored '+score+' out of '+total+'. Strong understanding — keep it up!';
+    title.textContent = pct === 100 ? '🏆 Perfect score!' : '🎉 Excellent work!';
+    sub.textContent = 'You scored ' + score + ' out of ' + total + '. Strong understanding — keep it up!';
   } else if(pct >= 50){
     circle.style.borderColor = 'var(--warning)';
     circle.style.color = 'var(--warning)';
     circle.style.background = 'rgba(249,168,37,.08)';
     title.textContent = '👍 Good effort!';
-    sub.textContent = 'You scored '+score+' out of '+total+'. Review the key ideas and retry to improve.';
+    sub.textContent = 'You scored ' + score + ' out of ' + total + '. Review the key ideas and retry to improve.';
   } else {
     circle.style.borderColor = 'var(--accent3)';
     circle.style.color = 'var(--accent3)';
     circle.style.background = 'rgba(255,101,132,.08)';
     title.textContent = '📚 Keep studying!';
-    sub.textContent = 'You scored '+score+' out of '+total+'. Re-watch the video and retry the quiz.';
+    sub.textContent = 'You scored ' + score + ' out of ' + total + '. Re-watch the videos and retry the test.';
   }
+}
+
+/* Wire up handlers once DOM is ready */
+if(el('qzStartBtn')){
+  el('qzStartBtn').onclick = openBigQuiz;
+  el('qzCloseBtn').onclick = closeBigQuiz;
+  el('qzBigNextBtn').onclick = nextBigQuiz;
+  el('qzBigRetryBtn').onclick = retryBigQuiz;
+  el('qzBigFinishBtn').onclick = closeBigQuiz;
 }
 
 function renderVidList(){
