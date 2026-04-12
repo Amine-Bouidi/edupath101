@@ -4850,10 +4850,11 @@ function proceedWithModules(mods, sem, idx, grid){
 /* Check if current user has learning page access (not just upload dashboard) */
 function hasLearningAccess(){
   if(isAdmin()) return true;
-  if(!S.uni || !S.sem || !S.user) return false;
-  // Fes Sais (usmba) + Semester 4 (sem4) students get learning page access
-  if(S.uni.id === 'usmba' && S.sem.id === 'sem4') return true;
-  // Paid users always get access
+  if(!S.user) return false;
+  // Check from user profile OR current navigation state
+  var userUni = S.user.university || (S.uni && S.uni.id) || '';
+  var userSem = S.user.semester || (S.sem && S.sem.id) || '';
+  if(userUni === 'usmba' && userSem === 'sem4') return true;
   if(isUserPaid()) return true;
   return false;
 }
