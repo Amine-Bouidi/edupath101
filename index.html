@@ -1903,6 +1903,7 @@ function openLoginFromLanding(){
     <div class="sb-nav">
       <div class="sb-sec">Navigation</div>
       <div class="sb-item active" id="nav-dashboard"><span class="sb-icon">🏠</span><span class="sb-item-label"> Dashboard</span></div>
+      <div class="sb-item" id="nav-learning" style="display:none;"><span class="sb-icon">📚</span><span class="sb-item-label"> Start Learning</span></div>
       <div class="sb-item" id="nav-semesters" style="display:none;"><span class="sb-icon">📅</span><span class="sb-item-label"> Semesters</span></div>
       <div class="sb-item" id="nav-modules"   style="display:none;"><span class="sb-icon">📚</span><span class="sb-item-label"> Modules</span></div>
       <div class="sb-item" id="nav-player"    style="display:none;"><span class="sb-icon">▶</span><span class="sb-item-label"> Now watching</span></div>
@@ -5693,6 +5694,19 @@ el('nav-pricing').onclick=function(){closeMobileMenu();openPricing();};
 el('btnSubmitContact').onclick=function(){el('cFormCard').style.display='none';el('cSuccess').style.display='block';};
 el('btnBackDash').onclick=function(){showView('dashboard');renderPhase1Dashboard();};
 el('nav-dashboard').onclick=function(){closeMobileMenu();showView('dashboard');if(isAdmin()){renderDashboard();}else{renderPhase1Dashboard();}};
+el('nav-learning').onclick=function(){
+  closeMobileMenu();
+  var userUni = S.user && S.user.university ? S.user.university : '';
+  var userSem = S.user && S.user.semester ? S.user.semester : '';
+  var uni = UNIVERSITIES.find(function(u){ return u.id === userUni; });
+  if(uni){
+    openSemesters(uni);
+    setTimeout(function(){
+      var semIdx = SEMESTERS.findIndex(function(s){ return s.id === userSem; });
+      if(semIdx >= 0) openModules(SEMESTERS[semIdx], semIdx);
+    }, 300);
+  }
+};
 
 /* ═══════════════════════════════════════════
    COMMUNITY — classmates + public discussion
@@ -8356,6 +8370,7 @@ window.renderPhase1Dashboard = function(){
     var userSem = S.user.semester || '';
     var canLearn = (userUni === 'usmba' && userSem === 'sem4');
     slCard.style.display = canLearn ? 'block' : 'none';
+    if(el('nav-learning')) el('nav-learning').style.display = canLearn ? 'flex' : 'none';
     if(canLearn){
       slCard.onclick = function(){
         var uni = UNIVERSITIES.find(function(u){ return u.id === userUni; });
