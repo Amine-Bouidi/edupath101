@@ -4419,6 +4419,15 @@ function enterApp(name, email){
     }, {merge: true}).catch(function(){});
   }
   startTrialTimer();
+  /* Load cached university/semester from localStorage immediately (before Firestore) */
+  if(email){
+    try {
+      var cachedUni = localStorage.getItem('user_uni_'+email);
+      var cachedSem = localStorage.getItem('user_sem_'+email);
+      if(cachedUni) S.user.university = cachedUni;
+      if(cachedSem) S.user.semester = cachedSem;
+    } catch(e){}
+  }
   showAdminIfNeeded();
   /* Restore video progress from localStorage + Firestore */
   loadProgressLocal();
@@ -6482,6 +6491,11 @@ function checkProfileSetup(email, name){
       // Load university/semester into session if available
       if(d.university) S.user.university = d.university;
       if(d.semester) S.user.semester = d.semester;
+      // Cache in localStorage so next login is instant
+      try {
+        if(d.university) localStorage.setItem('user_uni_'+email, d.university);
+        if(d.semester) localStorage.setItem('user_sem_'+email, d.semester);
+      } catch(e){}
       // Always re-render dashboard with updated user data
       renderPhase1Dashboard();
       // If user has seen the popup before OR has completed profile, skip
