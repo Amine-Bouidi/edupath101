@@ -1947,6 +1947,18 @@ function openLoginFromLanding(){
           <div class="wb-text"><h2 id="wbGreet" style="margin-bottom:4px;">Welcome back!</h2><p style="color:var(--text2);font-size:13px;">Phase 1 — Help us build video lessons by sharing your handouts</p></div>
         </div>
 
+        <!-- Start Learning CTA — shown for students with learning access -->
+        <div id="startLearningCard" style="display:none;background:linear-gradient(135deg,rgba(108,99,255,.12),rgba(56,249,215,.08));border:1px solid var(--border2);border-radius:14px;padding:20px 24px;margin-bottom:20px;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent2)'" onmouseout="this.style.borderColor='var(--border2)'">
+          <div style="display:flex;align-items:center;gap:16px;">
+            <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">📚</div>
+            <div style="flex:1;">
+              <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;">Start Learning</div>
+              <div style="font-size:12px;color:var(--text2);line-height:1.5;">Video lessons, summaries, quizzes, and study resources are ready for your semester. Tap to explore your modules.</div>
+            </div>
+            <div style="font-size:20px;color:var(--accent2);flex-shrink:0;">→</div>
+          </div>
+        </div>
+
         <!-- Reward Progress -->
         <div id="rewardBar" style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:20px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
@@ -8336,6 +8348,28 @@ window.renderPhase1Dashboard = function(){
   el('phase1Dashboard').style.display='block';
   el('adminDashboard').style.display='none';
   el('wbGreet').textContent = 'Welcome, ' + S.user.name.split(' ')[0] + '!';
+
+  /* Show "Start Learning" card for students with learning access */
+  var slCard = el('startLearningCard');
+  if(slCard){
+    var userUni = S.user.university || '';
+    var userSem = S.user.semester || '';
+    var canLearn = (userUni === 'usmba' && userSem === 'sem4');
+    slCard.style.display = canLearn ? 'block' : 'none';
+    if(canLearn){
+      slCard.onclick = function(){
+        var uni = UNIVERSITIES.find(function(u){ return u.id === userUni; });
+        if(uni){
+          openSemesters(uni);
+          // Auto-navigate to their semester
+          setTimeout(function(){
+            var semIdx = SEMESTERS.findIndex(function(s){ return s.id === userSem; });
+            if(semIdx >= 0) openModules(SEMESTERS[semIdx], semIdx);
+          }, 300);
+        }
+      };
+    }
+  }
 
   // Load user uploads from Firestore
   db.collection('contributions')
