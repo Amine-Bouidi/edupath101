@@ -5373,11 +5373,18 @@ function clearQuizProgress(){
 function resetBigQuizIntro(){
   bigQuizState = { qIdx:0, score:0, answered:false, done:false };
   var ov = el('qzOverlay'); if(ov) ov.style.display = 'none';
+  var quizCard = document.querySelector('.quiz-card');
   var intro = document.querySelector('.qz-intro');
-  if(intro) intro.style.display = 'block';
-  // Show 'Resume' state if there's saved progress for this video
   var startBtn = el('qzStartBtn');
   var subEl = document.querySelector('.qz-intro-sub');
+
+  /* Hide entire quiz card if no custom quiz exists for this video */
+  var activeQuiz = getActiveQuiz();
+  var hasCustomQuiz = activeQuiz !== PLACEHOLDER_QUIZ_100;
+  if(quizCard) quizCard.style.display = hasCustomQuiz ? 'block' : 'none';
+  if(!hasCustomQuiz) return;
+
+  if(intro) intro.style.display = 'block';
   if(!startBtn) return;
   startBtn.textContent = '🎯 I am ready for test';
   if(subEl) subEl.textContent = 'Challenge yourself with a 100-question test covering this module.';
