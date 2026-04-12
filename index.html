@@ -4178,31 +4178,32 @@ var VIDEOS=[
 /* ── STATE ── */
 var S={user:null,uni:null,sem:null,semIdx:0,mod:null,vidIdx:0,progress:{},vidDone:false};
 function initP(u,s,m){var k=u+'_'+s+'_'+m;if(!S.progress[k])S.progress[k]={videos:[],quizzes:[]};return S.progress[k];}
-function getP(u,s,m){var k=u+'_'+s+'_'+m;if(!S.progress[k])S.progress[k]={videos:[],quizzes:[]};return S.progress[k];}
-
-/* Save/load S.progress to localStorage so it persists across refresh */
-function saveProgressLocal(){
+function getP(u,s,m){
+  var k=u+'_'+s+'_'+m;
+  if(!S.progress[k]) S.progress[k]={videos:[],quizzes:[]};
+  // Always check localStorage for persisted progress (same pattern as quiz progress which works)
   try {
-    var json = JSON.stringify(S.progress);
-    localStorage.setItem('edupath_progress', json);
-    sessionStorage.setItem('edupath_progress', json); // backup
-  } catch(e){}
-}
-function loadProgressLocal(){
-  try {
-    var raw = localStorage.getItem('edupath_progress') || sessionStorage.getItem('edupath_progress') || '{}';
-    var saved = JSON.parse(raw);
-    if(saved && typeof saved === 'object'){
-      for(var k in saved){
-        if(saved[k] && saved[k].videos && saved[k].videos.length > 0){
-          if(!S.progress[k]) S.progress[k] = {videos:[], quizzes:[]};
-          if(saved[k].videos.length > S.progress[k].videos.length){
-            S.progress[k].videos = saved[k].videos.slice();
-          }
-        }
+    var saved = localStorage.getItem('vidprog_'+k);
+    if(saved){
+      var arr = JSON.parse(saved);
+      if(Array.isArray(arr) && arr.length > S.progress[k].videos.length){
+        S.progress[k].videos = arr;
       }
     }
   } catch(e){}
+  return S.progress[k];
+}
+
+/* Save/load S.progress to localStorage — per-key like quiz progress */
+function saveProgressLocal(){
+  for(var k in S.progress){
+    if(S.progress[k] && S.progress[k].videos && S.progress[k].videos.length > 0){
+      try { localStorage.setItem('vidprog_'+k, JSON.stringify(S.progress[k].videos)); } catch(e){}
+    }
+  }
+}
+function loadProgressLocal(){
+  /* No-op — getP() now reads directly from localStorage per-key */
 }
 
 /* Load progress from Firestore moduleProgress and merge into S.progress */
@@ -5125,9 +5126,7 @@ var fakeT=null;
 function openPlayer(mod){
   S.mod=mod; S.vidDone=false; updateCtx();
   initP(S.uni.id,S.sem.id,mod.id);
-  /* Ensure progress is loaded from localStorage before rendering */
-  loadProgressLocal();
-  /* Also load from Firestore and re-render if newer data arrives */
+  /* Load from Firestore and re-render if newer data arrives */
   if(S.user && S.user.email){
     var docId = S.user.email.replace(/[^a-zA-Z0-9]/g,'_');
     db.collection('users').doc(docId).get().then(function(doc){
@@ -5167,7 +5166,6 @@ function openPlayer(mod){
 el('nav-player').onclick=function(){closeMobileMenu();if(S.mod)renderPlayer();showView('player');};
 
 function renderPlayer(){
-  loadProgressLocal(); // always re-check localStorage before rendering
   var vid=VIDEOS[S.vidIdx];
   var p=getP(S.uni.id,S.sem.id,S.mod.id);
   var done=p.videos.length, pct=Math.round((done/VIDEOS.length)*100);
@@ -5542,7 +5540,6 @@ if(el('qzStartBtn')){
 }
 
 function renderVidList(){
-  loadProgressLocal();
   var p=getP(S.uni.id,S.sem.id,S.mod.id);
   var list=el('vidList'); list.innerHTML='';
   var hasPaidAccess = isAdmin() || isUserPaid();
