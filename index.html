@@ -5307,6 +5307,33 @@ function renderPlayer(){
       plInner.classList.remove('locked');
     }
   }
+  /* Also lock community section (classmates + discussion) for locked videos */
+  var studyBar = el('studyAloneBar');
+  var commSection = el('communitySection');
+  if(studyBar) studyBar.style.display = isVideoLocked ? 'none' : '';
+  if(commSection){
+    if(isVideoLocked){
+      commSection.style.filter = 'blur(6px)';
+      commSection.style.pointerEvents = 'none';
+      commSection.style.userSelect = 'none';
+      commSection.style.position = 'relative';
+      // Add lock overlay if not already present
+      if(!document.getElementById('commLockOverlay')){
+        var ov = document.createElement('div');
+        ov.id = 'commLockOverlay';
+        ov.className = 'pl-lock-overlay';
+        ov.innerHTML = '<div class="pl-lock-box"><div style="font-size:36px;margin-bottom:10px;">🔒</div><div style="font-family:\'Sora\',sans-serif;font-size:16px;font-weight:700;margin-bottom:6px;">Premium Content</div><div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:16px;">Unlock community features for all videos with a plan.</div><button class="pl-lock-btn" onclick="showView(\'pricing\');setTopbar([],\'Plans & Pricing\',false);">View Plans</button></div>';
+        commSection.parentNode.insertBefore(ov, commSection);
+      }
+      document.getElementById('commLockOverlay').style.display = 'flex';
+    } else {
+      commSection.style.filter = '';
+      commSection.style.pointerEvents = '';
+      commSection.style.userSelect = '';
+      var commOv = document.getElementById('commLockOverlay');
+      if(commOv) commOv.style.display = 'none';
+    }
+  }
 
   var pr=document.querySelector('.pl-right'); if(pr)pr.scrollTop=0;
 }
