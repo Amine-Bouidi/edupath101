@@ -4895,14 +4895,13 @@ function renderModuleGrid(grid, mods, sem, idx, subData, readyMods){
       }
     } else if(hasLearningAccess()){
       /* Student with learning page access — show module cards with player access */
-      var isUnlockedStudent = allUnlocked || enabledIndices.indexOf(modIdx) !== -1;
-      card.className = 'mod-card' + (isUnlockedStudent ? '' : ' locked');
+      var hasContent = lessonCount > 0 || (mod.title.toLowerCase().indexOf('cultural studies') !== -1);
+      card.className = 'mod-card' + (hasContent ? '' : ' locked');
       card.innerHTML='<div class="mc-head"><div class="mc-icon">'+mod.icon+'</div><div><div class="mc-title">'+mod.title+'</div><div class="mc-desc">'+mod.desc+'</div></div></div><div class="pbar"><div class="pfill" style="width:'+pct+'%"></div></div><div class="mc-footer"><span class="mc-vids">5 videos'+(dv>0?' · '+dv+' done':'')+'</span>'+lessonBadge+badge+'</div>';
-      if(isUnlockedStudent){
+      if(hasContent){
         card.onclick=(function(m){return function(){openPlayer(m);};})(mod);
       } else {
-        card.innerHTML += '<div class="mod-lock-overlay"><div class="mod-lock-badge">🔒 Upgrade to access</div></div>';
-        card.onclick=function(){ showView('pricing'); setTopbar([],'Plans & Pricing',false); };
+        card.innerHTML += '<div class="mod-lock-overlay"><div class="mod-lock-badge" style="background:rgba(249,168,37,.15);color:#f9a825;border:1px solid rgba(249,168,37,.3);">🔜 Coming soon</div></div>';
       }
     } else {
       card.className = 'mod-card';
