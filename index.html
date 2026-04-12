@@ -5255,10 +5255,12 @@ el('btnDone').onclick=function(){
   if(p.videos.indexOf(S.vidIdx)<0) p.videos.push(S.vidIdx);
   var done=p.videos.length, pct=Math.round((done/VIDEOS.length)*100);
   el('btnDone').textContent='✓ Completed'; el('btnDone').disabled=true; el('btnNxt').disabled=false;
-  el('progFill').style.width=pct+'%'; el('progPct').textContent=pct+'%';
-  el('ptsChip').textContent='⭐ '+done*2+' pts';
-  el('progCircle').style.strokeDashoffset=188.5-(188.5*(pct/100));
-  el('pcPct').textContent=pct+'%'; el('pcSub').textContent=done+' of '+VIDEOS.length+' completed';
+  if(el('progFill')) el('progFill').style.width=pct+'%';
+  if(el('progPct')) el('progPct').textContent=pct+'%';
+  if(el('ptsChip')) el('ptsChip').textContent='⭐ '+done*2+' pts';
+  if(el('progCircle')) el('progCircle').style.strokeDashoffset=188.5-(188.5*(pct/100));
+  if(el('pcPct')) el('pcPct').textContent=pct+'%';
+  if(el('pcSub')) el('pcSub').textContent=done+' of '+VIDEOS.length+' completed';
   renderVidList();
   if(done===VIDEOS.length) setTimeout(showModal,600);
   /* Persist progress everywhere */
