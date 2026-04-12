@@ -4180,6 +4180,48 @@ var S={user:null,uni:null,sem:null,semIdx:0,mod:null,vidIdx:0,progress:{},vidDon
 function initP(u,s,m){var k=u+'_'+s+'_'+m;if(!S.progress[k])S.progress[k]={videos:[],quizzes:[]};return S.progress[k];}
 function getP(u,s,m){var k=u+'_'+s+'_'+m;if(!S.progress[k])S.progress[k]={videos:[],quizzes:[]};return S.progress[k];}
 
+/* Save/load S.progress to localStorage so it persists across refresh */
+function saveProgressLocal(){
+  try { localStorage.setItem('edupath_progress', JSON.stringify(S.progress)); } catch(e){}
+}
+function loadProgressLocal(){
+  try {
+    var saved = JSON.parse(localStorage.getItem('edupath_progress') || '{}');
+    if(saved && typeof saved === 'object'){
+      for(var k in saved){
+        if(!S.progress[k]) S.progress[k] = saved[k];
+        else {
+          // Merge — keep whichever has more videos completed
+          if(saved[k].videos && saved[k].videos.length > (S.progress[k].videos||[]).length){
+            S.progress[k].videos = saved[k].videos;
+          }
+        }
+      }
+    }
+  } catch(e){}
+}
+
+/* Load progress from Firestore moduleProgress and merge into S.progress */
+function loadProgressFromFirestore(){
+  if(!S.user || !S.user.email) return;
+  var docId = S.user.email.replace(/[^a-zA-Z0-9]/g,'_');
+  db.collection('users').doc(docId).get().then(function(doc){
+    if(!doc.exists) return;
+    var d = doc.data();
+    if(!d.moduleProgress) return;
+    for(var key in d.moduleProgress){
+      var mp = d.moduleProgress[key];
+      if(!mp.videos || !mp.videos.length) continue;
+      if(!S.progress[key]) S.progress[key] = {videos:[], quizzes:[]};
+      // Merge — keep whichever has more videos
+      if(mp.videos.length > S.progress[key].videos.length){
+        S.progress[key].videos = mp.videos;
+      }
+    }
+    saveProgressLocal();
+  }).catch(function(){});
+}
+
 /* Sync module progress to Firestore so classmates see real bars */
 function syncModuleProgress(){
   if(!S.user || !S.user.email || !S.uni || !S.sem || !S.mod) return;
@@ -4344,6 +4386,9 @@ function enterApp(name, email){
   }
   startTrialTimer();
   showAdminIfNeeded();
+  /* Restore video progress from localStorage + Firestore */
+  loadProgressLocal();
+  loadProgressFromFirestore();
   // Restore last view if returning from refresh
   var lastView = sessionStorage.getItem('lastView');
   if(lastView && lastView !== 'dashboard'){
@@ -5188,7 +5233,8 @@ el('btnDone').onclick=function(){
   el('pcPct').textContent=pct+'%'; el('pcSub').textContent=done+' of '+VIDEOS.length+' completed';
   renderVidList();
   if(done===VIDEOS.length) setTimeout(showModal,600);
-  /* Persist module progress to Firestore so classmates can see it */
+  /* Persist progress everywhere */
+  saveProgressLocal();
   syncModuleProgress();
   /* Invalidate classmates cache so progress bars refresh on next render */
   if(S.uni && S.sem) delete CLASSMATES_CACHE[S.uni.id + '_' + S.sem.id];
