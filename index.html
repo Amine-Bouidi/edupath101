@@ -4182,18 +4182,22 @@ function getP(u,s,m){var k=u+'_'+s+'_'+m;if(!S.progress[k])S.progress[k]={videos
 
 /* Save/load S.progress to localStorage so it persists across refresh */
 function saveProgressLocal(){
-  try { localStorage.setItem('edupath_progress', JSON.stringify(S.progress)); } catch(e){}
+  try {
+    var json = JSON.stringify(S.progress);
+    localStorage.setItem('edupath_progress', json);
+    sessionStorage.setItem('edupath_progress', json); // backup
+  } catch(e){}
 }
 function loadProgressLocal(){
   try {
-    var saved = JSON.parse(localStorage.getItem('edupath_progress') || '{}');
+    var raw = localStorage.getItem('edupath_progress') || sessionStorage.getItem('edupath_progress') || '{}';
+    var saved = JSON.parse(raw);
     if(saved && typeof saved === 'object'){
       for(var k in saved){
-        if(!S.progress[k]) S.progress[k] = saved[k];
-        else {
-          // Merge — keep whichever has more videos completed
-          if(saved[k].videos && saved[k].videos.length > (S.progress[k].videos||[]).length){
-            S.progress[k].videos = saved[k].videos;
+        if(saved[k] && saved[k].videos && saved[k].videos.length > 0){
+          if(!S.progress[k]) S.progress[k] = {videos:[], quizzes:[]};
+          if(saved[k].videos.length > S.progress[k].videos.length){
+            S.progress[k].videos = saved[k].videos.slice();
           }
         }
       }
@@ -5163,6 +5167,7 @@ function openPlayer(mod){
 el('nav-player').onclick=function(){closeMobileMenu();if(S.mod)renderPlayer();showView('player');};
 
 function renderPlayer(){
+  loadProgressLocal(); // always re-check localStorage before rendering
   var vid=VIDEOS[S.vidIdx];
   var p=getP(S.uni.id,S.sem.id,S.mod.id);
   var done=p.videos.length, pct=Math.round((done/VIDEOS.length)*100);
@@ -5537,6 +5542,7 @@ if(el('qzStartBtn')){
 }
 
 function renderVidList(){
+  loadProgressLocal();
   var p=getP(S.uni.id,S.sem.id,S.mod.id);
   var list=el('vidList'); list.innerHTML='';
   var hasPaidAccess = isAdmin() || isUserPaid();
