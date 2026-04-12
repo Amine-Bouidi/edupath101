@@ -5121,6 +5121,31 @@ var fakeT=null;
 function openPlayer(mod){
   S.mod=mod; S.vidDone=false; updateCtx();
   initP(S.uni.id,S.sem.id,mod.id);
+  /* Ensure progress is loaded from localStorage before rendering */
+  loadProgressLocal();
+  /* Also load from Firestore and re-render if newer data arrives */
+  if(S.user && S.user.email){
+    var docId = S.user.email.replace(/[^a-zA-Z0-9]/g,'_');
+    db.collection('users').doc(docId).get().then(function(doc){
+      if(!doc.exists) return;
+      var d = doc.data();
+      if(!d.moduleProgress) return;
+      var changed = false;
+      for(var key in d.moduleProgress){
+        var mp = d.moduleProgress[key];
+        if(!mp.videos || !mp.videos.length) continue;
+        if(!S.progress[key]) S.progress[key] = {videos:[], quizzes:[]};
+        if(mp.videos.length > S.progress[key].videos.length){
+          S.progress[key].videos = mp.videos;
+          changed = true;
+        }
+      }
+      if(changed){
+        saveProgressLocal();
+        if(S.mod) renderPlayer();
+      }
+    }).catch(function(){});
+  }
   // Preload content from Firestore
   var modIdx = mod.id.replace('m','');
   loadContentForModule(S.uni.id, S.sem.id, parseInt(modIdx)-1, function(){
