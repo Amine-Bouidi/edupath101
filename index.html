@@ -2830,7 +2830,10 @@ function openLoginFromLanding(){
               <div style="font-size:36px;margin-bottom:10px;">🔒</div>
               <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;margin-bottom:6px;">Premium Content</div>
               <div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:16px;">Unlock video summaries, quizzes, and resources for all videos with a plan.</div>
-              <button class="pl-lock-btn" onclick="showView('pricing');setTopbar([],'Plans & Pricing',false);">View Plans</button>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <button class="pl-lock-btn" onclick="showView('pricing');setTopbar([],'Plans & Pricing',false);">View Plans</button>
+                <button style="padding:10px 20px;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);width:100%;" onclick="S.vidIdx=0;renderPlayer();">← Back to Video 1</button>
+              </div>
             </div>
           </div>
           <div class="sum-card">
@@ -5313,23 +5316,18 @@ function renderPlayer(){
   if(studyBar) studyBar.style.display = isVideoLocked ? 'none' : '';
   if(commSection){
     if(isVideoLocked){
-      commSection.style.filter = 'blur(6px)';
-      commSection.style.pointerEvents = 'none';
-      commSection.style.userSelect = 'none';
-      commSection.style.position = 'relative';
+      commSection.style.display = 'none';
       // Add lock overlay if not already present
       if(!document.getElementById('commLockOverlay')){
         var ov = document.createElement('div');
         ov.id = 'commLockOverlay';
-        ov.className = 'pl-lock-overlay';
-        ov.innerHTML = '<div class="pl-lock-box"><div style="font-size:36px;margin-bottom:10px;">🔒</div><div style="font-family:\'Sora\',sans-serif;font-size:16px;font-weight:700;margin-bottom:6px;">Premium Content</div><div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:16px;">Unlock community features for all videos with a plan.</div><button class="pl-lock-btn" onclick="showView(\'pricing\');setTopbar([],\'Plans & Pricing\',false);">View Plans</button></div>';
-        commSection.parentNode.insertBefore(ov, commSection);
+        ov.style.cssText = 'text-align:center;padding:32px 20px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;margin-top:12px;';
+        ov.innerHTML = '<div style="font-size:36px;margin-bottom:10px;">🔒</div><div style="font-family:\'Sora\',sans-serif;font-size:16px;font-weight:700;margin-bottom:6px;">Premium Content</div><div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:16px;">Unlock community features for all videos with a plan.</div><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;"><button class="pl-lock-btn" style="width:auto;padding:10px 20px;" onclick="showView(\'pricing\');setTopbar([],\'Plans & Pricing\',false);">View Plans</button><button style="padding:10px 20px;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;font-family:\'Sora\',sans-serif;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);" onclick="S.vidIdx=0;renderPlayer();">← Back to Video 1</button></div>';
+        commSection.parentNode.insertBefore(ov, commSection.nextSibling);
       }
       document.getElementById('commLockOverlay').style.display = 'flex';
     } else {
-      commSection.style.filter = '';
-      commSection.style.pointerEvents = '';
-      commSection.style.userSelect = '';
+      commSection.style.display = '';
       var commOv = document.getElementById('commLockOverlay');
       if(commOv) commOv.style.display = 'none';
     }
