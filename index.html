@@ -4256,12 +4256,13 @@ window.showView = function showView(id){
   });
   var pl=el('view-player');
   pl.style.display='none'; pl.classList.remove('active');
-  /* Pause YouTube when leaving player */
+  /* Pause YouTube and detach chat listener when leaving player */
   if(id !== 'player'){
     var iframe = el('ytPlayer');
     if(iframe && iframe.src && iframe.src.indexOf('youtube') !== -1){
       iframe.src = iframe.src.replace('autoplay=1','autoplay=0');
     }
+    if(DISC_LISTENER){ DISC_LISTENER(); DISC_LISTENER = null; }
   }
   if(id==='player'){
     pl.style.display='grid'; pl.classList.add('active');
@@ -5654,6 +5655,7 @@ function getUserStatus(lastLogin){
 
 /* Pre-seeded discussion messages per module key */
 var DISC_STORE = {};
+var DISC_LISTENER = null; // Firestore real-time listener
 
 function getDiscKey(){
   if(!S.uni||!S.sem||!S.mod) return 'global';
@@ -5661,9 +5663,7 @@ function getDiscKey(){
 }
 
 function seedMessages(){
-  var key = getDiscKey();
-  if(DISC_STORE[key]) return;
-  DISC_STORE[key] = [];
+  /* No-op — messages now come from Firestore */
 }
 
 function switchCommTab(tab){
@@ -5676,9 +5676,8 @@ function switchCommTab(tab){
 window.switchCommTab = switchCommTab;
 
 function renderCommunity(){
-  seedMessages();
   renderStudents();
-  renderDisc();
+  startDiscListener();
 }
 
 function renderStudents(){
@@ -5793,42 +5792,74 @@ function renderClassmateCards(list, students){
   el('onlineCount').textContent = '';
 }
 
-function renderDisc(){
+/* Start Firestore real-time listener for discussion messages */
+function startDiscListener(){
   var key = getDiscKey();
-  var msgs = DISC_STORE[key] || [];
+  if(key === 'global') return;
+  // Detach previous listener if switching modules
+  if(DISC_LISTENER) { DISC_LISTENER(); DISC_LISTENER = null; }
+
+  var container = el('discMsgs');
+  if(!container) return;
+  container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">Loading messages...</div>';
+
+  DISC_LISTENER = db.collection('discussions').doc(key).collection('messages')
+    .orderBy('createdAt','asc')
+    .limit(200)
+    .onSnapshot(function(snap){
+      var msgs = [];
+      snap.forEach(function(doc){
+        var d = doc.data();
+        d._id = doc.id;
+        msgs.push(d);
+      });
+      DISC_STORE[key] = msgs;
+      renderDiscMessages(msgs);
+    }, function(err){
+      container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">No messages yet — start the conversation!</div>';
+    });
+}
+
+function renderDiscMessages(msgs){
   var container = el('discMsgs');
   if(!container) return;
   container.innerHTML = '';
+  var myEmail = S.user && S.user.email ? S.user.email.toLowerCase() : '';
+
+  if(!msgs.length){
+    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">No messages yet — start the conversation!</div>';
+    if(el('msgCount')) el('msgCount').textContent = '';
+    return;
+  }
 
   msgs.forEach(function(m){
-    var isMe = m.isMe;
+    var isMe = m.email && m.email.toLowerCase() === myEmail;
     var row = document.createElement('div');
-    row.className = 'msg-row' + (isMe?' mine':'');
+    row.className = 'msg-row' + (isMe ? ' mine' : '');
 
-    /* build media html */
-    var mediaHtml = '';
-    if(m.media && m.media.length){
-      m.media.forEach(function(med){
-        if(med.type==='image'){
-          mediaHtml += '<div class="msg-media-img"><img src="'+med.url+'" alt="image" onclick="this.requestFullscreen&&this.requestFullscreen()"></div>';
-        } else {
-          mediaHtml += '<div class="msg-media-audio"><audio controls src="'+med.url+'"></audio></div>';
-        }
-      });
+    var timeStr = '';
+    if(m.createdAt){
+      var d = m.createdAt.toDate ? m.createdAt.toDate() : new Date(m.createdAt);
+      var diff = (Date.now() - d.getTime()) / 60000;
+      if(diff < 1) timeStr = 'Just now';
+      else if(diff < 60) timeStr = Math.round(diff) + 'm ago';
+      else if(diff < 1440) timeStr = Math.round(diff/60) + 'h ago';
+      else timeStr = d.toLocaleDateString();
     }
 
+    var avatarColor = isMe ? 'linear-gradient(135deg,var(--accent),#9b59b6)' : getAvatarColor(m.name || '');
+    var initials = m.initials || getInitials(m.name || 'U');
+
     row.innerHTML =
-      '<div class="msg-avatar" style="background:'+(isMe?'linear-gradient(135deg,var(--accent),#9b59b6)':m.color)+';">'+m.initials+'</div>'+
+      '<div class="msg-avatar" style="background:'+avatarColor+';">'+initials+'</div>'+
       '<div class="msg-body">'+
-        '<div class="msg-meta">'+m.name+' · '+m.time+'</div>'+
-        (m.text ? '<div class="msg-bubble '+(isMe?'msg-bubble-mine':'msg-bubble-other')+'">'+m.text+'</div>' : '')+
-        mediaHtml+
+        '<div class="msg-meta">'+esc(m.name || 'User')+' · '+timeStr+'</div>'+
+        (m.text ? '<div class="msg-bubble '+(isMe?'msg-bubble-mine':'msg-bubble-other')+'">'+esc(m.text)+'</div>' : '')+
       '</div>';
     container.appendChild(row);
   });
 
-  var cnt = msgs.length;
-  el('msgCount').textContent = cnt > 0 ? cnt : '';
+  if(el('msgCount')) el('msgCount').textContent = msgs.length > 0 ? msgs.length : '';
   scrollDiscToBottom();
 }
 
@@ -6063,25 +6094,27 @@ el('recCancelBtn').onclick   = closeRecordModal;
 function sendMessage(){
   var input = el('discInput');
   var text = input.value.trim();
-  if(!text && !pendingMedia.length) return;
+  if(!text) return;
   var key = getDiscKey();
-  if(!DISC_STORE[key]) DISC_STORE[key]=[];
+  if(key === 'global') return;
 
-  var mediaSnapshot = pendingMedia.slice();
-  pendingMedia = [];
-  updatePreviewStrip();
-  updateAttachBtnState();
+  var msgData = {
+    name: S.user.name || 'User',
+    email: S.user.email || '',
+    initials: S.user.initials || 'AB',
+    text: text,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
 
-  DISC_STORE[key].push({
-    isMe: true, sid:'me',
-    name: S.user.name, initials: S.user.initials || 'AB',
-    color:'linear-gradient(135deg,var(--accent),#9b59b6)',
-    text: text, time:'Just now',
-    media: mediaSnapshot
+  input.value = '';
+  input.style.height = 'auto';
+
+  // Write to Firestore — the onSnapshot listener will auto-render it
+  db.collection('discussions').doc(key).collection('messages').add(msgData).catch(function(e){
+    // If it fails, show inline error
+    var container = el('discMsgs');
+    if(container) container.insertAdjacentHTML('beforeend','<div style="text-align:center;padding:8px;color:var(--accent3);font-size:11px;">Failed to send — check your connection</div>');
   });
-  input.value='';
-  input.style.height='auto';
-  renderDisc();
 
   /* simulate reply only if text was sent */
   if(text){
