@@ -341,7 +341,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 
 /* RIGHT */
 .pl-right{display:flex;flex-direction:column;background:var(--bg);overflow-y:auto;min-width:0;}
-.pl-right-inner{padding:24px;display:flex;flex-direction:column;gap:16px;}
+.pl-right-inner{padding:24px;display:flex;flex-direction:column;gap:16px;position:relative;}
+.pl-right-inner.locked > *:not(.pl-lock-overlay){filter:blur(6px);pointer-events:none;user-select:none;}
+.pl-right-inner.locked > .pl-lock-overlay{display:flex !important;}
+.pl-lock-overlay{position:absolute;top:0;left:0;right:0;bottom:0;z-index:10;display:flex;align-items:center;justify-content:center;background:rgba(12,12,24,.4);}
+.pl-lock-box{text-align:center;background:var(--bg2);border:1px solid var(--border2);border-radius:18px;padding:32px 28px;max-width:320px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.4);}
+.pl-lock-btn{background:linear-gradient(135deg,var(--accent2),#9b59b6);color:#fff;border:none;padding:12px 28px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Sora',sans-serif;transition:all .2s;width:100%;}
+.pl-lock-btn:hover{opacity:.9;transform:translateY(-1px);}
 
 .prog-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;display:flex;align-items:center;gap:20px;}
 .pc-circ{position:relative;width:76px;height:76px;flex-shrink:0;}
@@ -2804,7 +2810,16 @@ function openLoginFromLanding(){
         </div>
       </div>
       <div class="pl-right">
-        <div class="pl-right-inner">
+        <div class="pl-right-inner" id="plRightInner">
+          <!-- Lock overlay for paid videos -->
+          <div class="pl-lock-overlay" id="plLockOverlay" style="display:none;">
+            <div class="pl-lock-box">
+              <div style="font-size:36px;margin-bottom:10px;">🔒</div>
+              <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;margin-bottom:6px;">Premium Content</div>
+              <div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:16px;">Unlock video summaries, quizzes, and resources for all videos with a plan.</div>
+              <button class="pl-lock-btn" onclick="showView('pricing');setTopbar([],'Plans & Pricing',false);">View Plans</button>
+            </div>
+          </div>
           <div class="sum-card">
             <div class="sum-hdr"><div class="sum-hdr-icon">📖</div><div class="sum-hdr-title">Video Summary</div></div>
             <div class="sum-body" id="sumBody"></div>
@@ -5196,9 +5211,22 @@ function renderPlayer(){
   el('viName').textContent=displayTitle;
   el('viDesc').textContent=vid.desc;
 
-  el('btnDone').disabled=true; el('btnDone').textContent='✓ Mark as complete';
-  el('btnNxt').disabled=!isDone;
-  if(isDone){el('btnDone').textContent='✓ Completed';el('btnDone').disabled=true;el('btnNxt').disabled=false;}
+  /* Handle locked video state */
+  var isVidLocked = S.vidIdx > 0 && !isAdmin() && !isUserPaid();
+  var playBtn = el('btnPlay');
+  if(isVidLocked){
+    playBtn.innerHTML = '<span style="font-size:28px;">🔒</span>';
+    playBtn.style.background = 'rgba(255,255,255,.08)';
+    el('btnDone').disabled=true; el('btnDone').textContent='🔒 Locked';
+    el('btnNxt').disabled=true;
+    el('viDesc').textContent='Unlock all videos with a plan.';
+  } else {
+    playBtn.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>';
+    playBtn.style.background = '';
+    el('btnDone').disabled=true; el('btnDone').textContent='✓ Mark as complete';
+    el('btnNxt').disabled=!isDone;
+    if(isDone){el('btnDone').textContent='✓ Completed';el('btnDone').disabled=true;el('btnNxt').disabled=false;}
+  }
 
   /* Use Firestore summary and keys if available */
   var fsSummary = getVideoField(S.uni.id, S.sem.id, S.mod.id, S.vidIdx, 'summary');
@@ -5218,6 +5246,18 @@ function renderPlayer(){
   renderVidList();
   renderCommunity();
   renderResources();
+
+  /* Lock right panel for paid videos (2-5) if user hasn't paid */
+  var isVideoLocked = S.vidIdx > 0 && !isAdmin() && !isUserPaid();
+  var plInner = el('plRightInner');
+  if(plInner){
+    if(isVideoLocked){
+      plInner.classList.add('locked');
+    } else {
+      plInner.classList.remove('locked');
+    }
+  }
+
   var pr=document.querySelector('.pl-right'); if(pr)pr.scrollTop=0;
 }
 
