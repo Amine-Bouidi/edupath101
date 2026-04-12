@@ -4178,7 +4178,25 @@ var VIDEOS=[
 /* ── STATE ── */
 var S={user:null,uni:null,sem:null,semIdx:0,mod:null,vidIdx:0,progress:{},vidDone:false};
 function initP(u,s,m){var k=u+'_'+s+'_'+m;if(!S.progress[k])S.progress[k]={videos:[],quizzes:[]};return S.progress[k];}
-function getP(u,s,m){var k=u+'_'+s+'_'+m;return S.progress[k]||{videos:[],quizzes:[]};}
+function getP(u,s,m){var k=u+'_'+s+'_'+m;if(!S.progress[k])S.progress[k]={videos:[],quizzes:[]};return S.progress[k];}
+
+/* Sync module progress to Firestore so classmates see real bars */
+function syncModuleProgress(){
+  if(!S.user || !S.user.email || !S.uni || !S.sem || !S.mod) return;
+  var p = getP(S.uni.id, S.sem.id, S.mod.id);
+  var docId = S.user.email.replace(/[^a-zA-Z0-9]/g,'_');
+  var progressKey = S.uni.id + '_' + S.sem.id + '_' + S.mod.id;
+  var update = {};
+  update['moduleProgress.' + progressKey] = {
+    videos: p.videos,
+    total: VIDEOS.length,
+    pct: Math.round((p.videos.length / VIDEOS.length) * 100),
+    updatedAt: new Date().toISOString()
+  };
+  db.collection('users').doc(docId).update(update).catch(function(){
+    db.collection('users').doc(docId).set({moduleProgress: (function(){var o={};o[progressKey]=update['moduleProgress.'+progressKey];return o;})()}, {merge:true}).catch(function(){});
+  });
+}
 
 /* ── HELPERS ── */
 function el(id){return document.getElementById(id);}
@@ -5170,6 +5188,10 @@ el('btnDone').onclick=function(){
   el('pcPct').textContent=pct+'%'; el('pcSub').textContent=done+' of '+VIDEOS.length+' completed';
   renderVidList();
   if(done===VIDEOS.length) setTimeout(showModal,600);
+  /* Persist module progress to Firestore so classmates can see it */
+  syncModuleProgress();
+  /* Invalidate classmates cache so progress bars refresh on next render */
+  if(S.uni && S.sem) delete CLASSMATES_CACHE[S.uni.id + '_' + S.sem.id];
 };
 
 el('btnNxt').onclick=function(){
@@ -5618,6 +5640,8 @@ function renderStudents(){
 
   list.insertAdjacentHTML('beforeend','<div style="text-align:center;padding:12px;color:var(--text3);font-size:12px;">Loading classmates...</div>');
 
+  var progressKey = S.uni.id + '_' + S.sem.id + '_' + S.mod.id;
+
   db.collection('users')
     .where('university','==',S.uni.id)
     .where('semester','==',S.sem.id)
@@ -5629,21 +5653,21 @@ function renderStudents(){
       snap.forEach(function(doc){
         var u = doc.data();
         if(!u.email || !u.name) return;
-        if(u.email.toLowerCase() === myEmail) return; // skip yourself
-        if(ADMIN_EMAILS.indexOf(u.email.toLowerCase()) !== -1) return; // skip admins
+        if(u.email.toLowerCase() === myEmail) return;
+        if(ADMIN_EMAILS.indexOf(u.email.toLowerCase()) !== -1) return;
+        var modProg = u.moduleProgress && u.moduleProgress[progressKey] ? u.moduleProgress[progressKey] : null;
         students.push({
           name: u.name,
           initials: getInitials(u.name),
           color: getAvatarColor(u.name),
           status: getUserStatus(u.lastLogin),
-          lastLogin: u.lastLogin || ''
+          lastLogin: u.lastLogin || '',
+          pct: modProg ? modProg.pct : -1
         });
       });
-      // Sort: online first, then away, then offline
       var order = {online:0, away:1, offline:2};
       students.sort(function(a,b){ return (order[a.status]||3) - (order[b.status]||3); });
       CLASSMATES_CACHE[cacheKey] = students;
-      // Re-render (remove loading)
       list.innerHTML = '';
       list.appendChild(meCard);
       renderClassmateCards(list, students);
@@ -5666,6 +5690,12 @@ function renderClassmateCards(list, students){
     var dotColor = stu.status==='online'?'var(--success)':stu.status==='away'?'var(--warning)':'var(--text3)';
     if(stu.status==='online') onlineCount++;
 
+    var hasProg = stu.pct >= 0;
+    var progWidth = hasProg ? stu.pct + '%' : '0%';
+    var progLabel = hasProg ? stu.pct + '%' : '—';
+    var progColor = hasProg ? stu.color : 'transparent';
+    var progLabelStyle = hasProg ? '' : 'color:var(--text3);';
+
     var card = document.createElement('div');
     card.className = 'student-card';
     card.innerHTML =
@@ -5675,8 +5705,8 @@ function renderClassmateCards(list, students){
       '<div class="stu-info">'+
         '<div class="stu-name">'+esc(stu.name)+'</div>'+
         '<div class="stu-prog-row">'+
-          '<div class="stu-prog-bar"><div class="stu-prog-fill" style="width:0%;background:'+stu.color+';opacity:.8;"></div></div>'+
-          '<span class="stu-prog-pct" style="color:var(--text3);">—</span>'+
+          '<div class="stu-prog-bar"><div class="stu-prog-fill" style="width:'+progWidth+';background:'+progColor+';opacity:.8;"></div></div>'+
+          '<span class="stu-prog-pct" style="'+progLabelStyle+'">'+progLabel+'</span>'+
         '</div>'+
       '</div>'+
       '<span class="stu-badge '+badgeClass+'">'+badgeLabel+'</span>';
