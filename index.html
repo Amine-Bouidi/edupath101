@@ -4337,6 +4337,13 @@ function enterApp(name, email){
     }, 100);
   }
   cacheUserSubscription();
+  /* Heartbeat: update lastLogin every 3 minutes so classmates see you online */
+  if(email && email !== ''){
+    setInterval(function(){
+      var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
+      db.collection('users').doc(docId).update({lastLogin: new Date().toISOString()}).catch(function(){});
+    }, 180000);
+  }
   setTimeout(updateNotifBadge, 2000);
   // Check if profile setup needed — runs immediately, blocks app if incomplete
   if(email && email !== ''){
@@ -5512,15 +5519,40 @@ el('nav-dashboard').onclick=function(){closeMobileMenu();showView('dashboard');i
 ═══════════════════════════════════════════ */
 
 /* Simulated classmates pool */
-var CLASSMATES = [
-  {id:'s1', name:'Sarah M.',    initials:'SM', color:'#6c63ff', status:'online',  vidsDone:[0,1,2,3]},
-  {id:'s2', name:'Omar K.',     initials:'OK', color:'#ff6584', status:'online',  vidsDone:[0,1,2]},
-  {id:'s3', name:'Lena T.',     initials:'LT', color:'#43e97b', status:'online',  vidsDone:[0,1,2,3,4]},
-  {id:'s4', name:'James R.',    initials:'JR', color:'#f9a825', status:'away',    vidsDone:[0]},
-  {id:'s5', name:'Nour A.',     initials:'NA', color:'#56ccf2', status:'away',    vidsDone:[0,1]},
-  {id:'s6', name:'Priya S.',    initials:'PS', color:'#a18cd1', status:'offline', vidsDone:[0,1,2]},
-  {id:'s7', name:'Youssef B.',  initials:'YB', color:'#38f9d7', status:'offline', vidsDone:[0]}
+/* ── Real classmates from Firestore ── */
+var CLASSMATES_CACHE = {}; // keyed by uni_sem
+
+var AVATAR_COLORS = [
+  'linear-gradient(135deg,#6c63ff,#9b59b6)',
+  'linear-gradient(135deg,#ff6584,#ff9a9e)',
+  'linear-gradient(135deg,#43e97b,#38f9d7)',
+  'linear-gradient(135deg,#f9a825,#fc4a1a)',
+  'linear-gradient(135deg,#56ccf2,#2f80ed)',
+  'linear-gradient(135deg,#a18cd1,#fbc2eb)',
+  'linear-gradient(135deg,#ff6584,#6c63ff)',
+  'linear-gradient(135deg,#43e97b,#f9a825)',
+  'linear-gradient(135deg,#e05252,#ff6584)',
+  'linear-gradient(135deg,#38f9d7,#56ccf2)'
 ];
+
+function getAvatarColor(name){
+  var hash = 0;
+  for(var i = 0; i < name.length; i++) hash = ((hash << 5) - hash) + name.charCodeAt(i);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+function getInitials(name){
+  return name.split(' ').map(function(w){return w[0];}).join('').substring(0,2).toUpperCase();
+}
+
+function getUserStatus(lastLogin){
+  if(!lastLogin) return 'offline';
+  var diff = Date.now() - new Date(lastLogin).getTime();
+  var mins = diff / 60000;
+  if(mins < 5) return 'online';
+  if(mins < 30) return 'away';
+  return 'offline';
+}
 
 /* Pre-seeded discussion messages per module key */
 var DISC_STORE = {};
@@ -5533,14 +5565,7 @@ function getDiscKey(){
 function seedMessages(){
   var key = getDiscKey();
   if(DISC_STORE[key]) return;
-  DISC_STORE[key] = [
-    {sid:'s3', name:'Lena T.',   color:'#43e97b', initials:'LT', text:'Hey everyone! Just finished all 5 videos — the applied examples section was really eye-opening. Make sure you pause and try each problem before watching the solution!', time:'2h ago'},
-    {sid:'s1', name:'Sarah M.',  color:'#6c63ff', initials:'SM', text:'Agreed! I struggled with Core Concepts Part 2 at first. Anyone else find the edge cases tricky?', time:'1h 45m ago'},
-    {sid:'s2', name:'Omar K.',   color:'#ff6584', initials:'OK', text:'Yes! I rewatched that part twice. The key for me was connecting it back to Part 1 — once I did that it clicked 🙌', time:'1h 30m ago'},
-    {sid:'s4', name:'James R.',  color:'#f9a825', initials:'JR', text:'Quick question — do we need to memorise all the formulas for the exam or just understand the concepts?', time:'58m ago'},
-    {sid:'s3', name:'Lena T.',   color:'#43e97b', initials:'LT', text:'From what the tutor said in the summary video, it\'s more about application than memorisation. Focus on the worked examples!', time:'52m ago'},
-    {sid:'s5', name:'Nour A.',   color:'#56ccf2', initials:'NA', text:'I made a one-page cheat sheet summarising all the key ideas from each video — highly recommend doing that as revision 📝', time:'30m ago'}
-  ];
+  DISC_STORE[key] = [];
 }
 
 function switchCommTab(tab){
@@ -5564,7 +5589,7 @@ function renderStudents(){
   list.innerHTML = '';
   var onlineCount = 0;
 
-  /* show the logged-in user first */
+  /* Show the logged-in user first */
   var mePct = Math.round((getP(S.uni.id,S.sem.id,S.mod.id).videos.length / VIDEOS.length)*100);
   var meCard = document.createElement('div');
   meCard.className = 'student-card';
@@ -5574,7 +5599,7 @@ function renderStudents(){
       '<div class="stu-online-dot" style="background:var(--success);"></div>'+
     '</div>'+
     '<div class="stu-info">'+
-      '<div class="stu-name">'+S.user.name+' <span style="font-size:10px;color:var(--accent2);font-weight:600;">(You)</span></div>'+
+      '<div class="stu-name">'+esc(S.user.name)+' <span style="font-size:10px;color:var(--accent2);font-weight:600;">(You)</span></div>'+
       '<div class="stu-prog-row">'+
         '<div class="stu-prog-bar"><div class="stu-prog-fill" style="width:'+mePct+'%;background:linear-gradient(90deg,var(--accent),var(--accent2));"></div></div>'+
         '<span class="stu-prog-pct">'+mePct+'%</span>'+
@@ -5584,8 +5609,58 @@ function renderStudents(){
   list.appendChild(meCard);
   onlineCount++;
 
-  CLASSMATES.forEach(function(stu){
-    var donePct = Math.round((stu.vidsDone.length / VIDEOS.length)*100);
+  /* Fetch real classmates from Firestore */
+  var cacheKey = S.uni.id + '_' + S.sem.id;
+  if(CLASSMATES_CACHE[cacheKey]){
+    renderClassmateCards(list, CLASSMATES_CACHE[cacheKey]);
+    return;
+  }
+
+  list.insertAdjacentHTML('beforeend','<div style="text-align:center;padding:12px;color:var(--text3);font-size:12px;">Loading classmates...</div>');
+
+  db.collection('users')
+    .where('university','==',S.uni.id)
+    .where('semester','==',S.sem.id)
+    .limit(50)
+    .get()
+    .then(function(snap){
+      var students = [];
+      var myEmail = S.user && S.user.email ? S.user.email.toLowerCase() : '';
+      snap.forEach(function(doc){
+        var u = doc.data();
+        if(!u.email || !u.name) return;
+        if(u.email.toLowerCase() === myEmail) return; // skip yourself
+        if(ADMIN_EMAILS.indexOf(u.email.toLowerCase()) !== -1) return; // skip admins
+        students.push({
+          name: u.name,
+          initials: getInitials(u.name),
+          color: getAvatarColor(u.name),
+          status: getUserStatus(u.lastLogin),
+          lastLogin: u.lastLogin || ''
+        });
+      });
+      // Sort: online first, then away, then offline
+      var order = {online:0, away:1, offline:2};
+      students.sort(function(a,b){ return (order[a.status]||3) - (order[b.status]||3); });
+      CLASSMATES_CACHE[cacheKey] = students;
+      // Re-render (remove loading)
+      list.innerHTML = '';
+      list.appendChild(meCard);
+      renderClassmateCards(list, students);
+    })
+    .catch(function(){
+      list.innerHTML = '';
+      list.appendChild(meCard);
+      el('onlinePill').textContent = onlineCount + ' online';
+    });
+
+  el('onlinePill').textContent = onlineCount + ' online';
+  el('onlineCount').textContent = '';
+}
+
+function renderClassmateCards(list, students){
+  var onlineCount = 1; // 1 = yourself
+  students.forEach(function(stu){
     var badgeClass = stu.status==='online'?'stu-badge-online':stu.status==='away'?'stu-badge-away':'stu-badge-offline';
     var badgeLabel = stu.status==='online'?'● Online':stu.status==='away'?'◐ Away':'○ Offline';
     var dotColor = stu.status==='online'?'var(--success)':stu.status==='away'?'var(--warning)':'var(--text3)';
@@ -5598,10 +5673,10 @@ function renderStudents(){
         '<div class="stu-online-dot" style="background:'+dotColor+';"></div>'+
       '</div>'+
       '<div class="stu-info">'+
-        '<div class="stu-name">'+stu.name+'</div>'+
+        '<div class="stu-name">'+esc(stu.name)+'</div>'+
         '<div class="stu-prog-row">'+
-          '<div class="stu-prog-bar"><div class="stu-prog-fill" style="width:'+donePct+'%;background:'+stu.color+';opacity:.8;"></div></div>'+
-          '<span class="stu-prog-pct">'+donePct+'%</span>'+
+          '<div class="stu-prog-bar"><div class="stu-prog-fill" style="width:0%;background:'+stu.color+';opacity:.8;"></div></div>'+
+          '<span class="stu-prog-pct" style="color:var(--text3);">—</span>'+
         '</div>'+
       '</div>'+
       '<span class="stu-badge '+badgeClass+'">'+badgeLabel+'</span>';
