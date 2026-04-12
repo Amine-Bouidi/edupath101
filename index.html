@@ -5204,11 +5204,84 @@ var PLACEHOLDER_QUIZ_100 = (function(){
 
 var bigQuizState = { qIdx:0, score:0, answered:false, done:false };
 
+/* ── Quiz progress persistence (localStorage + Firestore) ── */
+function getQuizProgressKey(){
+  if(!S.uni || !S.sem || !S.mod) return null;
+  var email = S.user && S.user.email ? S.user.email : 'guest';
+  return 'qzp_' + email + '_' + S.uni.id + '_' + S.sem.id + '_' + S.mod.id + '_v' + S.vidIdx;
+}
+
+function saveQuizProgress(){
+  var key = getQuizProgressKey();
+  if(!key) return;
+  var payload = { qIdx: bigQuizState.qIdx, score: bigQuizState.score, updatedAt: Date.now() };
+  try { localStorage.setItem(key, JSON.stringify(payload)); } catch(e){}
+  // Also sync to Firestore so progress follows the user across devices
+  if(S.user && S.user.email){
+    var docId = S.user.email.replace(/[^a-zA-Z0-9]/g,'_');
+    var field = 'quizProgress.' + key;
+    var update = {};
+    update[field] = payload;
+    db.collection('users').doc(docId).update(update).catch(function(){
+      // If the field path fails (e.g. doc has no quizProgress yet), write the whole field
+      db.collection('users').doc(docId).set({quizProgress: (function(){var o={};o[key]=payload;return o;})()}, {merge:true}).catch(function(){});
+    });
+  }
+}
+
+function loadQuizProgress(cb){
+  var key = getQuizProgressKey();
+  if(!key){ cb(null); return; }
+  // Try localStorage first for instant load
+  var local = null;
+  try { local = JSON.parse(localStorage.getItem(key) || 'null'); } catch(e){}
+  if(!S.user || !S.user.email){ cb(local); return; }
+  // Then check Firestore for newer data from another device
+  var docId = S.user.email.replace(/[^a-zA-Z0-9]/g,'_');
+  db.collection('users').doc(docId).get().then(function(doc){
+    if(doc.exists){
+      var d = doc.data();
+      var remote = d.quizProgress && d.quizProgress[key] ? d.quizProgress[key] : null;
+      if(remote && (!local || (remote.updatedAt || 0) > (local.updatedAt || 0))){
+        try { localStorage.setItem(key, JSON.stringify(remote)); } catch(e){}
+        cb(remote);
+        return;
+      }
+    }
+    cb(local);
+  }).catch(function(){ cb(local); });
+}
+
+function clearQuizProgress(){
+  var key = getQuizProgressKey();
+  if(!key) return;
+  try { localStorage.removeItem(key); } catch(e){}
+  if(S.user && S.user.email){
+    var docId = S.user.email.replace(/[^a-zA-Z0-9]/g,'_');
+    var update = {};
+    update['quizProgress.' + key] = firebase.firestore.FieldValue.delete();
+    db.collection('users').doc(docId).update(update).catch(function(){});
+  }
+}
+
 function resetBigQuizIntro(){
   bigQuizState = { qIdx:0, score:0, answered:false, done:false };
   var ov = el('qzOverlay'); if(ov) ov.style.display = 'none';
   var intro = document.querySelector('.qz-intro');
   if(intro) intro.style.display = 'block';
+  // Show 'Resume' state if there's saved progress for this video
+  var startBtn = el('qzStartBtn');
+  var subEl = document.querySelector('.qz-intro-sub');
+  if(!startBtn) return;
+  startBtn.textContent = '🎯 I am ready for test';
+  if(subEl) subEl.textContent = 'Challenge yourself with a 100-question test covering this module.';
+  loadQuizProgress(function(saved){
+    if(saved && typeof saved.qIdx === 'number' && saved.qIdx > 0){
+      var qs = getActiveQuiz();
+      startBtn.textContent = '▶ Resume test (' + (saved.qIdx + 1) + ' / ' + qs.length + ')';
+      if(subEl) subEl.textContent = 'You stopped at question ' + (saved.qIdx + 1) + '. Pick up where you left off.';
+    }
+  });
 }
 
 function getActiveQuiz(){
@@ -5224,11 +5297,19 @@ function getActiveQuiz(){
 }
 
 function openBigQuiz(){
-  bigQuizState = { qIdx:0, score:0, answered:false, done:false };
   el('qzOverlay').style.display = 'flex';
   el('qzBigBody').style.display = 'block';
   el('qzBigResult').style.display = 'none';
-  showBigQuestion();
+  // Load saved progress if any
+  loadQuizProgress(function(saved){
+    var qs = getActiveQuiz();
+    if(saved && typeof saved.qIdx === 'number' && saved.qIdx >= 0 && saved.qIdx < qs.length){
+      bigQuizState = { qIdx: saved.qIdx, score: saved.score || 0, answered: false, done: false };
+    } else {
+      bigQuizState = { qIdx:0, score:0, answered:false, done:false };
+    }
+    showBigQuestion();
+  });
 }
 
 function closeBigQuiz(){
@@ -5286,18 +5367,23 @@ function answerBigQuiz(i, correct){
     el('qzBigNextBtn').textContent = 'Next question →';
   }
   el('qzBigNextBtn').style.display = 'block';
+  // Persist progress so user can resume later
+  saveQuizProgress();
 }
 
 function nextBigQuiz(){
   if(bigQuizState.done){
+    clearQuizProgress();
     showBigResult();
   } else {
     bigQuizState.qIdx++;
+    saveQuizProgress();
     showBigQuestion();
   }
 }
 
 function retryBigQuiz(){
+  clearQuizProgress();
   bigQuizState = { qIdx:0, score:0, answered:false, done:false };
   el('qzBigBody').style.display = 'block';
   el('qzBigResult').style.display = 'none';
