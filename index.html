@@ -7430,7 +7430,23 @@ firebase.auth().onAuthStateChanged(function(user){
   if(user && !S.user){
     var lp = document.getElementById('landingPage');
     if(lp) lp.style.display = 'none';
-    enterApp(user.displayName || 'User', user.email || '');
+    /* Pre-load university/semester from Firestore BEFORE enterApp so dashboard renders correctly */
+    var email = user.email || '';
+    if(email){
+      var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
+      db.collection('users').doc(docId).get().then(function(doc){
+        if(doc.exists){
+          var d = doc.data();
+          if(d.university) localStorage.setItem('user_uni_'+email, d.university);
+          if(d.semester) localStorage.setItem('user_sem_'+email, d.semester);
+        }
+        enterApp(user.displayName || 'User', email);
+      }).catch(function(){
+        enterApp(user.displayName || 'User', email);
+      });
+    } else {
+      enterApp(user.displayName || 'User', email);
+    }
   }
 });
 
