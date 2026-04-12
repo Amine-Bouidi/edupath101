@@ -4902,7 +4902,7 @@ function renderModuleGrid(grid, mods, sem, idx, subData, readyMods){
       }
     } else if(hasLearningAccess()){
       /* Student with learning page access — show module cards with player access */
-      var hasContent = lessonCount > 0 || (mod.title.toLowerCase().indexOf('cultural studies') !== -1);
+      var hasContent = mod.title.toLowerCase().indexOf('cultural studies') !== -1;
       card.className = 'mod-card' + (hasContent ? '' : ' locked');
       card.innerHTML='<div class="mc-head"><div class="mc-icon">'+mod.icon+'</div><div><div class="mc-title">'+mod.title+'</div><div class="mc-desc">'+mod.desc+'</div></div></div><div class="pbar"><div class="pfill" style="width:'+pct+'%"></div></div><div class="mc-footer"><span class="mc-vids">5 videos'+(dv>0?' · '+dv+' done':'')+'</span>'+lessonBadge+badge+'</div>';
       if(hasContent){
