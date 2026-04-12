@@ -4695,7 +4695,13 @@ function renderSemGrid(grid, semIndices, uni, hidden, customSems, readySems){
     var semLessonCount = readySems[sem.id] ? (readySems[sem.id]._total || 0) : 0;
     var semLessonBadge = semLessonCount > 0 ? '<span style="background:rgba(67,233,123,.15);color:#43e97b;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:700;margin-left:4px;">📄 '+semLessonCount+' Lesson'+(semLessonCount>1?'s':'')+' Ready</span>' : '';
     card.innerHTML='<div class="sc-num" style="color:'+sem.c1+'" id="stitle_'+idx+'">'+sem.title+adminBtns+'</div><div class="sc-title" id="ssub_'+idx+'">'+sem.sub+subAdminBtn+'</div><div class="pbar"><div class="pfill" style="width:'+pct+'%;background:linear-gradient(90deg,'+sem.c1+','+sem.c2+');"></div></div><div class="sc-footer"><span style="font-size:12px;color:var(--text2);">'+mods.length+' modules</span>'+semLessonBadge+badge+'</div>';
-    card.onclick=(function(s,i){return function(e){if(e.target.closest('.sem-edit-btn')||e.target.closest('.sem-edit-sub-btn')||e.target.closest('.sem-hide-btn')||e.target.closest('.sem-restore-btn'))return;openModules(s,i);};})(sem,idx);
+    /* For non-admin students: lock all semesters except S4 */
+    if(!isAdminUser && hasLearningAccess() && sem.id !== 'sem4'){
+      card.classList.add('locked');
+      card.innerHTML += '<div class="mod-lock-overlay"><div class="mod-lock-badge" style="background:rgba(249,168,37,.15);color:#f9a825;border:1px solid rgba(249,168,37,.3);">🔜 Coming soon</div></div>';
+    } else {
+      card.onclick=(function(s,i){return function(e){if(e.target.closest('.sem-edit-btn')||e.target.closest('.sem-edit-sub-btn')||e.target.closest('.sem-hide-btn')||e.target.closest('.sem-restore-btn'))return;openModules(s,i);};})(sem,idx);
+    }
     grid.appendChild(card);
   });
 
