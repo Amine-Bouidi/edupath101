@@ -6474,8 +6474,8 @@ function populateProfileDropdowns(uniElId, semElId, selUni, selSem){
 function checkProfileSetup(email, name){
   if(!email || email === '') return;
   if(isAdmin()) return;
-  if(localStorage.getItem('profileDone_'+email)) return;
   var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
+  // Always load university/semester from Firestore into session
   db.collection('users').doc(docId).get().then(function(doc){
     if(doc.exists){
       var d = doc.data();
@@ -6483,8 +6483,10 @@ function checkProfileSetup(email, name){
       if(d.university) S.user.university = d.university;
       if(d.semester) S.user.semester = d.semester;
       // If user has seen the popup before OR has completed profile, skip
-      if(d.profileSetupSeen || d.profileComplete){
+      if(d.profileSetupSeen || d.profileComplete || localStorage.getItem('profileDone_'+email)){
         localStorage.setItem('profileDone_'+email,'1');
+        // Re-render dashboard now that university/semester are loaded
+        if(!isAdmin()) renderPhase1Dashboard();
         return;
       }
     }
