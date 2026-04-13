@@ -5275,12 +5275,12 @@ function getVideoKey(){
 function loadVideoStats(){
   var key = getVideoKey();
   if(!key) return;
-  // Update view count optimistically in UI
+  // Read current values then display (views +1 since we're incrementing)
   db.collection('videoStats').doc(key).get().then(function(doc){
     var d = doc.exists ? doc.data() : {};
     if(el('likeCount')) el('likeCount').textContent = d.likes || 0;
     if(el('saveCount')) el('saveCount').textContent = d.saves || 0;
-    if(el('viewCount')) el('viewCount').textContent = d.views || 0;
+    if(el('viewCount')) el('viewCount').textContent = (d.views || 0) + 1;
   }).catch(function(){});
   // Increment view count (best-effort)
   db.collection('videoStats').doc(key).set({
