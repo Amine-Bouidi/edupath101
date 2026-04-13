@@ -5162,7 +5162,7 @@ window.deleteModule = function(firestoreId){
 
 /* ── PLAYER ── */
 var fakeT=null;
-function openPlayer(mod){
+function openPlayer(mod, forceVidIdx){
   S.mod=mod; S.vidDone=false; updateCtx();
   initP(S.uni.id,S.sem.id,mod.id);
   /* Load from Firestore and re-render if newer data arrives */
@@ -5192,9 +5192,13 @@ function openPlayer(mod){
   var modIdx = mod.id.replace('m','');
   loadContentForModule(S.uni.id, S.sem.id, parseInt(modIdx)-1, function(){
     var p=getP(S.uni.id,S.sem.id,mod.id);
-    var first=-1;
-    for(var i=0;i<VIDEOS.length;i++){if(p.videos.indexOf(i)<0){first=i;break;}}
-    S.vidIdx=first>=0?first:0;
+    if(typeof forceVidIdx === 'number'){
+      S.vidIdx = forceVidIdx;
+    } else {
+      var first=-1;
+      for(var i=0;i<VIDEOS.length;i++){if(p.videos.indexOf(i)<0){first=i;break;}}
+      S.vidIdx=first>=0?first:0;
+    }
     el('nav-player').style.display='flex';
     el('nav-contact').style.display='flex';
     setTopbar([S.uni.emoji+' '+S.uni.name, S.sem.title, mod.title], mod.title, true);
@@ -8420,8 +8424,7 @@ window.renderPhase1Dashboard = function(){
           var mods = getMods(semIdx, 'usmba');
           var cs = mods.find(function(m){ return m.title && m.title.toLowerCase().indexOf('cultural studies') !== -1; });
           if(cs){
-            S.vidIdx = 0; // free preview video
-            openPlayer(cs);
+            openPlayer(cs, 0); // force Video 1 (free preview)
           }
         }, 500);
       }, 300);
