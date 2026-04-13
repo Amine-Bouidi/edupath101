@@ -8408,18 +8408,23 @@ window.renderPhase1Dashboard = function(){
   if(el('newVideoSection')) el('newVideoSection').style.display = 'block';
   if(el('newVideoCard')){
     el('newVideoCard').onclick = function(){
-      /* Navigate to student's OWN university or fall back to Fes Sais */
-      var userUni = S.user.university || 'usmba';
-      var userSem = S.user.semester || 'sem4';
-      var uni = UNIVERSITIES.find(function(u){ return u.id === userUni; }) || UNIVERSITIES.find(function(u){ return u.id === 'usmba'; });
-      if(uni){
-        openSemesters(uni);
+      /* Navigate directly to USMBA Fes Sais → Semester 4 → Cultural Studies → Video 1 */
+      var uni = UNIVERSITIES.find(function(u){ return u.id === 'usmba'; });
+      if(!uni) return;
+      openSemesters(uni);
+      setTimeout(function(){
+        var semIdx = SEMESTERS.findIndex(function(s){ return s.id === 'sem4'; });
+        if(semIdx < 0) return;
+        openModules(SEMESTERS[semIdx], semIdx);
         setTimeout(function(){
-          var semIdx = SEMESTERS.findIndex(function(s){ return s.id === userSem; });
-          if(semIdx < 0) semIdx = 3; // default to S4
-          openModules(SEMESTERS[semIdx], semIdx);
-        }, 300);
-      }
+          var mods = getMods(semIdx, 'usmba');
+          var cs = mods.find(function(m){ return m.title && m.title.toLowerCase().indexOf('cultural studies') !== -1; });
+          if(cs){
+            S.vidIdx = 0; // free preview video
+            openPlayer(cs);
+          }
+        }, 500);
+      }, 300);
     };
   }
 
