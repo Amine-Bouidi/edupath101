@@ -4290,6 +4290,57 @@ var VIDEOS=[
 /* ── STATE ── */
 var S={user:null,uni:null,sem:null,semIdx:0,mod:null,vidIdx:0,progress:{},vidDone:false};
 function initP(u,s,m){var k=u+'_'+s+'_'+m;if(!S.progress[k])S.progress[k]={videos:[],quizzes:[]};return S.progress[k];}
+
+/* ── Navigation state persistence (for page refresh) ── */
+function saveNavState(){
+  try {
+    if(S.uni && S.uni.id) sessionStorage.setItem('nav_uni', S.uni.id);
+    else sessionStorage.removeItem('nav_uni');
+    if(S.sem && S.sem.id) sessionStorage.setItem('nav_sem', S.sem.id);
+    else sessionStorage.removeItem('nav_sem');
+    if(S.mod && S.mod.id) sessionStorage.setItem('nav_mod', S.mod.id);
+    else sessionStorage.removeItem('nav_mod');
+    sessionStorage.setItem('nav_vidIdx', String(S.vidIdx || 0));
+  } catch(e){}
+}
+
+function restoreLastView(){
+  var lastView = sessionStorage.getItem('lastView') || 'dashboard';
+  /* Simple views that don't need nav state */
+  var simpleViews = ['profile','admin','notifs','privacy','contact','pricing','upload','saved'];
+  if(simpleViews.indexOf(lastView) !== -1){
+    showView(lastView);
+    if(lastView === 'admin') loadAdminUsers();
+    if(lastView === 'profile') openProfile();
+    if(lastView === 'notifs') loadNotifications();
+    if(lastView === 'saved') renderSavedVideos();
+    return;
+  }
+  /* Navigation-dependent views: semesters / modules / player */
+  var uniId = sessionStorage.getItem('nav_uni');
+  if(!uniId) return;
+  var uni = UNIVERSITIES.find(function(u){ return u.id === uniId; });
+  if(!uni) return;
+  var semId = sessionStorage.getItem('nav_sem');
+  var modId = sessionStorage.getItem('nav_mod');
+  var vidIdx = parseInt(sessionStorage.getItem('nav_vidIdx') || '0');
+
+  openSemesters(uni);
+  if(lastView === 'semesters') return;
+  if(!semId) return;
+  var semIdx = SEMESTERS.findIndex(function(s){ return s.id === semId; });
+  if(semIdx < 0) return;
+  setTimeout(function(){
+    openModules(SEMESTERS[semIdx], semIdx);
+    if(lastView === 'modules') return;
+    if(!modId) return;
+    setTimeout(function(){
+      var mods = getMods(semIdx, uniId);
+      var mod = mods.find(function(m){ return m.id === modId; });
+      if(mod) openPlayer(mod, vidIdx);
+    }, 500);
+  }, 300);
+}
 function getP(u,s,m){
   var k=u+'_'+s+'_'+m;
   if(!S.progress[k]) S.progress[k]={videos:[],quizzes:[]};
@@ -4516,16 +4567,8 @@ function enterApp(name, email){
   /* Restore video progress from localStorage + Firestore */
   loadProgressLocal();
   loadProgressFromFirestore();
-  // Restore last view if returning from refresh
-  var lastView = sessionStorage.getItem('lastView');
-  if(lastView && lastView !== 'dashboard'){
-    setTimeout(function(){
-      showView(lastView);
-      if(lastView === 'admin') loadAdminUsers();
-      if(lastView === 'profile') openProfile();
-      if(lastView === 'notifs') loadNotifications();
-    }, 100);
-  }
+  // Restore last view if returning from refresh — including deep navigation
+  setTimeout(function(){ restoreLastView(); }, 150);
   cacheUserSubscription();
   /* Heartbeat: update lastLogin every 3 minutes so classmates see you online */
   if(email && email !== ''){
@@ -4557,6 +4600,10 @@ el('btnSignOut').onclick=function(){
   sessionStorage.removeItem('loggedIn');
   sessionStorage.removeItem('lastView');
   sessionStorage.removeItem('profileDone');
+  sessionStorage.removeItem('nav_uni');
+  sessionStorage.removeItem('nav_sem');
+  sessionStorage.removeItem('nav_mod');
+  sessionStorage.removeItem('nav_vidIdx');
   if(trialInterval) clearInterval(trialInterval);
   el('trialBanner').style.display='none';
   el('paywallOverlay').style.display='none';
@@ -4689,6 +4736,7 @@ function renderUniGrid(grid, resCounts){
 /* ── SEMESTERS ── */
 function openSemesters(uni){
   S.uni=uni; S.sem=null; S.mod=null; updateCtx();
+  saveNavState();
   var grid=el('semGrid'); grid.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);">Loading...</div>';
   var semIndices = UNI_SEM_CONFIG[uni.id] || null;
   var prefix = uni.id + '_sem_';
@@ -4829,6 +4877,7 @@ el('nav-semesters').onclick=function(){closeMobileMenu();if(S.uni)openSemesters(
 /* ── MODULES ── */
 function openModules(sem,idx){
   S.sem=sem; S.semIdx=idx; S.mod=null; updateCtx();
+  saveNavState();
   var mods=getMods(idx,S.uni.id);
   var grid=el('modGrid'); grid.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);">Loading modules...</div>';
 
@@ -5239,6 +5288,7 @@ window.deleteModule = function(firestoreId){
 var fakeT=null;
 function openPlayer(mod, forceVidIdx){
   S.mod=mod; S.vidDone=false; updateCtx();
+  saveNavState();
   initP(S.uni.id,S.sem.id,mod.id);
   /* Load from Firestore and re-render if newer data arrives */
   if(S.user && S.user.email){
@@ -5394,6 +5444,7 @@ function renderInstructorCard(){
 }
 
 function renderPlayer(){
+  saveNavState();
   var vid=VIDEOS[S.vidIdx];
   var p=getP(S.uni.id,S.sem.id,S.mod.id);
   var done=p.videos.length, pct=Math.round((done/VIDEOS.length)*100);
