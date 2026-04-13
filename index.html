@@ -435,7 +435,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .rp-dots{display:flex;gap:4px;}
 .rp-dot{width:5px;height:5px;border-radius:50%;background:var(--bg4);transition:all .25s;}
 .rp-dot.active{background:var(--accent2);width:14px;border-radius:3px;}
-.rp-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;cursor:pointer;overflow:hidden;height:254px;position:relative;transition:border-color .2s,transform .2s;display:flex;flex-direction:column;}
+.rp-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;cursor:pointer;overflow:hidden;flex:1 1 auto;min-height:254px;position:relative;transition:border-color .2s,transform .2s;display:flex;flex-direction:column;}
 .rp-card:hover{border-color:var(--accent2);transform:translateY(-2px);}
 .rp-card-inner{padding:20px;display:flex;flex-direction:column;gap:12px;flex:1;transition:opacity .4s ease,transform .4s ease;min-height:0;}
 .rp-card-inner.fading{opacity:0;transform:translateY(-14px);}
@@ -2014,7 +2014,7 @@ function openLoginFromLanding(){
         <!-- PHASE 1 USER DASHBOARD (hidden for admin) -->
         <div id="phase1Dashboard">
         <!-- NEW VIDEO + RECENTLY PUBLISHED side by side -->
-        <div id="newVideoRow" style="display:flex;gap:18px;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;">
+        <div id="newVideoRow" style="display:flex;gap:18px;align-items:stretch;margin-bottom:20px;flex-wrap:wrap;">
         <!-- NEW VIDEO ON EDUPATH — LinkedIn Learning style -->
         <div id="newVideoSection" style="display:none;flex-shrink:0;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
@@ -2043,7 +2043,7 @@ function openLoginFromLanding(){
         </div>
 
         <!-- Recently Published rotating ticker -->
-        <div id="recentPublishedSection" style="display:none;flex:1;min-width:280px;">
+        <div id="recentPublishedSection" style="display:none;flex:1;min-width:280px;flex-direction:column;">
           <div class="rp-hdr">
             <div class="rp-title">🔥 Recently Published</div>
             <div class="rp-dots" id="rpDots"></div>
@@ -8832,7 +8832,7 @@ function loadRecentPublished(){
         section.style.display = 'none';
         return;
       }
-      section.style.display = 'block';
+      section.style.display = 'flex';
       RP_IDX = 0;
       renderRpCard();
       startRpRotation();
