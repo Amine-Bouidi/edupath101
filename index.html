@@ -52,6 +52,13 @@
   --border:rgba(108,99,255,.18);--border2:rgba(108,99,255,.38);
   --success:#43e97b;--warning:#f9a825;--r:14px;--sw:260px;
 }
+[data-theme="light"]{
+  --bg:#f5f6fb;--bg2:#ffffff;--bg3:#f0f2fa;--bg4:#e6e9f5;--bg5:#d8ddee;
+  --accent:#6c63ff;--accent2:#5b51e8;--accent3:#ff6584;--teal:#00bfa5;
+  --text:#14142b;--text2:#4e4e6c;--text3:#8b8ba7;
+  --border:rgba(108,99,255,.20);--border2:rgba(108,99,255,.40);
+  --success:#22c55e;--warning:#f59e0b;
+}
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;overflow:hidden;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;height:100vh;}
@@ -1915,6 +1922,7 @@ function openLoginFromLanding(){
       <div class="sb-item" id="nav-profile"><span class="sb-icon">👤</span><span class="sb-item-label"> My Profile</span></div>
       <div class="sb-item" id="nav-privacy"><span class="sb-icon">🔒</span><span class="sb-item-label"> Privacy Policy</span></div>
       <div class="sb-item" id="nav-contact"   style="display:none;"><span class="sb-icon">💬</span><span class="sb-item-label"> Book tutoring</span></div>
+      <div class="sb-item" id="nav-theme"><span class="sb-icon" id="themeIcon">🌙</span><span class="sb-item-label" id="themeLabel"> Dark mode</span></div>
     </div>
     <div class="sb-ctx" id="sbCtx" style="display:none;">
       <div class="sb-ctx-lbl">Current session</div>
@@ -6631,6 +6639,27 @@ el('profSaveBtn').onclick = function(){
 el('nav-profile').onclick = function(){ closeMobileMenu(); openProfile(); };
 el('nav-privacy').onclick = function(){ closeMobileMenu(); openPrivacyPage(); };
 el('nav-notifs').onclick = function(){ closeMobileMenu(); setTopbar([],'Notifications',false); showView('notifs'); };
+
+/* ── THEME TOGGLE (dark / light) ── */
+function applyTheme(theme){
+  if(theme === 'light'){
+    document.documentElement.setAttribute('data-theme','light');
+    if(el('themeIcon')) el('themeIcon').textContent = '☀️';
+    if(el('themeLabel')) el('themeLabel').textContent = ' Light mode';
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    if(el('themeIcon')) el('themeIcon').textContent = '🌙';
+    if(el('themeLabel')) el('themeLabel').textContent = ' Dark mode';
+  }
+}
+/* Restore saved preference */
+try { applyTheme(localStorage.getItem('theme') || 'dark'); } catch(e){}
+el('nav-theme').onclick = function(){
+  var current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  var next = current === 'light' ? 'dark' : 'light';
+  applyTheme(next);
+  try { localStorage.setItem('theme', next); } catch(e){}
+};
 
 /* Paywall overlay buttons */
 el('pwBtnPricing').onclick = function(){
