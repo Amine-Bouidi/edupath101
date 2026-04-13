@@ -8785,6 +8785,7 @@ var RP_TIMER = null;
 function loadRecentPublished(){
   var section = el('recentPublishedSection');
   if(!section) return;
+  var currentEmail = (S.user && S.user.email) ? S.user.email.toLowerCase() : '';
   db.collection('published_resources')
     .where('status','==','published')
     .limit(50)
@@ -8792,15 +8793,17 @@ function loadRecentPublished(){
       var items = [];
       snap.forEach(function(doc){
         var d = doc.data();
-        // Only keep items that are properly attached to a module
-        // (university + semester + module), so the click can navigate there
-        if(d && d.university && d.semester && d.module){
-          items.push(d);
-        }
+        if(!d || !d.university || !d.semester || !d.module) return;
+        // Only show items shared by an admin (not student contributions)
+        var contribEmail = (d.contributorEmail || '').toLowerCase();
+        if(ADMIN_EMAILS.indexOf(contribEmail) === -1) return;
+        // Don't show resources the current user shared themselves
+        if(contribEmail && contribEmail === currentEmail) return;
+        items.push(d);
       });
-      // Sort client-side by publishedAt desc (avoids needing a Firestore index)
+      // Sort client-side by publishedAt desc (most recent first)
       items.sort(function(a,b){ return (b.publishedAt || '').localeCompare(a.publishedAt || ''); });
-      // Keep only the 10 most recent module resources
+      // Keep only the 10 most recent
       RECENT_PUB = items.slice(0, 10);
       if(RECENT_PUB.length === 0){
         section.style.display = 'none';
