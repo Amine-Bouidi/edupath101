@@ -1911,7 +1911,6 @@ function openLoginFromLanding(){
     <div class="sb-nav">
       <div class="sb-sec">Navigation</div>
       <div class="sb-item active" id="nav-dashboard"><span class="sb-icon">🏠</span><span class="sb-item-label"> Dashboard</span></div>
-      <div class="sb-item" id="nav-learning" style="display:none;"><span class="sb-icon">📚</span><span class="sb-item-label"> Start Learning</span></div>
       <div class="sb-item" id="nav-semesters" style="display:none;"><span class="sb-icon">📅</span><span class="sb-item-label"> Semesters</span></div>
       <div class="sb-item" id="nav-modules"   style="display:none;"><span class="sb-icon">📚</span><span class="sb-item-label"> Modules</span></div>
       <div class="sb-item" id="nav-player"    style="display:none;"><span class="sb-icon">▶</span><span class="sb-item-label"> Now watching</span></div>
@@ -1985,16 +1984,7 @@ function openLoginFromLanding(){
         </div>
 
         <!-- Start Learning CTA — shown for students with learning access -->
-        <div id="startLearningCard" style="display:none;background:linear-gradient(135deg,rgba(108,99,255,.12),rgba(56,249,215,.08));border:1px solid var(--border2);border-radius:14px;padding:20px 24px;margin-bottom:20px;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent2)'" onmouseout="this.style.borderColor='var(--border2)'">
-          <div style="display:flex;align-items:center;gap:16px;">
-            <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">📚</div>
-            <div style="flex:1;">
-              <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;">Start Learning</div>
-              <div style="font-size:12px;color:var(--text2);line-height:1.5;">Video lessons, summaries, quizzes, and study resources are ready for your semester. Tap to explore your modules.</div>
-            </div>
-            <div style="font-size:20px;color:var(--accent2);flex-shrink:0;">→</div>
-          </div>
-        </div>
+        <div id="startLearningCard" style="display:none;"></div>
 
         <!-- Reward Progress -->
         <div id="rewardBar" style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;gap:14px;">
@@ -4705,13 +4695,7 @@ function renderSemGrid(grid, semIndices, uni, hidden, customSems, readySems){
     var semLessonCount = readySems[sem.id] ? (readySems[sem.id]._total || 0) : 0;
     var semLessonBadge = semLessonCount > 0 ? '<span style="background:rgba(67,233,123,.15);color:#43e97b;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:700;margin-left:4px;">📄 '+semLessonCount+' Lesson'+(semLessonCount>1?'s':'')+' Ready</span>' : '';
     card.innerHTML='<div class="sc-num" style="color:'+sem.c1+'" id="stitle_'+idx+'">'+sem.title+adminBtns+'</div><div class="sc-title" id="ssub_'+idx+'">'+sem.sub+subAdminBtn+'</div><div class="pbar"><div class="pfill" style="width:'+pct+'%;background:linear-gradient(90deg,'+sem.c1+','+sem.c2+');"></div></div><div class="sc-footer"><span style="font-size:12px;color:var(--text2);">'+mods.length+' modules</span>'+semLessonBadge+badge+'</div>';
-    /* For non-admin students: lock all semesters except S4 */
-    if(!isAdminUser && hasLearningAccess() && sem.id !== 'sem4'){
-      card.classList.add('locked');
-      card.innerHTML += '<div class="mod-lock-overlay"><div class="mod-lock-badge" style="background:rgba(249,168,37,.15);color:#f9a825;border:1px solid rgba(249,168,37,.3);">🔜 Coming soon</div></div>';
-    } else {
-      card.onclick=(function(s,i){return function(e){if(e.target.closest('.sem-edit-btn')||e.target.closest('.sem-edit-sub-btn')||e.target.closest('.sem-hide-btn')||e.target.closest('.sem-restore-btn'))return;openModules(s,i);};})(sem,idx);
-    }
+    card.onclick=(function(s,i){return function(e){if(e.target.closest('.sem-edit-btn')||e.target.closest('.sem-edit-sub-btn')||e.target.closest('.sem-hide-btn')||e.target.closest('.sem-restore-btn'))return;openModules(s,i);};})(sem,idx);
     grid.appendChild(card);
   });
 
@@ -4857,18 +4841,9 @@ function proceedWithModules(mods, sem, idx, grid){
   }
 }
 
-/* Check if current user has learning page access (not just upload dashboard) */
+/* Every logged-in student has access to the learning page (Video 1 is always free) */
 function hasLearningAccess(){
-  if(isAdmin()) return true;
-  if(!S.user) return false;
-  // Any student viewing the Fes Sais S4 context gets access to the free preview
-  if(S.uni && S.uni.id === 'usmba' && S.sem && S.sem.id === 'sem4') return true;
-  // Fes Sais S4 students in their own profile path
-  var userUni = S.user.university || '';
-  var userSem = S.user.semester || '';
-  if(userUni === 'usmba' && userSem === 'sem4') return true;
-  if(isUserPaid()) return true;
-  return false;
+  return !!S.user;
 }
 
 function renderModuleGrid(grid, mods, sem, idx, subData, readyMods){
@@ -4913,15 +4888,10 @@ function renderModuleGrid(grid, mods, sem, idx, subData, readyMods){
         card.onclick=function(e){ if(e.target.closest('.mod-edit-btn')||e.target.closest('.mod-del-btn'))return; showView('pricing'); setTopbar([],'Plans & Pricing',false); };
       }
     } else if(hasLearningAccess()){
-      /* Student with learning page access — show module cards with player access */
-      var hasContent = mod.title.toLowerCase().indexOf('cultural studies') !== -1;
-      card.className = 'mod-card' + (hasContent ? '' : ' locked');
+      /* Student with learning page access — all modules clickable, Video 1 free */
+      card.className = 'mod-card';
       card.innerHTML='<div class="mc-head"><div class="mc-icon">'+mod.icon+'</div><div><div class="mc-title">'+mod.title+'</div><div class="mc-desc">'+mod.desc+'</div></div></div><div class="pbar"><div class="pfill" style="width:'+pct+'%"></div></div><div class="mc-footer"><span class="mc-vids">5 videos'+(dv>0?' · '+dv+' done':'')+'</span>'+lessonBadge+badge+'</div>';
-      if(hasContent){
-        card.onclick=(function(m){return function(){openPlayer(m);};})(mod);
-      } else {
-        card.innerHTML += '<div class="mod-lock-overlay"><div class="mod-lock-badge" style="background:rgba(249,168,37,.15);color:#f9a825;border:1px solid rgba(249,168,37,.3);">🔜 Coming soon</div></div>';
-      }
+      card.onclick=(function(m){return function(){openPlayer(m);};})(mod);
     } else {
       card.className = 'mod-card';
       card.setAttribute('data-mod-title', mod.title);
@@ -5734,19 +5704,6 @@ el('nav-pricing').onclick=function(){closeMobileMenu();openPricing();};
 el('btnSubmitContact').onclick=function(){el('cFormCard').style.display='none';el('cSuccess').style.display='block';};
 el('btnBackDash').onclick=function(){showView('dashboard');renderPhase1Dashboard();};
 el('nav-dashboard').onclick=function(){closeMobileMenu();showView('dashboard');if(isAdmin()){renderDashboard();}else{renderPhase1Dashboard();}};
-el('nav-learning').onclick=function(){
-  closeMobileMenu();
-  var userUni = S.user && S.user.university ? S.user.university : '';
-  var userSem = S.user && S.user.semester ? S.user.semester : '';
-  var uni = UNIVERSITIES.find(function(u){ return u.id === userUni; });
-  if(uni){
-    openSemesters(uni);
-    setTimeout(function(){
-      var semIdx = SEMESTERS.findIndex(function(s){ return s.id === userSem; });
-      if(semIdx >= 0) openModules(SEMESTERS[semIdx], semIdx);
-    }, 300);
-  }
-};
 
 /* ═══════════════════════════════════════════
    COMMUNITY — classmates + public discussion
@@ -8447,49 +8404,23 @@ window.renderPhase1Dashboard = function(){
   el('adminDashboard').style.display='none';
   el('wbGreet').textContent = 'Welcome, ' + S.user.name.split(' ')[0] + '!';
 
-  /* Show "Start Learning" card for students with learning access */
-  var slCard = el('startLearningCard');
-  if(slCard){
-    var userUni = S.user.university || '';
-    var userSem = S.user.semester || '';
-    var canLearn = (userUni === 'usmba' && userSem === 'sem4');
-    slCard.style.display = canLearn ? 'block' : 'none';
-    if(el('nav-learning')) el('nav-learning').style.display = canLearn ? 'flex' : 'none';
-    /* Show 'New on EduPath' free video card to ALL students */
-    if(el('newVideoSection')) el('newVideoSection').style.display = 'block';
-    if(el('newVideoCard')){
-      el('newVideoCard').onclick = function(){
-        /* Always navigate to Fes Sais S4 Cultural Studies — the free preview */
-        var uni = UNIVERSITIES.find(function(u){ return u.id === 'usmba'; });
-        if(uni){
-          openSemesters(uni);
-          setTimeout(function(){
-            var semIdx = SEMESTERS.findIndex(function(s){ return s.id === 'sem4'; });
-            if(semIdx >= 0){
-              openModules(SEMESTERS[semIdx], semIdx);
-              setTimeout(function(){
-                var mods = getMods(semIdx, 'usmba');
-                var cs = mods.find(function(m){ return m.title && m.title.toLowerCase().indexOf('cultural studies') !== -1; });
-                if(cs) openPlayer(cs);
-              }, 400);
-            }
-          }, 300);
-        }
-      };
-    }
-    if(canLearn){
-      slCard.onclick = function(){
-        var uni = UNIVERSITIES.find(function(u){ return u.id === userUni; });
-        if(uni){
-          openSemesters(uni);
-          // Auto-navigate to their semester
-          setTimeout(function(){
-            var semIdx = SEMESTERS.findIndex(function(s){ return s.id === userSem; });
-            if(semIdx >= 0) openModules(SEMESTERS[semIdx], semIdx);
-          }, 300);
-        }
-      };
-    }
+  /* Show 'New on EduPath' free video card to ALL students */
+  if(el('newVideoSection')) el('newVideoSection').style.display = 'block';
+  if(el('newVideoCard')){
+    el('newVideoCard').onclick = function(){
+      /* Navigate to student's OWN university or fall back to Fes Sais */
+      var userUni = S.user.university || 'usmba';
+      var userSem = S.user.semester || 'sem4';
+      var uni = UNIVERSITIES.find(function(u){ return u.id === userUni; }) || UNIVERSITIES.find(function(u){ return u.id === 'usmba'; });
+      if(uni){
+        openSemesters(uni);
+        setTimeout(function(){
+          var semIdx = SEMESTERS.findIndex(function(s){ return s.id === userSem; });
+          if(semIdx < 0) semIdx = 3; // default to S4
+          openModules(SEMESTERS[semIdx], semIdx);
+        }, 300);
+      }
+    };
   }
 
   // Load user uploads from Firestore
