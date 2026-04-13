@@ -435,14 +435,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .rp-dots{display:flex;gap:4px;}
 .rp-dot{width:5px;height:5px;border-radius:50%;background:var(--bg4);transition:all .25s;}
 .rp-dot.active{background:var(--accent2);width:14px;border-radius:3px;}
-.rp-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;cursor:pointer;overflow:hidden;flex:1 1 auto;min-height:290px;position:relative;transition:border-color .2s,transform .2s;display:flex;flex-direction:column;}
-.rp-card:hover{border-color:var(--accent2);transform:translateY(-2px);}
-.rp-card-inner{padding:20px;display:flex;flex-direction:row;gap:20px;flex:1;transition:opacity .4s ease,transform .4s ease;min-height:0;align-items:center;}
+.rp-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;cursor:default;overflow:hidden;flex:1 1 auto;min-height:250px;position:relative;transition:border-color .2s;display:flex;flex-direction:row;align-items:stretch;}
+.rp-card:hover{border-color:var(--accent2);}
+.rp-card-inner{padding:20px;display:flex;flex-direction:row;gap:20px;flex:1;min-width:0;transition:opacity .4s ease,transform .4s ease;align-items:center;cursor:pointer;}
 .rp-card-inner.fading{opacity:0;transform:translateY(-14px);}
 .rp-main-col{display:flex;flex-direction:column;gap:12px;flex:1;min-width:0;align-self:stretch;}
-.rp-logo-col{flex:0 0 260px;max-width:260px;display:flex;align-items:center;justify-content:center;align-self:stretch;padding:8px 0;}
+.rp-logo-col{flex:0 0 170px;max-width:170px;display:flex;align-items:center;justify-content:center;align-self:stretch;padding:8px 0;order:-1;}
 .rp-logo-col img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block;image-rendering:-webkit-optimize-contrast;image-rendering:crisp-edges;}
-.rp-logo-fallback{font-size:120px;line-height:1;opacity:.95;}
+.rp-logo-fallback{font-size:90px;line-height:1;opacity:.95;}
+.rp-search-col{flex:0 0 260px;max-width:260px;padding:20px;display:flex;flex-direction:column;justify-content:center;gap:10px;border-left:1px solid var(--border);background:rgba(255,255,255,.015);}
+.rp-search-wrap{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:12px 14px;transition:border-color .2s;}
+.rp-search-wrap:focus-within{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(0,212,170,.12);}
+.rp-search-icon{font-size:15px;opacity:.75;flex-shrink:0;}
+.rp-search-input{flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;}
+.rp-search-input::placeholder{color:var(--text3);}
+.rp-search-hint{font-size:10px;color:var(--text3);text-align:center;line-height:1.4;}
 .rp-icon-row{display:flex;align-items:center;gap:12px;}
 .rp-icon{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--accent3),#ff9a9e);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
 .rp-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(67,233,123,.12);border:1px solid rgba(67,233,123,.3);color:var(--success);font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px;}
@@ -451,15 +458,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .rp-contributor{font-size:11px;color:var(--accent2);font-weight:600;margin-top:auto;display:flex;align-items:center;gap:6px;}
 .rp-avatar{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
 
+@media(max-width:900px){
+  .rp-card{flex-direction:column;height:auto;min-height:auto;}
+  .rp-search-col{flex:1 1 auto;max-width:100%;border-left:none;border-top:1px solid var(--border);padding:14px 18px;}
+  .rp-search-hint{display:none;}
+}
 @media(max-width:768px){
-  .rp-card{height:auto;min-height:220px;}
-  .rp-logo-col{flex:0 0 160px;max-width:160px;padding:4px 0;}
-  .rp-logo-fallback{font-size:80px;}
+  .rp-logo-col{flex:0 0 130px;max-width:130px;padding:4px 0;}
+  .rp-logo-fallback{font-size:70px;}
 }
 @media(max-width:480px){
   .rp-card-inner{padding:16px;gap:12px;}
-  .rp-logo-col{flex:0 0 110px;max-width:110px;padding:2px 0;}
-  .rp-logo-fallback{font-size:56px;}
+  .rp-logo-col{flex:0 0 90px;max-width:90px;padding:2px 0;}
+  .rp-logo-fallback{font-size:50px;}
+  .rp-search-col{padding:12px 14px;}
 }
 
 /* ── COLLAPSIBLE SECTIONS (right panel cards) ── */
@@ -2060,7 +2072,16 @@ function openLoginFromLanding(){
             <div class="rp-dots" id="rpDots"></div>
           </div>
           <div class="rp-card" id="rpCard">
+            <!-- Rotating area: logo (left) + text info (right). Rebuilt each tick. -->
             <div class="rp-card-inner" id="rpCardInner"></div>
+            <!-- Static search bar — NOT rebuilt on rotation so typing/focus survives -->
+            <div class="rp-search-col">
+              <div class="rp-search-wrap">
+                <span class="rp-search-icon">🔍</span>
+                <input type="text" class="rp-search-input" id="dashSearch" placeholder="Search universities…" oninput="filterDashboardSearch()">
+              </div>
+              <div class="rp-search-hint">Tap to filter universities below</div>
+            </div>
           </div>
         </div>
         </div>
@@ -2068,13 +2089,21 @@ function openLoginFromLanding(){
         <!-- Start Learning CTA — shown for students with learning access -->
         <div id="startLearningCard" style="display:none;"></div>
 
-        <!-- Reward Progress -->
-        <!-- BIG UPLOAD BUTTON -->
-        <div onclick="showView('upload')" style="cursor:pointer;background:linear-gradient(135deg,rgba(0,212,170,.08),rgba(108,99,255,.08));border:2px dashed var(--accent2);border-radius:18px;padding:40px 24px;text-align:center;transition:all .25s;margin-bottom:24px;" onmouseover="this.style.borderColor='var(--teal)';this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 32px rgba(0,0,0,.2)'" onmouseout="this.style.borderColor='var(--accent2)';this.style.transform='none';this.style.boxShadow='none'">
-          <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--accent));display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;color:#fff;">+</div>
-          <div style="font-family:'Sora',sans-serif;font-size:20px;font-weight:800;color:var(--text);margin-bottom:6px;">Share My Handout Now</div>
-          <div style="font-size:13px;color:var(--text2);max-width:400px;margin:0 auto 12px;">Upload a photo of your lecture handout, PDF or slides. Takes 30 seconds.</div>
-          <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(108,99,255,.1);border:1px solid var(--border2);border-radius:20px;padding:6px 14px;font-size:12px;color:var(--text);"><span style="font-size:14px;">🎁</span><span><strong>Share a module handout</strong> = Get a <strong style="color:var(--accent2);">FREE video summary</strong> for it</span></div>
+        <!-- COMPACT UPLOAD STRIP — reward on the left, CTA button on the right -->
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:20px;background:linear-gradient(135deg,rgba(0,212,170,.08),rgba(108,99,255,.08));border:1px dashed var(--accent2);border-radius:14px;padding:16px 22px;margin-bottom:24px;flex-wrap:wrap;">
+          <!-- LEFT: reward message -->
+          <div style="display:flex;align-items:center;gap:14px;flex:1;min-width:220px;">
+            <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(108,99,255,.18),rgba(0,212,170,.18));display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🎁</div>
+            <div style="min-width:0;">
+              <div style="font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--text);line-height:1.3;">Share a module handout</div>
+              <div style="font-size:12px;color:var(--text2);line-height:1.4;margin-top:2px;">Get a <strong style="color:var(--accent2);">FREE video summary</strong> for it &middot; takes 30 seconds</div>
+            </div>
+          </div>
+          <!-- RIGHT: CTA button -->
+          <button onclick="showView('upload')" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--teal),var(--accent));color:#fff;border:none;padding:12px 22px;border-radius:12px;font-family:'Sora',sans-serif;font-size:13px;font-weight:800;cursor:pointer;flex-shrink:0;box-shadow:0 6px 16px rgba(0,212,170,.22);transition:transform .2s,box-shadow .2s;" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 10px 24px rgba(0,212,170,.35)'" onmouseout="this.style.transform='none';this.style.boxShadow='0 6px 16px rgba(0,212,170,.22)'">
+            <span style="font-size:18px;font-weight:900;line-height:1;">+</span>
+            <span>Share My Handout Now</span>
+          </button>
         </div>
 
         <!-- EXPLORE UNIVERSITIES — browse all unis → semesters → modules -->
@@ -8899,13 +8928,14 @@ function renderRpCard(){
   var initials = getInitials(contributor);
   var moduleName = item.module || 'Module';
   var semTitle = item.semesterTitle || '';
-  // University logo on the right side of the card (with emoji fallback)
+  // University logo on the LEFT of the card-inner (with emoji fallback)
   var fallbackEmoji = uniObj ? uniObj.emoji : '🎓';
   var logoUrl = UNI_LOGOS[item.university] || '';
   var logoHtml = logoUrl
     ? '<img src="' + esc(logoUrl) + '" alt="' + esc(uniName) + ' logo" onerror="this.outerHTML=&#39;<div class=&quot;rp-logo-fallback&quot;>' + fallbackEmoji + '</div>&#39;">'
     : '<div class="rp-logo-fallback">' + fallbackEmoji + '</div>';
   var html =
+    '<div class="rp-logo-col">' + logoHtml + '</div>' +
     '<div class="rp-main-col">' +
       '<div class="rp-icon-row">' +
         '<div class="rp-icon">' + icon + '</div>' +
@@ -8918,12 +8948,29 @@ function renderRpCard(){
         '<div class="rp-avatar">' + initials + '</div>' +
         '<span>Shared by ' + esc(contributor) + ' · ' + timeStr + '</span>' +
       '</div>' +
-    '</div>' +
-    '<div class="rp-logo-col">' + logoHtml + '</div>';
+    '</div>';
   var inner = el('rpCardInner');
   if(inner) inner.innerHTML = html;
   renderRpDots();
 }
+
+/* Dashboard search: filter the Explore Universities grid as the user types */
+window.filterDashboardSearch = function(){
+  var input = el('dashSearch');
+  if(!input) return;
+  var q = (input.value || '').trim().toLowerCase();
+  var grid = el('phase1UniGrid');
+  if(!grid) return;
+  var cards = grid.querySelectorAll('.uni-card');
+  cards.forEach(function(card){
+    var nameEl = card.querySelector('.uc-name');
+    var countryEl = card.querySelector('.uc-country');
+    var name = nameEl ? nameEl.textContent.toLowerCase() : '';
+    var country = countryEl ? countryEl.textContent.toLowerCase() : '';
+    var match = !q || name.indexOf(q) !== -1 || country.indexOf(q) !== -1;
+    card.style.display = match ? '' : 'none';
+  });
+};
 
 function renderRpDots(){
   var dots = el('rpDots');
@@ -8950,17 +8997,24 @@ function startRpRotation(){
   }, 5000);
 }
 
-/* Pause on hover + click to open the resource's learning page */
+/* Pause on hover. Click on the inner rotating area (not the search bar)
+   opens the resource's learning page. Event delegation on rpCardInner,
+   which survives innerHTML rebuilds because the listener is on the
+   container element itself. */
 setTimeout(function(){
   var card = el('rpCard');
-  if(!card) return;
+  var inner = el('rpCardInner');
+  if(!card || !inner) return;
   card.addEventListener('mouseenter', function(){
     if(RP_TIMER){ clearInterval(RP_TIMER); RP_TIMER = null; }
   });
   card.addEventListener('mouseleave', function(){
+    // Don't resume rotation while the search input is focused
+    var active = document.activeElement;
+    if(active && active.id === 'dashSearch') return;
     if(RECENT_PUB.length > 1 && !RP_TIMER) startRpRotation();
   });
-  card.addEventListener('click', function(){
+  inner.addEventListener('click', function(){
     var item = RECENT_PUB[RP_IDX];
     if(item) openResourceLearningPage(item);
   });
