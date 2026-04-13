@@ -2066,6 +2066,15 @@ function openLoginFromLanding(){
           <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(108,99,255,.1);border:1px solid var(--border2);border-radius:20px;padding:6px 14px;font-size:12px;color:var(--text);"><span style="font-size:14px;">🎁</span><span><strong>Share a module handout</strong> = Get a <strong style="color:var(--accent2);">FREE video summary</strong> for it</span></div>
         </div>
 
+        <!-- EXPLORE UNIVERSITIES — browse all unis → semesters → modules -->
+        <div style="margin-bottom:24px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="font-family:'Sora',sans-serif;font-size:15px;font-weight:700;color:var(--text);">🎓 Explore Universities</div>
+            <div style="font-size:11px;color:var(--text3);">Tap a university to browse semesters and modules</div>
+          </div>
+          <div class="uni-grid" id="phase1UniGrid"></div>
+        </div>
+
         <!-- Upload History -->
         <div style="margin-bottom:20px;">
           <div style="font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;">📋 My Uploads</div>
@@ -8948,6 +8957,16 @@ window.renderPhase1Dashboard = function(){
   /* Show 'New on EduPath' free video card to ALL students */
   if(el('newVideoSection')) el('newVideoSection').style.display = 'block';
   loadRecentPublished();
+
+  /* Populate the Explore Universities grid so students can browse
+     every university → semesters → modules from the dashboard.
+     renderUniGrid reuses the admin card component but falls into the
+     student branch (progress bar from watched videos) and already
+     wires card clicks to openSemesters(). */
+  var phase1Grid = el('phase1UniGrid');
+  if(phase1Grid){
+    renderUniGrid(phase1Grid, {});
+  }
   if(el('newVideoCard')){
     el('newVideoCard').onclick = function(){
       /* Navigate directly to USMBA Fes Sais → Semester 4 → Cultural Studies → Video 1 */
