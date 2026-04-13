@@ -435,15 +435,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .rp-dots{display:flex;gap:4px;}
 .rp-dot{width:5px;height:5px;border-radius:50%;background:var(--bg4);transition:all .25s;}
 .rp-dot.active{background:var(--accent2);width:14px;border-radius:3px;}
-.rp-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;cursor:pointer;overflow:hidden;flex:1 1 auto;min-height:270px;position:relative;transition:border-color .2s,transform .2s;display:flex;flex-direction:column;}
+.rp-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;cursor:pointer;overflow:hidden;flex:1 1 auto;min-height:290px;position:relative;transition:border-color .2s,transform .2s;display:flex;flex-direction:column;}
 .rp-card:hover{border-color:var(--accent2);transform:translateY(-2px);}
 .rp-card-inner{padding:20px;display:flex;flex-direction:row;gap:20px;flex:1;transition:opacity .4s ease,transform .4s ease;min-height:0;align-items:center;}
 .rp-card-inner.fading{opacity:0;transform:translateY(-14px);}
 .rp-main-col{display:flex;flex-direction:column;gap:12px;flex:1;min-width:0;align-self:stretch;}
-.rp-logo-col{flex:0 0 220px;max-width:220px;display:flex;align-items:center;justify-content:center;align-self:stretch;padding:18px;background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);border-radius:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 8px 24px rgba(0,0,0,.18);transition:transform .25s ease,border-color .25s ease;}
-.rp-card:hover .rp-logo-col{transform:scale(1.02);border-color:rgba(255,255,255,.14);}
-.rp-logo-col img{max-width:100%;max-height:190px;object-fit:contain;display:block;filter:drop-shadow(0 6px 18px rgba(0,0,0,.28));}
-.rp-logo-fallback{font-size:96px;line-height:1;opacity:.9;filter:drop-shadow(0 4px 12px rgba(0,0,0,.25));}
+.rp-logo-col{flex:0 0 260px;max-width:260px;display:flex;align-items:center;justify-content:center;align-self:stretch;padding:8px 0;}
+.rp-logo-col img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block;image-rendering:-webkit-optimize-contrast;image-rendering:crisp-edges;}
+.rp-logo-fallback{font-size:120px;line-height:1;opacity:.95;}
 .rp-icon-row{display:flex;align-items:center;gap:12px;}
 .rp-icon{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--accent3),#ff9a9e);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
 .rp-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(67,233,123,.12);border:1px solid rgba(67,233,123,.3);color:var(--success);font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px;}
@@ -453,16 +452,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .rp-avatar{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
 
 @media(max-width:768px){
-  .rp-card{height:auto;min-height:200px;}
-  .rp-logo-col{flex:0 0 140px;max-width:140px;padding:12px;border-radius:14px;}
-  .rp-logo-col img{max-height:120px;}
-  .rp-logo-fallback{font-size:64px;}
+  .rp-card{height:auto;min-height:220px;}
+  .rp-logo-col{flex:0 0 160px;max-width:160px;padding:4px 0;}
+  .rp-logo-fallback{font-size:80px;}
 }
 @media(max-width:480px){
   .rp-card-inner{padding:16px;gap:12px;}
-  .rp-logo-col{flex:0 0 96px;max-width:96px;padding:8px;border-radius:12px;}
-  .rp-logo-col img{max-height:82px;}
-  .rp-logo-fallback{font-size:46px;}
+  .rp-logo-col{flex:0 0 110px;max-width:110px;padding:2px 0;}
+  .rp-logo-fallback{font-size:56px;}
 }
 
 /* ── COLLAPSIBLE SECTIONS (right panel cards) ── */
