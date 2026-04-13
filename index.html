@@ -1970,29 +1970,9 @@ function openLoginFromLanding(){
         </div>
 
         <!-- Reward Progress -->
-        <div id="rewardBar" style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:20px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-            <div style="font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--text);">🎁 Your Rewards</div>
-            <div id="rewardCount" style="font-size:12px;color:var(--accent2);font-weight:600;">0 uploads</div>
-          </div>
-          <div style="display:flex;gap:8px;margin-bottom:14px;">
-            <div id="rStep1" style="flex:1;text-align:center;padding:10px 6px;border-radius:10px;border:1px dashed var(--border2);background:var(--bg3);transition:all .3s;">
-              <div style="font-size:18px;margin-bottom:4px;">🔓</div>
-              <div style="font-size:11px;font-weight:600;color:var(--text2);">1 upload</div>
-              <div style="font-size:10px;color:var(--text3);margin-top:2px;">Free video access</div>
-            </div>
-            <div id="rStep2" style="flex:1;text-align:center;padding:10px 6px;border-radius:10px;border:1px dashed var(--border);background:var(--bg3);transition:all .3s;">
-              <div style="font-size:18px;margin-bottom:4px;">📚</div>
-              <div style="font-size:11px;font-weight:600;color:var(--text2);">3 uploads</div>
-              <div style="font-size:10px;color:var(--text3);margin-top:2px;">Full module unlock</div>
-            </div>
-            <div id="rStep3" style="flex:1;text-align:center;padding:10px 6px;border-radius:10px;border:1px dashed var(--border);background:var(--bg3);transition:all .3s;">
-              <div style="font-size:18px;margin-bottom:4px;">⭐</div>
-              <div style="font-size:11px;font-weight:600;color:var(--text2);">5 uploads</div>
-              <div style="font-size:10px;color:var(--text3);margin-top:2px;">Founding member</div>
-            </div>
-          </div>
-          <div id="rewardMsg" style="font-size:12px;color:var(--accent2);text-align:center;padding:6px;background:rgba(108,99,255,.06);border-radius:8px;">Upload your first handout to unlock free video access!</div>
+        <div id="rewardBar" style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;gap:14px;">
+          <div style="font-size:26px;flex-shrink:0;">🎁</div>
+          <div style="font-size:14px;color:var(--text);line-height:1.55;"><strong>Share a module handout</strong> = Get a <strong style="color:var(--accent2);">FREE video summary</strong> for it</div>
         </div>
 
         <!-- BIG UPLOAD BUTTON -->
@@ -8472,30 +8452,6 @@ window.renderPhase1Dashboard = function(){
       var docs = [];
       snap.forEach(function(doc){ docs.push(doc); });
       docs.sort(function(a,b){ return (b.data().createdAt||'').localeCompare(a.data().createdAt||''); });
-
-      // Update reward bar
-      el('rewardCount').textContent = count + ' upload' + (count !== 1 ? 's' : '');
-
-      // Highlight reward steps
-      var r1 = el('rStep1'), r2 = el('rStep2'), r3 = el('rStep3');
-      r1.style.borderStyle = count >= 1 ? 'solid' : 'dashed';
-      r1.style.borderColor = count >= 1 ? 'var(--teal)' : 'var(--border)';
-      r1.style.background = count >= 1 ? 'rgba(56,249,215,.08)' : 'var(--bg3)';
-      r2.style.borderStyle = count >= 3 ? 'solid' : 'dashed';
-      r2.style.borderColor = count >= 3 ? 'var(--teal)' : 'var(--border)';
-      r2.style.background = count >= 3 ? 'rgba(56,249,215,.08)' : 'var(--bg3)';
-      r3.style.borderStyle = count >= 5 ? 'solid' : 'dashed';
-      r3.style.borderColor = count >= 5 ? 'var(--teal)' : 'var(--border)';
-      r3.style.background = count >= 5 ? 'rgba(56,249,215,.08)' : 'var(--bg3)';
-
-      // Reward message
-      var rmsg = el('rewardMsg');
-      if(count === 0) rmsg.textContent = 'Upload your first handout to unlock free video access!';
-      else if(count < 3) rmsg.textContent = '🎉 ' + count + ' uploaded! ' + (3 - count) + ' more to unlock full module access.';
-      else if(count < 5) rmsg.textContent = '🔥 Full module unlocked! ' + (5 - count) + ' more for founding member badge.';
-      else rmsg.textContent = '⭐ You are a Founding Member! Thank you for your ' + count + ' contributions.';
-      rmsg.style.background = count >= 5 ? 'rgba(56,249,215,.08)' : count >= 1 ? 'rgba(108,99,255,.06)' : 'rgba(108,99,255,.06)';
-      rmsg.style.color = count >= 5 ? 'var(--teal)' : 'var(--accent2)';
 
       // Render upload history
       if(snap.empty){
