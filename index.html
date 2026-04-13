@@ -435,21 +435,46 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .rp-dots{display:flex;gap:4px;}
 .rp-dot{width:5px;height:5px;border-radius:50%;background:var(--bg4);transition:all .25s;}
 .rp-dot.active{background:var(--accent2);width:14px;border-radius:3px;}
-.rp-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;cursor:default;overflow:hidden;flex:1 1 auto;min-height:250px;position:relative;transition:border-color .2s;display:flex;flex-direction:row;align-items:stretch;}
-.rp-card:hover{border-color:var(--accent2);}
-.rp-card-inner{padding:20px;display:flex;flex-direction:row;gap:20px;flex:1;min-width:0;transition:opacity .4s ease,transform .4s ease;align-items:center;cursor:pointer;}
+.rp-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;cursor:pointer;overflow:hidden;flex:1 1 auto;min-height:250px;position:relative;transition:border-color .2s,transform .2s;display:flex;flex-direction:column;}
+.rp-card:hover{border-color:var(--accent2);transform:translateY(-2px);}
+.rp-card-inner{padding:20px;display:flex;flex-direction:row;gap:20px;flex:1;min-width:0;transition:opacity .4s ease,transform .4s ease;align-items:center;}
 .rp-card-inner.fading{opacity:0;transform:translateY(-14px);}
 .rp-main-col{display:flex;flex-direction:column;gap:12px;flex:1;min-width:0;align-self:stretch;}
 .rp-logo-col{flex:0 0 170px;max-width:170px;display:flex;align-items:center;justify-content:center;align-self:stretch;padding:8px 0;order:-1;}
 .rp-logo-col img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block;image-rendering:-webkit-optimize-contrast;image-rendering:crisp-edges;}
 .rp-logo-fallback{font-size:90px;line-height:1;opacity:.95;}
-.rp-search-col{flex:0 0 260px;max-width:260px;padding:20px;display:flex;flex-direction:column;justify-content:center;gap:10px;border-left:1px solid var(--border);background:rgba(255,255,255,.015);}
-.rp-search-wrap{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:12px 14px;transition:border-color .2s;}
-.rp-search-wrap:focus-within{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(0,212,170,.12);}
-.rp-search-icon{font-size:15px;opacity:.75;flex-shrink:0;}
-.rp-search-input{flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;}
-.rp-search-input::placeholder{color:var(--text3);}
-.rp-search-hint{font-size:10px;color:var(--text3);text-align:center;line-height:1.4;}
+
+/* ── DASHBOARD SEARCH SECTION ── */
+.ds-search-section{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:22px 24px;margin-bottom:24px;}
+.ds-search-wrap{display:flex;align-items:center;gap:12px;background:var(--bg);border:1.5px solid var(--border);border-radius:14px;padding:14px 18px;transition:border-color .2s,box-shadow .2s;}
+.ds-search-wrap:focus-within{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(0,212,170,.14);}
+.ds-search-input{flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:0;}
+.ds-search-input::placeholder{color:var(--text3);}
+.ds-search-icon{font-size:17px;opacity:.7;flex-shrink:0;}
+.ds-search-clear{background:transparent;border:none;color:var(--text3);font-size:14px;cursor:pointer;padding:4px 6px;border-radius:6px;display:none;flex-shrink:0;transition:color .15s,background .15s;}
+.ds-search-clear:hover{color:var(--text);background:rgba(255,255,255,.06);}
+.ds-search-hint-row{display:flex;align-items:center;justify-content:space-between;margin:18px 0 12px;}
+.ds-search-hint-text{font-size:12px;color:var(--text3);}
+.ds-search-chips{display:flex;flex-wrap:wrap;gap:8px;}
+.ds-chip{display:inline-block;padding:8px 16px;border-radius:22px;font-size:13px;font-weight:700;cursor:pointer;border:1px solid transparent;transition:transform .15s,border-color .15s,filter .15s;user-select:none;line-height:1;}
+.ds-chip:hover{transform:translateY(-1px);filter:brightness(1.15);border-color:rgba(255,255,255,.18);}
+.ds-chip.active{border-color:var(--accent2);box-shadow:0 0 0 2px rgba(0,212,170,.18);}
+.ds-chip-sem{background:rgba(108,99,255,.18);color:#c2baff;}
+.ds-chip-mod-a{background:rgba(0,212,170,.18);color:#7ee8d1;}
+.ds-chip-mod-b{background:rgba(255,101,132,.18);color:#ffb1bf;}
+.ds-chip-mod-c{background:rgba(249,168,37,.18);color:#ffcf74;}
+.ds-chip-mod-d{background:rgba(56,249,215,.15);color:#8df2db;}
+.ds-chip-mod-e{background:rgba(155,89,182,.2);color:#d9a5ec;}
+.ds-chip-mod-f{background:rgba(86,204,242,.18);color:#9fdaf4;}
+.ds-chip-uni-a{background:rgba(108,99,255,.12);color:#b8b0f2;}
+.ds-chip-uni-b{background:rgba(255,154,158,.15);color:#ffb8bc;}
+.ds-chip-uni-c{background:rgba(67,233,123,.15);color:#88ecaa;}
+.ds-chip-uni-d{background:rgba(255,216,155,.18);color:#ffd9a3;}
+@media(max-width:600px){
+  .ds-search-section{padding:18px 18px;}
+  .ds-search-wrap{padding:12px 14px;}
+  .ds-chip{padding:7px 13px;font-size:12px;}
+}
 .rp-icon-row{display:flex;align-items:center;gap:12px;}
 .rp-icon{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--accent3),#ff9a9e);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
 .rp-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(67,233,123,.12);border:1px solid rgba(67,233,123,.3);color:var(--success);font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px;}
@@ -458,11 +483,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .rp-contributor{font-size:11px;color:var(--accent2);font-weight:600;margin-top:auto;display:flex;align-items:center;gap:6px;}
 .rp-avatar{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
 
-@media(max-width:900px){
-  .rp-card{flex-direction:column;height:auto;min-height:auto;}
-  .rp-search-col{flex:1 1 auto;max-width:100%;border-left:none;border-top:1px solid var(--border);padding:14px 18px;}
-  .rp-search-hint{display:none;}
-}
 @media(max-width:768px){
   .rp-logo-col{flex:0 0 130px;max-width:130px;padding:4px 0;}
   .rp-logo-fallback{font-size:70px;}
@@ -471,7 +491,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
   .rp-card-inner{padding:16px;gap:12px;}
   .rp-logo-col{flex:0 0 90px;max-width:90px;padding:2px 0;}
   .rp-logo-fallback{font-size:50px;}
-  .rp-search-col{padding:12px 14px;}
 }
 
 /* ── COLLAPSIBLE SECTIONS (right panel cards) ── */
@@ -2074,14 +2093,6 @@ function openLoginFromLanding(){
           <div class="rp-card" id="rpCard">
             <!-- Rotating area: logo (left) + text info (right). Rebuilt each tick. -->
             <div class="rp-card-inner" id="rpCardInner"></div>
-            <!-- Static search bar — NOT rebuilt on rotation so typing/focus survives -->
-            <div class="rp-search-col">
-              <div class="rp-search-wrap">
-                <span class="rp-search-icon">🔍</span>
-                <input type="text" class="rp-search-input" id="dashSearch" placeholder="Search universities…" oninput="filterDashboardSearch()">
-              </div>
-              <div class="rp-search-hint">Tap to filter universities below</div>
-            </div>
           </div>
         </div>
         </div>
@@ -2106,6 +2117,36 @@ function openLoginFromLanding(){
           </button>
         </div>
 
+        <!-- DASHBOARD SEARCH — filter the Explore Universities grid by uni / semester / module -->
+        <div class="ds-search-section">
+          <div class="ds-search-wrap">
+            <input type="text" class="ds-search-input" id="dashSearch" placeholder="Search by university, semester (S1–S6), or module…" oninput="filterDashboardSearch()" autocomplete="off">
+            <button type="button" class="ds-search-clear" id="dashSearchClear" onclick="clearDashboardSearch()" aria-label="Clear search">✕</button>
+            <span class="ds-search-icon">🔍</span>
+          </div>
+          <div class="ds-search-hint-row">
+            <div class="ds-search-hint-text">💡 Suggested keywords &mdash; tap to add one to your search</div>
+          </div>
+          <div class="ds-search-chips">
+            <span class="ds-chip ds-chip-sem" onclick="addDashboardKeyword('S1')">S1</span>
+            <span class="ds-chip ds-chip-sem" onclick="addDashboardKeyword('S2')">S2</span>
+            <span class="ds-chip ds-chip-sem" onclick="addDashboardKeyword('S3')">S3</span>
+            <span class="ds-chip ds-chip-sem" onclick="addDashboardKeyword('S4')">S4</span>
+            <span class="ds-chip ds-chip-sem" onclick="addDashboardKeyword('S5')">S5</span>
+            <span class="ds-chip ds-chip-sem" onclick="addDashboardKeyword('S6')">S6</span>
+            <span class="ds-chip ds-chip-mod-a" onclick="addDashboardKeyword('Grammar')">Grammar</span>
+            <span class="ds-chip ds-chip-mod-b" onclick="addDashboardKeyword('Literature')">Literature</span>
+            <span class="ds-chip ds-chip-mod-c" onclick="addDashboardKeyword('Linguistics')">Linguistics</span>
+            <span class="ds-chip ds-chip-mod-d" onclick="addDashboardKeyword('Cultural Studies')">Cultural Studies</span>
+            <span class="ds-chip ds-chip-mod-e" onclick="addDashboardKeyword('Translation')">Translation</span>
+            <span class="ds-chip ds-chip-mod-f" onclick="addDashboardKeyword('Media Studies')">Media Studies</span>
+            <span class="ds-chip ds-chip-uni-a" onclick="addDashboardKeyword('Fez')">Fez</span>
+            <span class="ds-chip ds-chip-uni-b" onclick="addDashboardKeyword('Casablanca')">Casablanca</span>
+            <span class="ds-chip ds-chip-uni-c" onclick="addDashboardKeyword('Agadir')">Agadir</span>
+            <span class="ds-chip ds-chip-uni-d" onclick="addDashboardKeyword('Marrakech')">Marrakech</span>
+          </div>
+        </div>
+
         <!-- EXPLORE UNIVERSITIES — browse all unis → semesters → modules -->
         <div style="margin-bottom:24px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
@@ -2113,6 +2154,9 @@ function openLoginFromLanding(){
             <div style="font-size:11px;color:var(--text3);">Tap a university to browse semesters and modules</div>
           </div>
           <div class="uni-grid" id="phase1UniGrid"></div>
+          <div id="phase1UniEmpty" style="display:none;text-align:center;padding:40px 20px;color:var(--text3);font-size:13px;background:var(--bg2);border:1px dashed var(--border);border-radius:14px;margin-top:6px;">
+            🔎 No universities match your search. Try a different keyword or tap ✕ to clear.
+          </div>
         </div>
 
         <!-- Upload History -->
@@ -4805,6 +4849,24 @@ function renderUniGrid(grid, resCounts){
     card.style.setProperty('--uc',uni.c);
     card.setAttribute('draggable','true');
     card.setAttribute('data-uni-id', uni.id);
+    // Build a searchable haystack for this uni: name + country +
+    // all S-labels (S1..S6 + titles) + all module titles across
+    // every semester. Used by filterDashboardSearch() to match
+    // against keywords like "S4", "Grammar 1", or "Cultural Studies".
+    try {
+      var searchParts = [uni.name || '', uni.country || ''];
+      var uniSemsSearch = UNI_SEM_CONFIG[uni.id] || null;
+      SEMESTERS.forEach(function(sem, si){
+        if(uniSemsSearch && uniSemsSearch.indexOf(si) === -1) return;
+        searchParts.push('S' + (si + 1));
+        searchParts.push(sem.title || '');
+        var mods = getMods(si, uni.id);
+        mods.forEach(function(m){ searchParts.push(m.title || ''); });
+      });
+      card.setAttribute('data-search', searchParts.join(' ').toLowerCase());
+    } catch(e) {
+      card.setAttribute('data-search', ((uni.name || '') + ' ' + (uni.country || '')).toLowerCase());
+    }
     var logoHtml = UNI_LOGOS[uni.id] ? '<img src="'+UNI_LOGOS[uni.id]+'" style="width:48px;height:48px;object-fit:contain;border-radius:8px;margin-bottom:8px;" onerror="this.outerHTML=&#39;<div class=&quot;uc-emoji&quot;>'+uni.emoji+'</div>&#39;">' : '<div class="uc-emoji">'+uni.emoji+'</div>';
     var verifiedBadge = uni.verified ? '<span style="display:inline-block;background:linear-gradient(135deg,#43e97b,#38f9d7);color:#111;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;vertical-align:middle;">✓ Verified</span>' : '';
     card.innerHTML=logoHtml+'<div class="uc-name" id="utitle_'+uni.id+'">'+uni.name+verifiedBadge+(isAdminUser?' <span class="uni-edit-btn" data-uid="'+uni.id+'" style="cursor:pointer;font-size:13px;opacity:.4;margin-left:4px;vertical-align:middle;" title="Edit name">✏️</span>':'')+'</div><div class="uc-country">'+uni.country+'</div><div class="uc-bar"><div class="uc-fill" style="width:'+pct+'%"></div></div><div class="uc-pct">'+pctLabel+'</div>';
@@ -8954,22 +9016,67 @@ function renderRpCard(){
   renderRpDots();
 }
 
-/* Dashboard search: filter the Explore Universities grid as the user types */
+/* Dashboard search: filter the Explore Universities grid.
+   Multi-token AND match against each uni-card's data-search attribute,
+   which is populated by renderUniGrid with the uni name, country, all
+   semester labels (S1..S6 + the title), and every module title for
+   every semester of that uni. So "S4 Grammar" narrows to unis that
+   have both. */
 window.filterDashboardSearch = function(){
   var input = el('dashSearch');
   if(!input) return;
   var q = (input.value || '').trim().toLowerCase();
   var grid = el('phase1UniGrid');
   if(!grid) return;
+  var clearBtn = el('dashSearchClear');
+  if(clearBtn) clearBtn.style.display = q ? 'inline-block' : 'none';
+  var tokens = q.split(/\s+/).filter(Boolean);
   var cards = grid.querySelectorAll('.uni-card');
+  var visibleCount = 0;
   cards.forEach(function(card){
-    var nameEl = card.querySelector('.uc-name');
-    var countryEl = card.querySelector('.uc-country');
-    var name = nameEl ? nameEl.textContent.toLowerCase() : '';
-    var country = countryEl ? countryEl.textContent.toLowerCase() : '';
-    var match = !q || name.indexOf(q) !== -1 || country.indexOf(q) !== -1;
+    var text = (card.getAttribute('data-search') || '').toLowerCase();
+    var match = tokens.length === 0 || tokens.every(function(t){
+      return text.indexOf(t) !== -1;
+    });
     card.style.display = match ? '' : 'none';
+    if(match) visibleCount++;
   });
+  // Highlight which chips are currently in the query so the user sees state
+  var chips = document.querySelectorAll('.ds-chip');
+  chips.forEach(function(chip){
+    var label = chip.textContent.trim().toLowerCase();
+    if(label && q.indexOf(label) !== -1) chip.classList.add('active');
+    else chip.classList.remove('active');
+  });
+  // Empty-state message when nothing matches
+  var empty = el('phase1UniEmpty');
+  if(empty) empty.style.display = (tokens.length > 0 && visibleCount === 0) ? 'block' : 'none';
+};
+
+/* Append a keyword to the search input (space-separated) and re-filter.
+   If the keyword is already present in the query, remove it instead,
+   so each chip acts as a toggle. */
+window.addDashboardKeyword = function(keyword){
+  var input = el('dashSearch');
+  if(!input) return;
+  var current = (input.value || '').trim();
+  var rxp = new RegExp('(^|\\s)' + keyword.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&') + '(\\s|$)', 'i');
+  if(rxp.test(current)){
+    // toggle off: remove the keyword
+    input.value = current.replace(rxp, ' ').replace(/\s+/g, ' ').trim();
+  } else {
+    input.value = current ? current + ' ' + keyword : keyword;
+  }
+  input.focus();
+  filterDashboardSearch();
+};
+
+window.clearDashboardSearch = function(){
+  var input = el('dashSearch');
+  if(!input) return;
+  input.value = '';
+  filterDashboardSearch();
+  input.focus();
 };
 
 function renderRpDots(){
@@ -8997,24 +9104,17 @@ function startRpRotation(){
   }, 5000);
 }
 
-/* Pause on hover. Click on the inner rotating area (not the search bar)
-   opens the resource's learning page. Event delegation on rpCardInner,
-   which survives innerHTML rebuilds because the listener is on the
-   container element itself. */
+/* Pause on hover + click to open the resource's learning page */
 setTimeout(function(){
   var card = el('rpCard');
-  var inner = el('rpCardInner');
-  if(!card || !inner) return;
+  if(!card) return;
   card.addEventListener('mouseenter', function(){
     if(RP_TIMER){ clearInterval(RP_TIMER); RP_TIMER = null; }
   });
   card.addEventListener('mouseleave', function(){
-    // Don't resume rotation while the search input is focused
-    var active = document.activeElement;
-    if(active && active.id === 'dashSearch') return;
     if(RECENT_PUB.length > 1 && !RP_TIMER) startRpRotation();
   });
-  inner.addEventListener('click', function(){
+  card.addEventListener('click', function(){
     var item = RECENT_PUB[RP_IDX];
     if(item) openResourceLearningPage(item);
   });
