@@ -4861,9 +4861,11 @@ function proceedWithModules(mods, sem, idx, grid){
 function hasLearningAccess(){
   if(isAdmin()) return true;
   if(!S.user) return false;
-  // Check from user profile OR current navigation state
-  var userUni = S.user.university || (S.uni && S.uni.id) || '';
-  var userSem = S.user.semester || (S.sem && S.sem.id) || '';
+  // Any student viewing the Fes Sais S4 context gets access to the free preview
+  if(S.uni && S.uni.id === 'usmba' && S.sem && S.sem.id === 'sem4') return true;
+  // Fes Sais S4 students in their own profile path
+  var userUni = S.user.university || '';
+  var userSem = S.user.semester || '';
   if(userUni === 'usmba' && userSem === 'sem4') return true;
   if(isUserPaid()) return true;
   return false;
@@ -8453,18 +8455,20 @@ window.renderPhase1Dashboard = function(){
     var canLearn = (userUni === 'usmba' && userSem === 'sem4');
     slCard.style.display = canLearn ? 'block' : 'none';
     if(el('nav-learning')) el('nav-learning').style.display = canLearn ? 'flex' : 'none';
-    if(el('newVideoSection')) el('newVideoSection').style.display = canLearn ? 'block' : 'none';
+    /* Show 'New on EduPath' free video card to ALL students */
+    if(el('newVideoSection')) el('newVideoSection').style.display = 'block';
     if(el('newVideoCard')){
       el('newVideoCard').onclick = function(){
-        var uni = UNIVERSITIES.find(function(u){ return u.id === userUni; });
+        /* Always navigate to Fes Sais S4 Cultural Studies — the free preview */
+        var uni = UNIVERSITIES.find(function(u){ return u.id === 'usmba'; });
         if(uni){
           openSemesters(uni);
           setTimeout(function(){
-            var semIdx = SEMESTERS.findIndex(function(s){ return s.id === userSem; });
+            var semIdx = SEMESTERS.findIndex(function(s){ return s.id === 'sem4'; });
             if(semIdx >= 0){
               openModules(SEMESTERS[semIdx], semIdx);
               setTimeout(function(){
-                var mods = getMods(semIdx, uni.id);
+                var mods = getMods(semIdx, 'usmba');
                 var cs = mods.find(function(m){ return m.title && m.title.toLowerCase().indexOf('cultural studies') !== -1; });
                 if(cs) openPlayer(cs);
               }, 400);
