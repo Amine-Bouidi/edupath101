@@ -426,6 +426,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .qz-retry-btn{background:var(--bg3);border:1px solid var(--border2);color:var(--accent2);padding:8px 20px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif;transition:all .2s;}
 .qz-retry-btn:hover{background:var(--bg4);}
 
+/* ── COLLAPSIBLE SECTIONS (right panel cards) ── */
+.collapsible-hdr{cursor:pointer;user-select:none;transition:opacity .2s;}
+.collapsible-hdr:hover{opacity:.85;}
+.collapsible-chevron{margin-left:auto;font-size:14px;color:var(--text3);transition:transform .25s ease;flex-shrink:0;}
+.collapsible-card.collapsed .collapsible-chevron{transform:rotate(-90deg);}
+.collapsible-body{max-height:2000px;overflow:hidden;transition:max-height .3s ease, opacity .2s ease, margin-top .3s ease;opacity:1;}
+.collapsible-card.collapsed .collapsible-body{max-height:0;opacity:0;margin-top:0;pointer-events:none;}
+.collapsible-card.collapsed .sum-hdr,
+.collapsible-card.collapsed .qz-hdr,
+.collapsible-card.collapsed .res-hdr{margin-bottom:0;}
+
 /* ── MODULE TEST INTRO + OVERLAY ── */
 .qz-intro{text-align:center;padding:6px 0 2px;}
 .qz-intro-sub{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:14px;}
@@ -2900,20 +2911,25 @@ function openLoginFromLanding(){
               </div>
             </div>
           </div>
-          <div class="sum-card">
-            <div class="sum-hdr"><div class="sum-hdr-icon">📖</div><div class="sum-hdr-title">Video Summary</div></div>
+          <div class="sum-card collapsible-card">
+            <div class="sum-hdr collapsible-hdr" onclick="toggleSection(this)"><div class="sum-hdr-icon">📖</div><div class="sum-hdr-title">Video Summary</div><div class="collapsible-chevron">▾</div></div>
+            <div class="collapsible-body">
             <div class="sum-body" id="sumBody"></div>
             <div class="ki-lbl">Key ideas to remember</div>
             <div class="ki-list" id="kiList"></div>
+            </div>
           </div>
-          <div class="quiz-card">
-            <div class="qz-hdr">
+          <div class="quiz-card collapsible-card">
+            <div class="qz-hdr collapsible-hdr" onclick="toggleSection(this)">
               <div class="qz-hdr-icon">📝</div>
               <div class="qz-hdr-title">Module Test</div>
+              <div class="collapsible-chevron" style="margin-left:auto;">▾</div>
             </div>
-            <div class="qz-intro">
-              <p class="qz-intro-sub">Challenge yourself with a 100-question test covering this module.</p>
-              <button class="qz-start-btn" id="qzStartBtn">🎯 I am ready for test</button>
+            <div class="collapsible-body">
+              <div class="qz-intro">
+                <p class="qz-intro-sub">Challenge yourself with a 100-question test covering this module.</p>
+                <button class="qz-start-btn" id="qzStartBtn">🎯 I am ready for test</button>
+              </div>
             </div>
           </div>
 
@@ -2947,17 +2963,18 @@ function openLoginFromLanding(){
           </div>
 
           <!-- RESOURCES SECTION -->
-          <div class="res-card">
-            <div class="res-hdr">
+          <div class="res-card collapsible-card">
+            <div class="res-hdr collapsible-hdr" onclick="toggleSection(this)">
               <div class="res-hdr-title">📁 Module Resources</div>
+              <div class="collapsible-chevron" style="margin-left:auto;">▾</div>
             </div>
-
-            <div class="res-panel active" id="resPanelResources">
-              <div class="res-file-list" id="resourceFileList">
-                <div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">Loading resources...</div>
+            <div class="collapsible-body">
+              <div class="res-panel active" id="resPanelResources">
+                <div class="res-file-list" id="resourceFileList">
+                  <div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">Loading resources...</div>
+                </div>
               </div>
             </div>
-
           </div>
 
         </div>
@@ -5346,6 +5363,12 @@ function toggleSave(){
 
 if(el('btnLike')) el('btnLike').onclick = toggleLike;
 if(el('btnSave')) el('btnSave').onclick = toggleSave;
+
+/* Collapsible section toggle — click a section header to expand/collapse */
+window.toggleSection = function(hdr){
+  var card = hdr.closest('.collapsible-card');
+  if(card) card.classList.toggle('collapsed');
+};
 
 function renderInstructorCard(){
   var card = el('instructorCard');
