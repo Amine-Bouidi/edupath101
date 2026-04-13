@@ -435,7 +435,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .rp-dots{display:flex;gap:4px;}
 .rp-dot{width:5px;height:5px;border-radius:50%;background:var(--bg4);transition:all .25s;}
 .rp-dot.active{background:var(--accent2);width:14px;border-radius:3px;}
-.rp-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;cursor:pointer;overflow:hidden;min-height:180px;position:relative;transition:border-color .2s,transform .2s;display:flex;flex-direction:column;}
+.rp-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;cursor:pointer;overflow:hidden;height:254px;position:relative;transition:border-color .2s,transform .2s;display:flex;flex-direction:column;}
 .rp-card:hover{border-color:var(--accent2);transform:translateY(-2px);}
 .rp-card-inner{padding:20px;display:flex;flex-direction:column;gap:12px;flex:1;transition:opacity .4s ease,transform .4s ease;min-height:0;}
 .rp-card-inner.fading{opacity:0;transform:translateY(-14px);}
@@ -448,7 +448,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .rp-avatar{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
 
 @media(max-width:768px){
-  .rp-card{min-height:180px;}
+  .rp-card{height:auto;min-height:200px;}
 }
 
 /* ── COLLAPSIBLE SECTIONS (right panel cards) ── */
@@ -2013,8 +2013,10 @@ function openLoginFromLanding(){
       <div class="view active" id="view-dashboard">
         <!-- PHASE 1 USER DASHBOARD (hidden for admin) -->
         <div id="phase1Dashboard">
+        <!-- NEW VIDEO + RECENTLY PUBLISHED side by side -->
+        <div id="newVideoRow" style="display:flex;gap:18px;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;">
         <!-- NEW VIDEO ON EDUPATH — LinkedIn Learning style -->
-        <div id="newVideoSection" style="display:none;margin-bottom:20px;">
+        <div id="newVideoSection" style="display:none;flex-shrink:0;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
             <div style="font-family:'Sora',sans-serif;font-size:15px;font-weight:700;color:var(--text);">🆕 New on EduPath</div>
           </div>
@@ -2041,7 +2043,7 @@ function openLoginFromLanding(){
         </div>
 
         <!-- Recently Published rotating ticker -->
-        <div id="recentPublishedSection" style="display:none;margin-bottom:20px;">
+        <div id="recentPublishedSection" style="display:none;flex:1;min-width:280px;">
           <div class="rp-hdr">
             <div class="rp-title">🔥 Recently Published</div>
             <div class="rp-dots" id="rpDots"></div>
@@ -2049,6 +2051,7 @@ function openLoginFromLanding(){
           <div class="rp-card" id="rpCard">
             <div class="rp-card-inner" id="rpCardInner"></div>
           </div>
+        </div>
         </div>
 
         <!-- Start Learning CTA — shown for students with learning access -->
