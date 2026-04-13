@@ -437,8 +437,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .rp-dot.active{background:var(--accent2);width:14px;border-radius:3px;}
 .rp-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;cursor:pointer;overflow:hidden;flex:1 1 auto;min-height:254px;position:relative;transition:border-color .2s,transform .2s;display:flex;flex-direction:column;}
 .rp-card:hover{border-color:var(--accent2);transform:translateY(-2px);}
-.rp-card-inner{padding:20px;display:flex;flex-direction:column;gap:12px;flex:1;transition:opacity .4s ease,transform .4s ease;min-height:0;}
+.rp-card-inner{padding:20px;display:flex;flex-direction:row;gap:20px;flex:1;transition:opacity .4s ease,transform .4s ease;min-height:0;align-items:center;}
 .rp-card-inner.fading{opacity:0;transform:translateY(-14px);}
+.rp-main-col{display:flex;flex-direction:column;gap:12px;flex:1;min-width:0;align-self:stretch;}
+.rp-logo-col{flex:0 0 170px;max-width:170px;display:flex;align-items:center;justify-content:center;align-self:stretch;}
+.rp-logo-col img{max-width:100%;max-height:150px;object-fit:contain;display:block;}
+.rp-logo-fallback{font-size:64px;line-height:1;opacity:.85;}
 .rp-icon-row{display:flex;align-items:center;gap:12px;}
 .rp-icon{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--accent3),#ff9a9e);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
 .rp-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(67,233,123,.12);border:1px solid rgba(67,233,123,.3);color:var(--success);font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px;}
@@ -449,6 +453,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 
 @media(max-width:768px){
   .rp-card{height:auto;min-height:200px;}
+  .rp-logo-col{flex:0 0 110px;max-width:110px;}
+  .rp-logo-col img{max-height:100px;}
+  .rp-logo-fallback{font-size:48px;}
+}
+@media(max-width:480px){
+  .rp-card-inner{padding:16px;gap:12px;}
+  .rp-logo-col{flex:0 0 80px;max-width:80px;}
+  .rp-logo-col img{max-height:72px;}
+  .rp-logo-fallback{font-size:36px;}
 }
 
 /* ── COLLAPSIBLE SECTIONS (right panel cards) ── */
@@ -8888,18 +8901,27 @@ function renderRpCard(){
   var initials = getInitials(contributor);
   var moduleName = item.module || 'Module';
   var semTitle = item.semesterTitle || '';
+  // University logo on the right side of the card (with emoji fallback)
+  var fallbackEmoji = uniObj ? uniObj.emoji : '🎓';
+  var logoUrl = UNI_LOGOS[item.university] || '';
+  var logoHtml = logoUrl
+    ? '<img src="' + esc(logoUrl) + '" alt="' + esc(uniName) + ' logo" onerror="this.outerHTML=&#39;<div class=&quot;rp-logo-fallback&quot;>' + fallbackEmoji + '</div>&#39;">'
+    : '<div class="rp-logo-fallback">' + fallbackEmoji + '</div>';
   var html =
-    '<div class="rp-icon-row">' +
-      '<div class="rp-icon">' + icon + '</div>' +
-      '<span class="rp-badge">✨ ' + esc(typeLabel) + '</span>' +
+    '<div class="rp-main-col">' +
+      '<div class="rp-icon-row">' +
+        '<div class="rp-icon">' + icon + '</div>' +
+        '<span class="rp-badge">✨ ' + esc(typeLabel) + '</span>' +
+      '</div>' +
+      '<div class="rp-title-text">' + esc(item.title || moduleName + ' — Handout') + '</div>' +
+      '<div class="rp-meta">' + esc(uniName) + (semTitle ? ' · ' + esc(semTitle) : '') + '</div>' +
+      '<div class="rp-meta" style="color:var(--text2);">📖 ' + esc(moduleName) + '</div>' +
+      '<div class="rp-contributor">' +
+        '<div class="rp-avatar">' + initials + '</div>' +
+        '<span>Shared by ' + esc(contributor) + ' · ' + timeStr + '</span>' +
+      '</div>' +
     '</div>' +
-    '<div class="rp-title-text">' + esc(item.title || moduleName + ' — Handout') + '</div>' +
-    '<div class="rp-meta">' + esc(uniName) + (semTitle ? ' · ' + esc(semTitle) : '') + '</div>' +
-    '<div class="rp-meta" style="color:var(--text2);">📖 ' + esc(moduleName) + '</div>' +
-    '<div class="rp-contributor">' +
-      '<div class="rp-avatar">' + initials + '</div>' +
-      '<span>Shared by ' + esc(contributor) + ' · ' + timeStr + '</span>' +
-    '</div>';
+    '<div class="rp-logo-col">' + logoHtml + '</div>';
   var inner = el('rpCardInner');
   if(inner) inner.innerHTML = html;
   renderRpDots();
