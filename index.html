@@ -3548,12 +3548,12 @@ var MOD_DATA_UH2C = [
     {icon:'🔄',title:'Initiation to Translation',desc:'Introduction to translation theory: English–Arabic and Arabic–English.'}
   ],
   /* S4 */ [
-    {icon:'📚',title:'Introduction to Literature',desc:'Basics of reading and writing about English literature: genres and analysis.'},
-    {icon:'✍️',title:'Advanced Composition and Introduction to Research',desc:'Academic writing and introduction to research methodology.'},
+    {icon:'📚',title:'Introduction to Research',desc:'Basics of reading and writing about English literature: genres and analysis.'},
+    {icon:'✍️',title:'Intro To Discourse Analysis',desc:'Refine academic writing: research papers, critical analysis, and argumentation.'},
     {icon:'🧠',title:'Introduction to Linguistics',desc:'Introduction to general linguistics: phonology, morphology, syntax, semantics.'},
-    {icon:'📺',title:'Introduction to Media Studies',desc:'Analyse media texts, discourse, effects, and the role of media in society.'},
+    {icon:'📺',title:'Introduction to African Literature',desc:'Analyse media texts, discourse, effects, and the role of media in society.'},
     {icon:'🌐',title:'Introduction to Cultural Studies',desc:'Basics in the theory and practice of cultural studies and critical theory.'},
-    {icon:'🔄',title:'Translation (Arabic–English–Arabic)',desc:'Develop translation skills between Arabic and English.'}
+    {icon:'🔄',title:'Intro to Translation',desc:'Develop translation skills from Arabic to English and vice versa.'}
   ],
   /* S5 Literature */ [
     {icon:'🎯',title:'Study Skills and Research Method',desc:'Research methodology, academic writing, and study strategies.'},
@@ -3805,6 +3805,18 @@ var MOD_DATA_NATIONAL = [
     {icon:'🎓',title:'Applied Linguistics',desc:'Advanced applied linguistics: discourse analysis, corpus linguistics, and ELT.'},
     {icon:'✒️',title:'Stylistics',desc:'Analyse literary and non-literary texts using linguistic tools and frameworks.'}
   ]
+];
+
+/* Errachidia Multidisciplinary College — inherits national curriculum,
+   but S4 matches the USMBA Fes renamed module titles (per admin request). */
+var MOD_DATA_FPE = MOD_DATA_NATIONAL.slice();
+MOD_DATA_FPE[3] = [
+  {icon:'📚',title:'Introduction to Research',desc:'Basics of reading and writing about English literature: genres and analysis.'},
+  {icon:'✍️',title:'Intro To Discourse Analysis',desc:'Refine academic writing: research papers, critical analysis, and argumentation.'},
+  {icon:'🧠',title:'Introduction to Linguistics',desc:'Introduction to general linguistics: phonology, morphology, syntax, semantics.'},
+  {icon:'📺',title:'Introduction to African Literature',desc:'Analyse media texts, discourse, effects, and the role of media in society.'},
+  {icon:'🌐',title:'Introduction to Cultural Studies',desc:'Basics in the theory and practice of cultural studies and critical theory.'},
+  {icon:'🔄',title:'Intro to Translation',desc:'Develop translation skills from Arabic to English and vice versa.'}
 ];
 
 /* University-specific module lookup */
@@ -4227,7 +4239,7 @@ var UNI_MOD_DATA = {
   'usms': MOD_DATA_NATIONAL,
   'uh1': MOD_DATA_UH1,
   'usmba_dhar': MOD_DATA_DHAR,
-  'fpe': MOD_DATA_NATIONAL
+  'fpe': MOD_DATA_FPE
 };
 
 function getMods(si, uniId){
