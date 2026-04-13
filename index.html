@@ -8785,6 +8785,9 @@ var RP_TIMER = null;
 function loadRecentPublished(){
   var section = el('recentPublishedSection');
   if(!section) return;
+  // Everything in published_resources is admin-published by definition
+  // (createPublishedResource is the only writer, called from the admin
+  // review flow), so no contributor filter is needed.
   db.collection('published_resources')
     .where('status','==','published')
     .limit(50)
@@ -8793,9 +8796,6 @@ function loadRecentPublished(){
       snap.forEach(function(doc){
         var d = doc.data();
         if(!d || !d.university || !d.semester || !d.module) return;
-        // Only show items shared by an admin (not student contributions)
-        var contribEmail = (d.contributorEmail || '').toLowerCase();
-        if(ADMIN_EMAILS.indexOf(contribEmail) === -1) return;
         items.push(d);
       });
       // Sort client-side by publishedAt desc (most recent first)
