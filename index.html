@@ -8785,7 +8785,6 @@ var RP_TIMER = null;
 function loadRecentPublished(){
   var section = el('recentPublishedSection');
   if(!section) return;
-  var currentEmail = (S.user && S.user.email) ? S.user.email.toLowerCase() : '';
   db.collection('published_resources')
     .where('status','==','published')
     .limit(50)
@@ -8797,8 +8796,6 @@ function loadRecentPublished(){
         // Only show items shared by an admin (not student contributions)
         var contribEmail = (d.contributorEmail || '').toLowerCase();
         if(ADMIN_EMAILS.indexOf(contribEmail) === -1) return;
-        // Don't show resources the current user shared themselves
-        if(contribEmail && contribEmail === currentEmail) return;
         items.push(d);
       });
       // Sort client-side by publishedAt desc (most recent first)
