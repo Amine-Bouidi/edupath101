@@ -7382,7 +7382,7 @@ function renderVideoSlots(container, docId, savedVideos){
       '<div class="cm-field"><label>Key point 5</label><input type="text" id="cm_k5_'+i+'" value="' + (v && v.keys && v.keys[4] ? v.keys[4] : '') + '" placeholder="Fifth key takeaway (optional)"></div>' +
       '<div class="cm-field"><label>Instructor name</label><input type="text" id="cm_instr_name_'+i+'" value="' + (v && v.instructor && v.instructor.name ? esc(v.instructor.name) : '') + '" placeholder="e.g. Teacher Amine"></div>' +
       '<div class="cm-field"><label>Instructor title</label><input type="text" id="cm_instr_title_'+i+'" value="' + (v && v.instructor && v.instructor.title ? esc(v.instructor.title) : '') + '" placeholder="e.g. English Studies Professor"></div>' +
-      '<div class="cm-field"><label>Instructor photo URL <span style="color:var(--text3);font-weight:400;font-size:11px;">(optional)</span></label><input type="text" id="cm_instr_photo_'+i+'" value="' + (v && v.instructor && v.instructor.photo ? esc(v.instructor.photo) : '') + '" placeholder="https://..."></div>' +
+      '<div class="cm-field"><label>Instructor photo <span style="color:var(--text3);font-weight:400;font-size:11px;">(optional — upload an image)</span></label><div style="display:flex;align-items:center;gap:12px;"><div id="cm_instr_photo_preview_'+i+'" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;overflow:hidden;flex-shrink:0;">' + (v && v.instructor && v.instructor.photo ? '<img src="'+esc(v.instructor.photo)+'" style="width:100%;height:100%;object-fit:cover;">' : '👤') + '</div><label style="display:inline-block;padding:8px 16px;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;cursor:pointer;font-size:12px;color:var(--accent2);font-weight:600;">📁 Choose file<input type="file" id="cm_instr_photo_file_'+i+'" accept="image/*" style="display:none;" onchange="handleInstructorPhoto(event, '+i+')"></label><button type="button" onclick="clearInstructorPhoto('+i+')" style="padding:8px 12px;background:none;border:1px solid var(--border);border-radius:10px;cursor:pointer;font-size:11px;color:var(--text3);">Clear</button></div><input type="hidden" id="cm_instr_photo_'+i+'" value="' + (v && v.instructor && v.instructor.photo ? esc(v.instructor.photo) : '') + '"></div>' +
       '<div class="cm-field"><label>Custom Quiz JSON <span style="color:var(--text3);font-weight:400;font-size:11px;">(paste 100 MCQ as JSON array — leave blank to use placeholder)</span></label><textarea id="cm_quiz_'+i+'" rows="4" style="width:100%;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text1);font-size:11px;box-sizing:border-box;resize:vertical;font-family:monospace;" placeholder=\'[{"q":"Question?","opts":["A","B","C"],"correct":0}, ...]\'>' + (v && v.customQuiz ? esc(JSON.stringify(v.customQuiz)) : '') + '</textarea><div id="cm_quiz_status_'+i+'" style="font-size:11px;color:var(--text3);margin-top:4px;">' + (v && v.customQuiz && v.customQuiz.length ? '✓ ' + v.customQuiz.length + ' questions saved' : 'No custom quiz') + '</div></div>' +
       '</div>' +
     '</div>';
@@ -7421,6 +7421,48 @@ function renderVideoSlots(container, docId, savedVideos){
   html += '<div id="cmSaveMsg" class="admin-msg" style="margin-top:8px;"></div>';
   container.innerHTML = html;
 }
+
+window.handleInstructorPhoto = function(event, slotIdx){
+  var file = event.target.files[0];
+  if(!file) return;
+  if(!file.type.startsWith('image/')){
+    alert('Please select an image file.');
+    return;
+  }
+  if(file.size > 5 * 1024 * 1024){
+    alert('Image too large. Please use a file under 5MB.');
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var img = new Image();
+    img.onload = function(){
+      // Resize to 200x200 max, crop center, output as JPEG
+      var size = 200;
+      var canvas = document.createElement('canvas');
+      canvas.width = size; canvas.height = size;
+      var ctx = canvas.getContext('2d');
+      var minDim = Math.min(img.width, img.height);
+      var sx = (img.width - minDim) / 2;
+      var sy = (img.height - minDim) / 2;
+      ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+      var dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      el('cm_instr_photo_'+slotIdx).value = dataUrl;
+      var preview = el('cm_instr_photo_preview_'+slotIdx);
+      if(preview) preview.innerHTML = '<img src="'+dataUrl+'" style="width:100%;height:100%;object-fit:cover;">';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+};
+
+window.clearInstructorPhoto = function(slotIdx){
+  el('cm_instr_photo_'+slotIdx).value = '';
+  var preview = el('cm_instr_photo_preview_'+slotIdx);
+  if(preview) preview.innerHTML = '👤';
+  var fileInput = el('cm_instr_photo_file_'+slotIdx);
+  if(fileInput) fileInput.value = '';
+};
 
 window.cmSaveVideos = function(docId){
   var videos = [];
