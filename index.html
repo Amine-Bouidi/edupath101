@@ -8790,9 +8790,17 @@ function loadRecentPublished(){
     .limit(50)
     .get().then(function(snap){
       var items = [];
-      snap.forEach(function(doc){ items.push(doc.data()); });
+      snap.forEach(function(doc){
+        var d = doc.data();
+        // Only keep items that are properly attached to a module
+        // (university + semester + module), so the click can navigate there
+        if(d && d.university && d.semester && d.module){
+          items.push(d);
+        }
+      });
       // Sort client-side by publishedAt desc (avoids needing a Firestore index)
       items.sort(function(a,b){ return (b.publishedAt || '').localeCompare(a.publishedAt || ''); });
+      // Keep only the 10 most recent module resources
       RECENT_PUB = items.slice(0, 10);
       if(RECENT_PUB.length === 0){
         section.style.display = 'none';
@@ -8805,6 +8813,23 @@ function loadRecentPublished(){
     }).catch(function(){
       section.style.display = 'none';
     });
+}
+
+function openResourceLearningPage(item){
+  if(!item || !item.university || !item.semester || !item.module) return;
+  var uni = UNIVERSITIES.find(function(u){ return u.id === item.university; });
+  if(!uni) return;
+  openSemesters(uni);
+  setTimeout(function(){
+    var semIdx = SEMESTERS.findIndex(function(s){ return s.id === item.semester; });
+    if(semIdx < 0) return;
+    openModules(SEMESTERS[semIdx], semIdx);
+    setTimeout(function(){
+      var mods = getMods(semIdx, uni.id);
+      var mod = mods.find(function(m){ return m.title === item.module; });
+      if(mod) openPlayer(mod, 0);
+    }, 500);
+  }, 300);
 }
 
 function renderRpCard(){
@@ -8870,7 +8895,7 @@ function startRpRotation(){
   }, 5000);
 }
 
-/* Pause on hover */
+/* Pause on hover + click to open the resource's learning page */
 setTimeout(function(){
   var card = el('rpCard');
   if(!card) return;
@@ -8879,6 +8904,10 @@ setTimeout(function(){
   });
   card.addEventListener('mouseleave', function(){
     if(RECENT_PUB.length > 1 && !RP_TIMER) startRpRotation();
+  });
+  card.addEventListener('click', function(){
+    var item = RECENT_PUB[RP_IDX];
+    if(item) openResourceLearningPage(item);
   });
 }, 1000);
 
