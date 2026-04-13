@@ -1884,14 +1884,6 @@ function openLoginFromLanding(){
     </div>
   </div>
 </div>
-<!-- Announcement popup -->
-<div id="announcementPopup" class="announce-ov">
-  <div class="announce-box">
-    <p class="announce-label">EduPath Team</p>
-    <p class="announce-msg">We will share the video summary for <strong>Semestre 4 — Cultural Studies (Lecture 2)</strong> for <strong>Fes Sais University</strong> this week <strong>(April 6–12)</strong>. Stay alert!</p>
-  </div>
-</div>
-
 <div id="app" class="screen" style="flex-direction:row;">
   <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
   <div class="mobile-overlay" id="mobileOverlay"></div>
@@ -4467,23 +4459,6 @@ function enterApp(name, email){
   if(email && email !== ''){
     checkProfileSetup(email, name);
   }
-  // Show announcement popup once per session
-  if(!sessionStorage.getItem('announceSeen')){
-    sessionStorage.setItem('announceSeen','1');
-    setTimeout(function(){
-      var ap = el('announcementPopup');
-      ap.classList.add('open');
-      var dismissTimer = setTimeout(function(){
-        ap.classList.add('fade-out');
-        setTimeout(function(){ ap.classList.remove('open','fade-out'); },500);
-      },10000);
-      ap.onclick = function(){
-        clearTimeout(dismissTimer);
-        ap.classList.add('fade-out');
-        setTimeout(function(){ ap.classList.remove('open','fade-out'); },500);
-      };
-    },800);
-  }
 }
 function googleSignIn(){
   var provider = new firebase.auth.GoogleAuthProvider();
@@ -4502,7 +4477,6 @@ el('btnSignOut').onclick=function(){
   sessionStorage.removeItem('loggedIn');
   sessionStorage.removeItem('lastView');
   sessionStorage.removeItem('profileDone');
-  sessionStorage.removeItem('announceSeen');
   if(trialInterval) clearInterval(trialInterval);
   el('trialBanner').style.display='none';
   el('paywallOverlay').style.display='none';
