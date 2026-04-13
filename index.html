@@ -8787,10 +8787,16 @@ function loadRecentPublished(){
   if(!section) return;
   // Everything in published_resources is admin-published by definition
   // (createPublishedResource is the only writer, called from the admin
-  // review flow), so no contributor filter is needed.
+  // review flow), so no contributor/status filter is needed.
+  //
+  // Use orderBy publishedAt desc so we actually get the newest docs.
+  // A bare limit() without orderBy returns docs in unspecified order
+  // and will miss recent items once the collection grows.
+  // orderBy on a single field auto-indexes in Firestore — no
+  // composite index required.
   db.collection('published_resources')
-    .where('status','==','published')
-    .limit(50)
+    .orderBy('publishedAt', 'desc')
+    .limit(20)
     .get().then(function(snap){
       var items = [];
       snap.forEach(function(doc){
@@ -8798,9 +8804,7 @@ function loadRecentPublished(){
         if(!d || !d.university || !d.semester || !d.module) return;
         items.push(d);
       });
-      // Sort client-side by publishedAt desc (most recent first)
-      items.sort(function(a,b){ return (b.publishedAt || '').localeCompare(a.publishedAt || ''); });
-      // Keep only the 10 most recent
+      // Already ordered by publishedAt desc from the query.
       RECENT_PUB = items.slice(0, 10);
       if(RECENT_PUB.length === 0){
         section.style.display = 'none';
