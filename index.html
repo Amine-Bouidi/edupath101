@@ -124,6 +124,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .sb-toggle svg{transition:transform .3s;}
 .sidebar.collapsed .sb-toggle svg{transform:rotate(180deg);}
 .sb-user{display:flex;align-items:center;gap:10px;padding:12px 11px;border-bottom:1px solid var(--border);overflow:hidden;min-height:58px;}
+.sb-welcome{padding:14px 14px 10px;border-bottom:1px solid var(--border);overflow:hidden;}
+.sb-welcome-text{font-family:'Sora',sans-serif;font-size:13px;font-weight:700;color:var(--text);background:linear-gradient(135deg,var(--accent2),var(--accent3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .2s;}
+.sidebar.collapsed .sb-welcome{display:none;}
 .sb-user-info{display:flex;flex-direction:column;flex:1;overflow:hidden;transition:opacity .2s,width .3s;white-space:nowrap;}
 .sidebar.collapsed .sb-user-info{opacity:0;width:0;pointer-events:none;}
 .sb-signout-wrap{transition:opacity .2s;white-space:nowrap;}
@@ -1936,6 +1939,7 @@ function openLoginFromLanding(){
       <div class="sb-user-info"><div class="sb-uname" id="sbName">Amine B.</div><div class="sb-role">Student</div></div>
       <div class="sb-signout-wrap"><button class="sb-signout" id="btnSignOut">Sign out</button></div>
     </div>
+    <div class="sb-welcome" id="sbWelcomeWrap"><div class="sb-welcome-text" id="sbWelcome">Welcome! 👋</div></div>
     <div class="sb-nav">
       <div class="sb-sec">Navigation</div>
       <div class="sb-item active" id="nav-dashboard"><span class="sb-icon">🏠</span><span class="sb-item-label"> Dashboard</span></div>
@@ -1980,11 +1984,6 @@ function openLoginFromLanding(){
       <div class="view active" id="view-dashboard">
         <!-- PHASE 1 USER DASHBOARD (hidden for admin) -->
         <div id="phase1Dashboard">
-        <!-- Welcome -->
-        <div class="welcome-banner" style="text-align:center;flex-direction:column;gap:8px;">
-          <div class="wb-text"><h2 id="wbGreet" style="margin-bottom:4px;">Welcome back!</h2><p style="color:var(--text2);font-size:13px;">Phase 1 — Help us build video lessons by sharing your handouts</p></div>
-        </div>
-
         <!-- NEW VIDEO ON EDUPATH — LinkedIn Learning style -->
         <div id="newVideoSection" style="display:none;margin-bottom:20px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
@@ -8754,7 +8753,8 @@ window.renderPhase1Dashboard = function(){
   // Show phase 1 dashboard, hide admin
   el('phase1Dashboard').style.display='block';
   el('adminDashboard').style.display='none';
-  el('wbGreet').textContent = 'Welcome, ' + S.user.name.split(' ')[0] + '!';
+  var sbWelcome = el('sbWelcome');
+  if(sbWelcome) sbWelcome.textContent = 'Welcome, ' + S.user.name.split(' ')[0] + '! 👋';
 
   /* Show 'New on EduPath' free video card to ALL students */
   if(el('newVideoSection')) el('newVideoSection').style.display = 'block';
