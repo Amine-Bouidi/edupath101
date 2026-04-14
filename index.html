@@ -33,6 +33,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://www.googleapis.com">
 <link rel="preconnect" href="https://firestore.googleapis.com">
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 
 <!-- Microsoft Clarity — session recordings & heatmaps -->
 <script type="text/javascript">
@@ -1595,25 +1596,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 
 </style>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
-<script>
-  var firebaseConfig = {
-    apiKey: "AIzaSyDDvXYqYyZV45UvxhE7f70P0JmJlKN5SLg",
-    authDomain: "edupath101-54337.firebaseapp.com",
-    projectId: "edupath101-54337",
-    storageBucket: "edupath101-54337.firebasestorage.app",
-    messagingSenderId: "120290264406",
-    appId: "1:120290264406:web:1d790a9c9b6c2143f442f7",
-    measurementId: "G-DW1MT8LWDG"
-  };
-  firebase.initializeApp(firebaseConfig);
-  var db = firebase.firestore();
-  var storage = firebase.storage();
-</script>
+<!-- NOTE: Firebase SDK used to live here and blocked HTML parsing for
+     ~1.5–2.5s on mobile before the landing page could paint. It has
+     been moved to just before the main app IIFE in <body> so the
+     landing page (which never uses Firebase) paints first. See the
+     "Firebase SDK — loaded after landing-page HTML" block below. -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-DW1MT8LWDG"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-DW1MT8LWDG");</script>
 </head>
 <body>
@@ -3328,6 +3315,30 @@ function openLoginFromLanding(){
   </div>
 </div>
 
+<!-- Firebase SDK — loaded after landing-page HTML so LCP isn't blocked.
+     These are still synchronous (order matters: app-compat must run
+     before auth/firestore/storage), but at this point the entire
+     landing page has been parsed and can paint while these download
+     and execute. The main app IIFE below needs `firebase`, `db` and
+     `storage` to be defined, so sync loading here is required. -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+<script>
+  var firebaseConfig = {
+    apiKey: "AIzaSyDDvXYqYyZV45UvxhE7f70P0JmJlKN5SLg",
+    authDomain: "edupath101-54337.firebaseapp.com",
+    projectId: "edupath101-54337",
+    storageBucket: "edupath101-54337.firebasestorage.app",
+    messagingSenderId: "120290264406",
+    appId: "1:120290264406:web:1d790a9c9b6c2143f442f7",
+    measurementId: "G-DW1MT8LWDG"
+  };
+  firebase.initializeApp(firebaseConfig);
+  var db = firebase.firestore();
+  var storage = firebase.storage();
+</script>
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 (function(){
 
