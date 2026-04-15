@@ -4014,6 +4014,19 @@ MOD_DATA_UMP[3] = [
   {icon:'🔄',title:'Intro to Translation',desc:'Develop translation skills from Arabic to English and vice versa.'}
 ];
 
+/* University Mohammed V — FLSH Rabat — inherits national curriculum,
+   S4 overridden with the unified renamed module titles. Same pattern
+   as MOD_DATA_FPE and MOD_DATA_UMP above. */
+var MOD_DATA_UM5 = MOD_DATA_NATIONAL.slice();
+MOD_DATA_UM5[3] = [
+  {icon:'📚',title:'Introduction to Research',desc:'Basics of reading and writing about English literature: genres and analysis.'},
+  {icon:'✍️',title:'Intro To Discourse Analysis',desc:'Refine academic writing: research papers, critical analysis, and argumentation.'},
+  {icon:'🧠',title:'Introduction to Linguistics',desc:'Introduction to general linguistics: phonology, morphology, syntax, semantics.'},
+  {icon:'📺',title:'Introduction to African Literature',desc:'Analyse media texts, discourse, effects, and the role of media in society.'},
+  {icon:'🌐',title:'Introduction to Cultural Studies',desc:'Basics in the theory and practice of cultural studies and critical theory.'},
+  {icon:'🔄',title:'Intro to Translation',desc:'Develop translation skills from Arabic to English and vice versa.'}
+];
+
 /* University-specific module lookup */
 
 /* Ibn Tofail — FLSH Kenitra module data */
@@ -4428,7 +4441,7 @@ var UNI_MOD_DATA = {
   'ump': MOD_DATA_UMP,
   'uit': MOD_DATA_UIT,
   'umi': MOD_DATA_UMI,
-  'um5': MOD_DATA_NATIONAL,
+  'um5': MOD_DATA_UM5,
   'uae': MOD_DATA_NATIONAL,
   'ucd': MOD_DATA_UCD,
   'usms': MOD_DATA_NATIONAL,
