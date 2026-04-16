@@ -687,7 +687,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .upload-progress-step.done{background:rgba(67,233,123,.1);color:#43e97b;border-color:rgba(67,233,123,.3);}
 .upload-progress-step.current{background:rgba(108,99,255,.12);color:var(--accent2);border-color:var(--accent2);}
 /* User table row */
-.au-row{display:grid;grid-template-columns:2fr 1.2fr 1fr 80px 80px;gap:8px;padding:12px;align-items:center;border-bottom:1px solid var(--border);font-size:13px;cursor:pointer;transition:background .15s;}
+.au-row{display:grid;grid-template-columns:2fr 1.2fr 1fr 130px 80px 80px;gap:8px;padding:12px;align-items:center;border-bottom:1px solid var(--border);font-size:13px;cursor:pointer;transition:background .15s;}
+.au-last{font-size:11px;color:var(--text2);white-space:nowrap;}
 .au-row:hover{background:rgba(108,99,255,.06);}
 .au-row:last-child{border-bottom:none;}
 .au-name{font-weight:600;color:var(--text1);word-break:break-word;}
@@ -2686,10 +2687,11 @@ function openLoginFromLanding(){
             <input type="text" id="adminSearch" class="admin-input" placeholder="🔍 Search by name or email..." style="margin:0;max-width:280px;flex:1;">
           </div>
           <!-- Table header -->
-          <div style="display:grid;grid-template-columns:2fr 1.2fr 1fr 80px 80px;gap:8px;padding:8px 12px;background:var(--bg);border-radius:8px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">
+          <div style="display:grid;grid-template-columns:2fr 1.2fr 1fr 130px 80px 80px;gap:8px;padding:8px 12px;background:var(--bg);border-radius:8px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">
             <div>Student</div>
             <div>University</div>
             <div>Semester</div>
+            <div>Last Login</div>
             <div>Status</div>
             <div style="text-align:center;">Actions</div>
           </div>
@@ -4792,14 +4794,21 @@ function enterApp(name, email){
   el('app').style.display='flex'; el('app').classList.add('active');
   el('sbName').textContent = name;
   el('sbAvatar').textContent = initials;
-  // Track user in Firestore — write immediately, no async get first
+  // Track user in Firestore — read first so we only set createdAt on the very first sign-in
   if(email && email !== ''){
     var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
-    db.collection('users').doc(docId).set({
-      email: email,
-      name: name,
-      lastLogin: new Date().toISOString()
-    }, {merge: true}).catch(function(){});
+    var userRef = db.collection('users').doc(docId);
+    userRef.get().then(function(snap){
+      var updates = {
+        email: email,
+        name: name,
+        lastLogin: new Date().toISOString()
+      };
+      if(!snap.exists || !snap.data().createdAt){
+        updates.createdAt = new Date().toISOString();
+      }
+      return userRef.set(updates, {merge: true});
+    }).catch(function(){});
   }
   startTrialTimer();
   /* Load cached university/semester from localStorage immediately (before Firestore) */
@@ -7119,7 +7128,13 @@ el('ppSaveBtn').onclick = function(){
     lastLogin: new Date().toISOString()
   };
   var docId = email.replace(/[^a-zA-Z0-9]/g,'_');
-  db.collection('users').doc(docId).set(profileData, {merge: true}).then(function(){
+  var userRef = db.collection('users').doc(docId);
+  userRef.get().then(function(snap){
+    if(!snap.exists || !snap.data().createdAt){
+      profileData.createdAt = new Date().toISOString();
+    }
+    return userRef.set(profileData, {merge: true});
+  }).then(function(){
     el('profilePopup').classList.remove('open');
     localStorage.setItem('profileDone_'+email,'1');
     S.user.name = profileData.name;
@@ -7329,12 +7344,13 @@ function loadAdminUsers(){
       el('statTotal').textContent='0'; el('statActive').textContent='0'; el('statTrial').textContent='0'; el('statExpired').textContent='0';
       return;
     }
-    var html='';
+    var rows = [];
     var total=0, active=0, trial=0, expired=0;
     userSnap.forEach(function(doc){
       var u = doc.data();
       if(ADMIN_EMAILS.indexOf(u.email.toLowerCase()) !== -1) return;
       total++;
+      var rowHtml = '';
       var sub = subs[u.email];
       var pending = pendingOrders[u.email];
       var statusClass='trial', statusText='🕐 Trial';
@@ -7360,15 +7376,18 @@ function loadAdminUsers(){
         trial++;
       }
 
-        var lastLogin = u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : '';
+        var lastLoginDisplay = u.lastLogin
+          ? new Date(u.lastLogin).toLocaleString('en-GB', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'})
+          : '—';
         var userUniId = u.university || '';
         var userSemId = u.semester || '';
         var safeRowId = 'auRow' + total;
 
-        html += '<div class="au-row" onclick="toggleAdminExpand(\''+safeRowId+'\')">' +
+        rowHtml += '<div class="au-row" onclick="toggleAdminExpand(\''+safeRowId+'\')">' +
           '<div><div class="au-name">'+esc(u.name||'Unknown')+'</div><div class="au-email">'+esc(u.email)+(u.whatsapp?' · 📱'+esc(u.whatsapp):'')+'</div></div>' +
           '<div class="au-uni">'+uniDisplay+'</div>' +
           '<div class="au-sem">'+semDisplay+'</div>' +
+          '<div class="au-last" title="Last login">🕒 '+lastLoginDisplay+'</div>' +
           '<div><span class="au-status '+statusClass+'">'+statusText+'</span></div>' +
           '<div style="text-align:center;"><button class="au-actions-btn" onclick="event.stopPropagation();toggleAdminExpand(\''+safeRowId+'\')">Manage</button></div>' +
         '</div>' +
@@ -7379,7 +7398,7 @@ function loadAdminUsers(){
           var payLabels = {cmi:'🏦 CMI',cashplus:'💵 Cash Plus',wafacash:'💰 Wafa Cash',bank:'🏧 Bank Transfer'};
           var pendingPlanLabel = pending.planLabel || planLabels[pending.plan] || pending.plan;
           var modNamesDisplay = pending.moduleNames && pending.moduleNames.length > 0 ? pending.moduleNames.join(', ') : (pending.modules ? pending.modules.map(function(idx){return 'Module '+(idx+1);}).join(', ') : '—');
-          html += '<div style="background:rgba(108,99,255,.08);border:1px solid rgba(108,99,255,.2);border-radius:10px;padding:12px;margin-bottom:12px;">' +
+          rowHtml += '<div style="background:rgba(108,99,255,.08);border:1px solid rgba(108,99,255,.2);border-radius:10px;padding:12px;margin-bottom:12px;">' +
             '<div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:8px;">📋 Student\'s order</div>' +
             '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:12px;">' +
               '<div><span style="color:var(--text3);">Plan:</span> <strong style="color:var(--text1);">'+pendingPlanLabel+'</strong></div>' +
@@ -7390,17 +7409,17 @@ function loadAdminUsers(){
             '<div style="margin-top:4px;font-size:11px;color:var(--text3);">Module limit: <strong style="color:var(--accent2);">'+(pending.maxModules||'—')+' modules</strong></div>' +
           '</div>';
         } else if(sub && sub.active) {
-          html += '<div style="background:rgba(67,233,123,.08);border:1px solid rgba(67,233,123,.2);border-radius:10px;padding:12px;margin-bottom:12px;">' +
+          rowHtml += '<div style="background:rgba(67,233,123,.08);border:1px solid rgba(67,233,123,.2);border-radius:10px;padding:12px;margin-bottom:12px;">' +
             '<div style="font-size:12px;font-weight:700;color:#43e97b;margin-bottom:4px;">✅ Active subscription</div>' +
             '<div style="font-size:12px;"><span style="color:var(--text3);">Plan:</span> <strong style="color:var(--text1);">'+(planLabels[sub.plan]||sub.plan)+'</strong> · <span style="color:var(--text3);">Expires:</span> <strong style="color:var(--text1);">'+(sub.expiresAt?new Date(sub.expiresAt).toLocaleDateString():'Lifetime')+'</strong></div>' +
           '</div>';
         } else {
-          html += '<div style="background:rgba(249,168,37,.06);border:1px solid rgba(249,168,37,.2);border-radius:10px;padding:12px;margin-bottom:12px;">' +
+          rowHtml += '<div style="background:rgba(249,168,37,.06);border:1px solid rgba(249,168,37,.2);border-radius:10px;padding:12px;margin-bottom:12px;">' +
             '<div style="font-size:12px;color:#f9a825;">⚠️ No order or subscription yet — student is on free trial</div>' +
           '</div>';
         }
 
-        html += '<input type="hidden" id="'+safeRowId+'_plan" value="'+(sub?sub.plan:(pending?pending.plan:''))+'">' +
+        rowHtml += '<input type="hidden" id="'+safeRowId+'_plan" value="'+(sub?sub.plan:(pending?pending.plan:''))+'">' +
           '<input type="hidden" id="'+safeRowId+'_dur" value="180">' +
           (userUniId && userSemId ?
             '<div style="font-size:12px;color:var(--text2);margin-bottom:10px;padding:8px 12px;background:rgba(108,99,255,.06);border-radius:8px;">📚 <strong style="color:var(--text1);">' + uniText + '</strong> · <strong style="color:var(--text1);">' + semText + '</strong></div>' :
@@ -7413,7 +7432,11 @@ function loadAdminUsers(){
           '</div>' +
           '<div id="'+safeRowId+'_msg" class="admin-msg" style="margin-top:8px;"></div>' +
         '</div>';
+
+        rows.push({ html: rowHtml, sortKey: u.createdAt || u.lastLogin || '' });
       });
+      rows.sort(function(a, b){ return b.sortKey.localeCompare(a.sortKey); });
+      var html = rows.map(function(r){ return r.html; }).join('');
       listEl.innerHTML = html || '<div style="color:var(--text3);font-size:13px;padding:20px 0;text-align:center;">No users yet.</div>';
       el('statTotal').textContent = total;
       el('statActive').textContent = active;
