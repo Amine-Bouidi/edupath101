@@ -2756,8 +2756,7 @@ function openLoginFromLanding(){
               <select id="contribFilterStatus" class="admin-select" style="margin:0;" onchange="loadContributions()">
                 <option value="">All status</option>
                 <option value="pending">Pending</option>
-                <option value="reviewed">Reviewed</option>
-                <option value="used">Used</option>
+                <option value="published">Published</option>
               </select>
               <button class="admin-btn small" onclick="loadContributions()">🔄 Refresh</button>
             </div>
@@ -2772,7 +2771,7 @@ function openLoginFromLanding(){
               </div>
               <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;">
                 <div style="font-size:20px;font-weight:800;color:#43e97b;" id="contribUsed">0</div>
-                <div style="font-size:11px;color:var(--text3);">Used</div>
+                <div style="font-size:11px;color:var(--text3);">Published</div>
               </div>
             </div>
           </div>
@@ -8492,8 +8491,8 @@ window.loadContributions = function(){
     snap.forEach(function(doc){
       var d = doc.data(); d._id = doc.id;
       total++;
-      if(d.status === 'pending') pending++;
-      if(d.status === 'used') used++;
+      if(d.status === 'pending' || !d.status) pending++;
+      if(d.status === 'used' || d.status === 'published') used++;
       if(statusFilter && d.status !== statusFilter) return;
       items.push(d);
     });
