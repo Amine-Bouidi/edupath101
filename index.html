@@ -1972,7 +1972,7 @@ function openLoginFromLanding(){
     </div>
     <div style="margin:6px 0;padding:6px 8px;">
       <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--text2);">
-        <input type="checkbox" id="ppTerms" onchange="validateProfilePopup()" style="accent-color:var(--accent2);width:18px;height:18px;flex-shrink:0;">
+        <input type="checkbox" id="ppTerms" style="accent-color:var(--accent2);width:18px;height:18px;flex-shrink:0;">
         I agree to the <a href="#" onclick="event.preventDefault();el('profilePopup').classList.remove('open');openPrivacyPage();" style="color:var(--accent2);text-decoration:underline;">Privacy Policy & Refund Policy</a>
       </label>
     </div>
@@ -4660,6 +4660,8 @@ function syncModuleProgress(){
 /* ── HELPERS ── */
 function el(id){return document.getElementById(id);}
 function esc(s){if(!s)return '';var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+window.el = el;
+window.esc = esc;
 window.showView = function showView(id){
   if(id === 'upload'){ setTimeout(initUploadPage, 50); }
   sessionStorage.setItem('lastView', id);
@@ -5283,6 +5285,7 @@ function renderModuleGrid(grid, mods, sem, idx, subData, readyMods){
   var allUnlocked = isAdminUser || onTrial;
 
   mods.forEach(function(mod, modIdx){
+    if(!S.uni || !mod) return;
     var p=getP(S.uni.id,sem.id,mod.id),dv=p.videos.length,pct=Math.round((dv/VIDEOS.length)*100);
     var isAll=dv===VIDEOS.length,isSome=dv>0&&!isAll;
     var badge=isSome?'<span class="badge b-prog">'+pct+'%</span>':isAll?'<span class="badge b-done">✓ Done</span>':'<span class="badge b-new">New</span>';
@@ -5735,6 +5738,7 @@ function renderInstructorCard(){
 }
 
 function renderPlayer(){
+  if(!S.uni || !S.sem || !S.mod) return;
   saveNavState();
   var vid=VIDEOS[S.vidIdx];
   var p=getP(S.uni.id,S.sem.id,S.mod.id);
@@ -5757,8 +5761,7 @@ function renderPlayer(){
   el('vidPlaying').style.display='none';
   /* Reset YouTube player */
   var iframe = el('ytPlayer');
-  iframe.src = '';
-  iframe.style.display = 'none';
+  if(iframe){ iframe.src = ''; iframe.style.display = 'none'; }
   S.vidDone=false;
 
   el('viNum').textContent='Video '+(S.vidIdx+1)+' of '+VIDEOS.length;
@@ -5850,6 +5853,7 @@ el('btnPlay').onclick=function(){
   var vid=VIDEOS[S.vidIdx];
   var ytId = getYouTubeId(S.uni.id, S.sem.id, S.mod.id, S.vidIdx);
   var iframe = el('ytPlayer');
+  if(!iframe) return;
   iframe.src = 'https://www.youtube.com/embed/' + ytId + '?autoplay=1&rel=0&modestbranding=1&cc_load_policy=0&enablejsapi=1&origin=' + encodeURIComponent(window.location.origin || 'https://amine-bouidi.github.io');
   iframe.style.display = 'block';
   el('vidOverlay').style.display='none';
@@ -7110,6 +7114,7 @@ el('ppAge').addEventListener('change', validateProfilePopup);
 el('ppGender').addEventListener('change', validateProfilePopup);
 el('ppUni').addEventListener('change', validateProfilePopup);
 el('ppSem').addEventListener('change', validateProfilePopup);
+el('ppTerms').addEventListener('change', validateProfilePopup);
 
 el('ppSaveBtn').onclick = function(){
   var email = el('ppEmail').value;
